@@ -505,6 +505,41 @@
 .cell.is-wrong { border-color: var(--bad); }
 .cell.is-on { border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-l); }
 
+.cell.is-div-cell {
+  padding: 3px 1px;
+  line-height: 1.15;
+}
+
+.div-cell-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.div-cell-eq {
+  font-family: var(--font-num);
+  font-size: clamp(10px, 2.6vw, 12px);
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+
+.div-cell-ans {
+  font-family: var(--font-num);
+  font-size: clamp(12px, 3.2vw, 14px);
+  font-weight: 700;
+  color: var(--brand-d);
+}
+
+.cell.is-div-cell.is-mastered .div-cell-ans {
+  color: var(--ok-text);
+}
+
+.cell.is-div-cell.is-wrong .div-cell-ans {
+  color: var(--bad-text);
+}
+
 .cell-empty {
   min-height: 44px;
   border-radius: 10px;

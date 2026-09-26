@@ -1,4 +1,4 @@
-var CACHE_NAME = 'mt99-cache-v10';
+var CACHE_NAME = 'mt99-cache-v11';
 var ASSETS = [
   './',
   './index.html',
@@ -466,6 +466,31 @@ self.addEventListener('fetch', function (e) {
   var url = e.request.url;
   if (!url.startsWith('http://') && !url.startsWith('https://')) return;
 
+  var isCodeAsset = e.request.mode === 'navigate' ||
+    url.indexOf('.html') !== -1 ||
+    url.indexOf('.js') !== -1 ||
+    url.indexOf('.css') !== -1 ||
+    url.indexOf('?v=') !== -1;
+
+  if (isCodeAsset) {
+    // Network-First for code assets so updates are immediate
+    e.respondWith(
+      fetch(e.request).then(function (res) {
+        if (res && res.status === 200) {
+          var clone = res.clone();
+          caches.open(CACHE_NAME).then(function (cache) {
+            cache.put(e.request, clone);
+          });
+        }
+        return res;
+      }).catch(function () {
+        return caches.match(e.request);
+      })
+    );
+    return;
+  }
+
+  // Cache-First for static media assets (audio, icons)
   e.respondWith(
     caches.match(e.request).then(function (cached) {
       if (cached) return cached;

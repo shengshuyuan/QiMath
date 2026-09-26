@@ -29,12 +29,14 @@
     var hr = document.createElement('tr');
     var corner = document.createElement('th');
     corner.textContent = divMode ? '÷' : '×';
+    corner.className = 'table-corner';
+    corner.title = divMode ? '表内除法 81 式整理表' : '乘法口诀表';
     hr.appendChild(corner);
     for (var a = 1; a <= 9; a++) {
       var th = document.createElement('th');
-      th.textContent = a;
+      th.textContent = divMode ? '商' + a : a;
       th.scope = 'col';
-      th.title = divMode ? '商 ' + a : '因数 ' + a;
+      th.title = divMode ? '商是 ' + a : '因数 ' + a;
       hr.appendChild(th);
     }
     thead.appendChild(hr);
@@ -44,9 +46,9 @@
     for (var b = 1; b <= 9; b++) {
       var tr = document.createElement('tr');
       var rh = document.createElement('th');
-      rh.textContent = b;
+      rh.textContent = divMode ? '÷' + b : b;
       rh.scope = 'row';
-      rh.title = divMode ? '除数 ' + b : '因数 ' + b;
+      rh.title = divMode ? '除数是 ' + b : '因数 ' + b;
       tr.appendChild(rh);
       for (var a2 = 1; a2 <= 9; a2++) {
         var td = document.createElement('td');
@@ -57,11 +59,15 @@
         } else {
           var cell = document.createElement('button');
           cell.type = 'button';
-          cell.className = 'cell';
+          cell.className = 'cell' + (divMode ? ' is-div-cell' : '');
           cell.dataset.a = a2;
           cell.dataset.b = b;
           if (divMode) {
-            cell.textContent = a2 * b;
+            cell.innerHTML =
+              '<div class="div-cell-inner">' +
+              '<span class="div-cell-eq">' + (a2 * b) + '÷' + b + '</span>' +
+              '<span class="div-cell-ans">=' + a2 + '</span>' +
+              '</div>';
             cell.setAttribute('aria-label', (a2 * b) + '除以' + b + '等于' + a2);
           } else {
             cell.textContent = a2 * b;
@@ -109,7 +115,7 @@
       for (var di = 0; di < divKeys.length; di++) {
         if (MT.progress.divMastered && MT.progress.divMastered[divKeys[di]]) dn++;
       }
-      dom.stat.textContent = '表内除法表 · 已掌握 ' + dn + ' / ' + divKeys.length;
+      dom.stat.textContent = '表内除法算式整理表 · 已掌握 ' + dn + ' / ' + divKeys.length;
     } else {
       var keys = MT.core.triangleKeys();
       var n = 0;
@@ -146,7 +152,7 @@
         ((p.divNeedsPractice && p.divNeedsPractice[k]) ? '需再练' : ''));
       eq.innerHTML = '<span class="tk-brand">' + nVal + '</span> ÷ <span class="tk-accent">' + b + '</span> = ' + a;
       var dParts = MT.core.divParts(b, a, 'share');
-      kj.textContent = '💡 想乘法口诀：' + dParts.chant + '，商是 ' + a + (dBadge ? '　' + dBadge : '');
+      kj.textContent = '💡 用乘法口诀求商：想' + dParts.chant + '，商是 ' + a + (dBadge ? '　' + dBadge : '');
     } else {
       k = MT.core.canon(a, b);
       var badge = p.mastered[k] ? '已掌握' : (p.wrong[k] ? '答错过' : (p.needsPractice[k] ? '需再练' : ''));
@@ -157,6 +163,14 @@
     head.appendChild(eq);
     head.appendChild(kj);
     body.appendChild(head);
+
+    if (divMode) {
+      var nameRow = document.createElement('div');
+      nameRow.className = 'sum-desc';
+      nameRow.style.marginBottom = '10px';
+      nameRow.innerHTML = '<span class="sum-tag">算式名称</span>被除数 <b>' + (a * b) + '</b> ÷ 除数 <b>' + b + '</b> = 商 <b>' + a + '</b>';
+      body.appendChild(nameRow);
+    }
 
     var seg = document.createElement('div');
     seg.className = 'seg seg-viz';

@@ -156,6 +156,7 @@
     bState.isRoundClear = false;
     bState.isGameComplete = false;
     bState.foundCount = 0;
+    bState.currentOp = isDiv() ? 'div' : 'mul';
 
     var divMode = isDiv();
     if (divMode) {
@@ -253,9 +254,13 @@
     var bState = S.bubbles;
     if (!dom.bubbleTargetNum) return;
     if (isDiv()) {
-      dom.bubbleTargetNum.textContent = '商是 ' + bState.targetNum;
-    } else {
+      if (dom.bubbleTargetPrefix) dom.bubbleTargetPrefix.textContent = '找一找商等于';
       dom.bubbleTargetNum.textContent = bState.targetNum;
+      if (dom.bubbleTargetSuffix) dom.bubbleTargetSuffix.textContent = '的除法气球！';
+    } else {
+      if (dom.bubbleTargetPrefix) dom.bubbleTargetPrefix.textContent = '找一找积等于';
+      dom.bubbleTargetNum.textContent = bState.targetNum;
+      if (dom.bubbleTargetSuffix) dom.bubbleTargetSuffix.textContent = '的气球！';
     }
     dom.bubbleFoundCount.textContent = bState.foundCount;
     dom.bubbleTotalTarget.textContent = bState.targetTotal;
@@ -411,6 +416,7 @@
     iState.isRoundClear = false;
     iState.isGameComplete = false;
     iState.madeMistake = false;
+    iState.currentOp = isDiv() ? 'div' : 'mul';
 
     var divMode = isDiv();
     if (divMode) {
@@ -681,12 +687,21 @@
     dom.viewBubbles.hidden = (mode !== 'bubbles');
     dom.viewImpostor.hidden = (mode !== 'impostor');
 
+    var curOp = isDiv() ? 'div' : 'mul';
     if (mode === 'bubbles') {
-      if (!S.bubbles.items || !S.bubbles.items.length) startBubbleRound(0);
-      else { renderBubblesHUD(); renderBubblesStage(); }
+      if (S.bubbles.currentOp !== curOp || !S.bubbles.items || !S.bubbles.items.length) {
+        startBubbleRound(0);
+      } else {
+        renderBubblesHUD();
+        renderBubblesStage();
+      }
     } else {
-      if (!S.impostor.cards || !S.impostor.cards.length) startImpostorRound(0);
-      else { renderImpostorHUD(); renderImpostorStage(); }
+      if (S.impostor.currentOp !== curOp || !S.impostor.cards || !S.impostor.cards.length) {
+        startImpostorRound(0);
+      } else {
+        renderImpostorHUD();
+        renderImpostorStage();
+      }
     }
   }
 
@@ -704,11 +719,14 @@
 
   function resetAll() {
     clearTimer();
+    var curOp = isDiv() ? 'div' : 'mul';
+    S.bubbles.currentOp = curOp;
     S.bubbles.score = 0;
     S.bubbles.roundIdx = 0;
     S.bubbles.items = [];
     S.bubbles.targetList = [];
     S.bubbles.divTargetList = [];
+    S.impostor.currentOp = curOp;
     S.impostor.streak = 0;
     S.impostor.roundIdx = 0;
     S.impostor.cards = [];
@@ -726,7 +744,9 @@
       dom.viewBubbles = document.getElementById('game-view-bubbles');
       dom.viewImpostor = document.getElementById('game-view-impostor');
 
+      dom.bubbleTargetPrefix = document.getElementById('bubble-target-prefix');
       dom.bubbleTargetNum = document.getElementById('bubble-target-num');
+      dom.bubbleTargetSuffix = document.getElementById('bubble-target-suffix');
       dom.bubbleFoundCount = document.getElementById('bubble-found-count');
       dom.bubbleTotalTarget = document.getElementById('bubble-total-target');
       dom.bubbleRoundNum = document.getElementById('bubble-round-num');
@@ -764,16 +784,26 @@
     },
 
     resume: function () {
+      var curOp = isDiv() ? 'div' : 'mul';
       if (S.submode === 'bubbles') {
-        renderBubblesHUD();
-        renderBubblesStage();
+        if (S.bubbles.currentOp !== curOp || !S.bubbles.items || !S.bubbles.items.length) {
+          startBubbleRound(0);
+        } else {
+          renderBubblesHUD();
+          renderBubblesStage();
+        }
       } else {
-        renderImpostorHUD();
-        renderImpostorStage();
+        if (S.impostor.currentOp !== curOp || !S.impostor.cards || !S.impostor.cards.length) {
+          startImpostorRound(0);
+        } else {
+          renderImpostorHUD();
+          renderImpostorStage();
+        }
       }
     },
 
     resetAll: resetAll,
+    setSubmode: setSubmode,
     state: S
   };
 })(window.MT = window.MT || {});

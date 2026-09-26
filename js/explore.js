@@ -52,7 +52,8 @@
         '<div class="sum-row sum-div"><span class="tk-brand">' + p.n + '</span> <span class="op">÷</span> ' +
         '<span class="tk-accent">' + p.divisor + '</span> <span class="op">=</span> <span class="tk-quot">' + p.quot + '</span></div>' +
         '<div class="sum-desc"><span class="sum-tag">算式名称</span>被除数 <b>' + p.n + '</b> ÷ 除数 <b>' + p.divisor + '</b> = 商 <b>' + p.quot + '</b></div>' +
-        '<div class="sum-think">💡 想乘法口诀求商：<b>' + p.think + '</b></div>' +
+        '<div class="sum-think">💡 用乘法口诀求商：<b>' + p.think + '</b></div>' +
+        '<div class="sum-bridge" style="font-size:13px; color:var(--ink-2); margin-top:3px;">🔗 乘除互逆：同一副图，既是 <b>' + S.a + ' × ' + S.b + ' = ' + n + '</b>，也是 <b>' + p.n + ' ÷ ' + p.divisor + ' = ' + p.quot + '</b></div>' +
         '<div class="sum-legend">' + legend + commuteHtml + '</div>';
       return;
     }

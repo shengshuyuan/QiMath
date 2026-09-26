@@ -9,12 +9,12 @@
 <link rel="manifest" href="manifest.json">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<link rel="stylesheet" href="css/base.css">
-<link rel="stylesheet" href="css/layout.css">
-<link rel="stylesheet" href="css/visuals.css">
-<link rel="stylesheet" href="css/quiz.css">
-<link rel="stylesheet" href="css/games.css">
-<link rel="stylesheet" href="css/print.css">
+<link rel="stylesheet" href="css/base.css?v=2.1.0">
+<link rel="stylesheet" href="css/layout.css?v=2.1.0">
+<link rel="stylesheet" href="css/visuals.css?v=2.1.0">
+<link rel="stylesheet" href="css/quiz.css?v=2.1.0">
+<link rel="stylesheet" href="css/games.css?v=2.1.0">
+<link rel="stylesheet" href="css/print.css?v=2.1.0">
 </head>
 <body>
 
@@ -261,9 +261,9 @@
     <div class="game-view" id="game-view-bubbles">
       <div class="game-hud">
         <div class="hud-target">
-          <span class="hud-label">找一找结果等于</span>
+          <span class="hud-label" id="bubble-target-prefix">找一找结果等于</span>
           <b class="hud-num" id="bubble-target-num">24</b>
-          <span class="hud-label">的气球！</span>
+          <span class="hud-label" id="bubble-target-suffix">的气球！</span>
         </div>
         <div class="hud-stats">
           <span class="hud-score">已找到: <b id="bubble-found-count">0</b> / <span id="bubble-total-target">2</span></span>
@@ -320,20 +320,20 @@
 
 <div id="print-root" aria-hidden="true"></div>
 
-<script src="js/core.js"></script>
-<script src="js/storage.js"></script>
-<script src="js/voice-clips.js"></script>
-<script src="js/speech.js"></script>
-<script src="js/sound.js"></script>
-<script src="js/confetti.js"></script>
-<script src="js/badges.js"></script>
-<script src="js/visuals.js"></script>
-<script src="js/explore.js"></script>
-<script src="js/table.js"></script>
-<script src="js/quiz.js"></script>
-<script src="js/games.js"></script>
-<script src="js/print.js"></script>
-<script src="js/app.js"></script>
+<script src="js/core.js?v=2.1.0"></script>
+<script src="js/storage.js?v=2.1.0"></script>
+<script src="js/voice-clips.js?v=2.1.0"></script>
+<script src="js/speech.js?v=2.1.0"></script>
+<script src="js/sound.js?v=2.1.0"></script>
+<script src="js/confetti.js?v=2.1.0"></script>
+<script src="js/badges.js?v=2.1.0"></script>
+<script src="js/visuals.js?v=2.1.0"></script>
+<script src="js/explore.js?v=2.1.0"></script>
+<script src="js/table.js?v=2.1.0"></script>
+<script src="js/quiz.js?v=2.1.0"></script>
+<script src="js/games.js?v=2.1.0"></script>
+<script src="js/print.js?v=2.1.0"></script>
+<script src="js/app.js?v=2.1.0"></script>
 <script>
 (function () {
   var ok = window.MT && MT.core && MT.visuals && MT.app;

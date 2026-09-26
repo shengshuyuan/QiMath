@@ -59,6 +59,11 @@
     if (tabTable) {
       tabTable.textContent = (op === 'div') ? '📋 除法表' : '📋 口诀表';
     }
+    var tmSeg = document.querySelector('.seg[data-setting="tableMode"]');
+    if (tmSeg) {
+      var tmRow = tmSeg.closest ? tmSeg.closest('.set-row') : tmSeg.parentElement;
+      if (tmRow) tmRow.style.display = (op === 'div') ? 'none' : '';
+    }
   }
 
   function setOp(op) {
@@ -254,8 +259,17 @@
 
   function registerSW() {
     if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) {
+      var refreshing = false;
+      navigator.serviceWorker.addEventListener('controllerchange', function () {
+        if (!refreshing) {
+          refreshing = true;
+          window.location.reload();
+        }
+      });
       window.addEventListener('load', function () {
-        navigator.serviceWorker.register('./sw.js').catch(function () {});
+        navigator.serviceWorker.register('./sw.js').then(function (reg) {
+          try { reg.update(); } catch (e) {}
+        }).catch(function () {});
       });
     }
   }
