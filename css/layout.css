@@ -13,44 +13,127 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 10px 16px 6px;
+  gap: 10px;
+  padding: 8px 14px 6px;
+  flex-wrap: wrap;
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.brand-badge {
+  font-size: 20px;
+  animation: hop 2.5s ease-in-out infinite;
+  display: inline-block;
 }
 
 .app-title {
-  font-size: 18px;
-  font-weight: 500;
+  font-size: 19px;
+  font-weight: 700;
   letter-spacing: .5px;
   white-space: nowrap;
   color: var(--brand-d);
+  font-family: var(--font-num);
+}
+
+.op-switch {
+  margin: 0;
+  border-radius: 999px;
+  background: var(--muted);
+  border-color: var(--line);
+}
+
+.op-switch .seg-btn {
+  min-height: 34px;
+  padding: 0 10px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 999px;
+}
+
+.op-switch .seg-btn.is-on {
+  background: var(--brand);
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(109, 63, 217, 0.28);
 }
 
 .header-actions {
   display: flex;
-  gap: 8px;
-  flex-wrap: nowrap;
+  align-items: center;
+  gap: 6px;
 }
+
+.act-btn {
+  min-height: 36px;
+  padding: 0 10px;
+  border-radius: var(--r-md);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1.5px solid var(--line);
+  background: var(--card);
+}
+
+.act-icon { font-size: 15px; }
+
+@media (max-width: 480px) {
+  .act-btn {
+    padding: 0 8px;
+  }
+  .act-btn .act-text {
+    display: none;
+  }
+  .act-icon { font-size: 18px; }
+}
+
+.op-pending {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: var(--ink-2);
+}
+
+.div-story { margin-bottom: 12px; }
 
 .tabbar {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 4px;
-  padding: 0 16px 8px;
+  gap: 6px;
+  padding: 2px 14px 8px;
 }
 
 .tab {
-  min-height: 48px;
-  border: 0;
-  background: transparent;
-  border-radius: var(--r-sm);
-  font-size: clamp(13px, 3.8vw, 16px);
-  font-weight: 500;
+  min-height: 44px;
+  border: 1.5px solid transparent;
+  background: var(--card);
+  border-radius: var(--r-md);
+  font-size: clamp(13px, 3.7vw, 15px);
+  font-weight: 600;
   color: var(--ink-2);
-  position: relative;
-  padding: 0 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  box-shadow: 0 2.5px 0 var(--line);
+  transition: transform .08s ease, box-shadow .08s ease, background .12s;
 }
 
-.tab.is-on { color: var(--brand-d); background: var(--brand-l); }
+.tab:active {
+  transform: translateY(2px);
+  box-shadow: 0 0.5px 0 var(--line);
+}
+
+.tab.is-on {
+  color: var(--brand-d);
+  background: var(--brand-l);
+  border-color: rgba(139, 92, 246, 0.35);
+  box-shadow: 0 3px 0 rgba(109, 63, 217, 0.25);
+  transform: translateY(-1px);
+}
 
 /* ---------- settings ---------- */
 
@@ -123,67 +206,73 @@
 }
 
 .picker-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   font-size: 15px;
-  color: var(--ink-2);
+  font-weight: 600;
+  color: var(--ink);
   margin-bottom: 10px;
+}
+
+.stepper-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .pv {
   display: inline-block;
-  min-width: 26px;
+  min-width: 32px;
+  text-align: center;
   font-family: var(--font-num);
-  font-size: 24px;
-  font-weight: 500;
+  font-size: 26px;
+  font-weight: 700;
   color: var(--brand-d);
-  vertical-align: -2px;
-  margin-left: 6px;
 }
 
 .nums {
   display: grid;
   grid-template-columns: repeat(9, 1fr);
-  gap: 5px;
+  gap: 6px;
 }
 
 .num {
   aspect-ratio: 1;
-  min-height: 40px;
-  border: 1.5px solid var(--line);
-  border-radius: 12px;
+  min-height: 44px;
+  border: 1.5px solid var(--line-2);
+  border-radius: var(--r-md);
   background: var(--card);
   font-family: var(--font-num);
-  font-size: 18px;
-  font-weight: 500;
+  font-size: 19px;
+  font-weight: 700;
   color: var(--ink);
+  box-shadow: 0 3px 0 var(--line-2);
   padding: 0;
-  transition: transform .12s var(--ease), background .15s;
+  transition: transform .08s ease, box-shadow .08s ease, background .15s;
 }
 
-.num:active { transform: scale(.9); }
+.num:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 var(--line-2);
+}
 
 .num.is-on {
   background: var(--brand);
-  border-color: var(--brand);
+  border-color: var(--brand-d);
   color: #fff;
+  box-shadow: 0 3px 0 var(--brand-d);
+  transform: translateY(-1px);
 }
 
 .slider-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-top: 10px;
-}
-
-.slider {
-  flex: 1;
-  height: 34px;
-  accent-color: var(--brand);
+  display: none !important;
 }
 
 .viewswitch {
   display: flex;
   gap: 6px;
-  margin: 14px 0 10px;
+  margin: 14px 0 8px;
   overflow-x: auto;
   padding-bottom: 2px;
 }
@@ -193,17 +282,74 @@
   min-height: 44px;
   padding: 0 14px;
   border: 1.5px solid var(--line-2);
-  border-radius: var(--r-sm);
+  border-radius: var(--r-md);
   background: var(--card);
   font-size: 15px;
+  font-weight: 600;
+  color: var(--ink-2);
+  box-shadow: 0 2.5px 0 var(--line-2);
   white-space: nowrap;
+  transition: transform .08s, box-shadow .08s;
+}
+
+.vs:active {
+  transform: translateY(2px);
+  box-shadow: 0 0.5px 0 var(--line-2);
 }
 
 .vs.is-on {
   background: var(--accent-l);
-  border-color: var(--accent-d);
+  border-color: var(--accent);
   color: var(--accent-d);
-  font-weight: 500;
+  box-shadow: 0 3px 0 var(--accent);
+  transform: translateY(-1px);
+}
+
+/* ---------- 具象道具皮肤选择栏 ---------- */
+.skin-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 6px 0 12px;
+  flex-wrap: wrap;
+}
+
+.skin-bar-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+
+.skin-options {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.skin-opt {
+  border: 1.5px solid var(--line-2);
+  background: var(--card);
+  border-radius: var(--r-md);
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-2);
+  box-shadow: 0 2px 0 var(--line-2);
+  white-space: nowrap;
+  transition: transform .08s, box-shadow .08s, background .15s;
+}
+
+.skin-opt:active {
+  transform: translateY(2px);
+  box-shadow: 0 0 0 var(--line-2);
+}
+
+.skin-opt.is-on {
+  background: var(--accent-l);
+  border-color: var(--accent);
+  color: var(--accent-d);
+  box-shadow: 0 2.5px 0 var(--accent);
 }
 
 .stage {

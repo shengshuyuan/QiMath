@@ -27,18 +27,34 @@
 
 <header class="app-header" id="app-header">
   <div class="header-top">
-    <h1 class="app-title">QiMath · 九九乘法表</h1>
+    <div class="header-brand">
+      <span class="brand-badge">⭐</span>
+      <h1 class="app-title">QiMath</h1>
+      <div class="seg op-switch" id="op-switch" role="group" aria-label="运算模式">
+        <button type="button" class="seg-btn is-on" data-op="mul" aria-pressed="true">✖️ 乘法</button>
+        <button type="button" class="seg-btn" data-op="div" aria-pressed="false">➗ 除法</button>
+      </div>
+    </div>
     <div class="header-actions">
-      <button type="button" class="btn btn-soft" id="btn-speech" aria-pressed="true">朗读：开</button>
-      <button type="button" class="btn btn-soft" id="btn-print">打印练习</button>
-      <button type="button" class="btn btn-soft" id="btn-settings" aria-expanded="false">设置</button>
+      <button type="button" class="btn btn-soft act-btn" id="btn-badges" title="荣誉勋章馆" aria-label="荣誉勋章">
+        <span class="act-icon">🎖️</span><span class="act-text">勋章</span>
+      </button>
+      <button type="button" class="btn btn-soft act-btn" id="btn-speech" aria-pressed="true" title="声音朗读" aria-label="朗读">
+        <span class="act-icon" id="speech-icon">🔊</span><span class="act-text" id="speech-text">朗读</span>
+      </button>
+      <button type="button" class="btn btn-soft act-btn" id="btn-print" title="打印练习纸" aria-label="打印">
+        <span class="act-icon">🖨️</span><span class="act-text">打印</span>
+      </button>
+      <button type="button" class="btn btn-soft act-btn" id="btn-settings" aria-expanded="false" title="设置" aria-label="设置">
+        <span class="act-icon">⚙️</span>
+      </button>
     </div>
   </div>
   <nav class="tabbar" role="tablist" aria-label="主导航">
-    <button type="button" class="tab is-on" data-tab="explore" role="tab" aria-selected="true" aria-controls="panel-explore">探究台</button>
-    <button type="button" class="tab" data-tab="table" role="tab" aria-selected="false" aria-controls="panel-table">口诀表</button>
-    <button type="button" class="tab" data-tab="quiz" role="tab" aria-selected="false" aria-controls="panel-quiz">闯关</button>
-    <button type="button" class="tab" data-tab="games" role="tab" aria-selected="false" aria-controls="panel-games">游乐场</button>
+    <button type="button" class="tab is-on" data-tab="explore" role="tab" aria-selected="true" aria-controls="panel-explore">🔍 探究台</button>
+    <button type="button" class="tab" data-tab="table" role="tab" aria-selected="false" aria-controls="panel-table">📋 口诀表</button>
+    <button type="button" class="tab" data-tab="quiz" role="tab" aria-selected="false" aria-controls="panel-quiz">🏆 闯关</button>
+    <button type="button" class="tab" data-tab="games" role="tab" aria-selected="false" aria-controls="panel-games">🎈 游乐场</button>
   </nav>
 </header>
 
@@ -110,25 +126,40 @@
 </div>
 
 <main class="app-main">
+  <p class="op-pending" id="op-pending" hidden>除法先在探究台看图。口诀、闯关和游乐场仍是乘法。</p>
 
   <section class="panel" id="panel-explore" role="tabpanel" aria-label="图示探究台">
+    <div class="seg div-story" id="div-story" role="group" aria-label="除法看法" hidden>
+      <button type="button" class="seg-btn is-on" data-story="share" aria-pressed="true">平均分</button>
+      <button type="button" class="seg-btn" data-story="measure" aria-pressed="false">几个一份</button>
+    </div>
     <div class="pickers">
       <div class="picker">
-        <div class="picker-title">有几行？<b class="pv" id="pv-a">3</b></div>
+        <div class="picker-title">
+          <span id="label-a">有几行？</span>
+          <div class="stepper-wrap">
+            <button type="button" class="mini" data-factor="a" data-delta="-1" aria-label="减少一行">－</button>
+            <b class="pv" id="pv-a">3</b>
+            <button type="button" class="mini" data-factor="a" data-delta="1" aria-label="增加一行">＋</button>
+          </div>
+        </div>
         <div class="nums" id="nums-a"></div>
-        <div class="slider-row">
-          <button type="button" class="mini" data-factor="a" data-delta="-1" aria-label="减少一行">－</button>
+        <div class="slider-row" hidden>
           <input type="range" class="slider" id="slider-a" min="1" max="9" step="1" value="3" aria-label="行数">
-          <button type="button" class="mini" data-factor="a" data-delta="1" aria-label="增加一行">＋</button>
         </div>
       </div>
       <div class="picker">
-        <div class="picker-title">每行有几个？<b class="pv" id="pv-b">4</b></div>
+        <div class="picker-title">
+          <span id="label-b">每行有几个？</span>
+          <div class="stepper-wrap">
+            <button type="button" class="mini" data-factor="b" data-delta="-1" aria-label="减少一个">－</button>
+            <b class="pv" id="pv-b">4</b>
+            <button type="button" class="mini" data-factor="b" data-delta="1" aria-label="增加一个">＋</button>
+          </div>
+        </div>
         <div class="nums" id="nums-b"></div>
-        <div class="slider-row">
-          <button type="button" class="mini" data-factor="b" data-delta="-1" aria-label="减少一个">－</button>
+        <div class="slider-row" hidden>
           <input type="range" class="slider" id="slider-b" min="1" max="9" step="1" value="4" aria-label="每行个数">
-          <button type="button" class="mini" data-factor="b" data-delta="1" aria-label="增加一个">＋</button>
         </div>
       </div>
     </div>
@@ -139,6 +170,16 @@
       <button type="button" class="vs" data-view="numberline">数轴</button>
       <button type="button" class="vs" data-view="area">方格</button>
       <button type="button" class="vs" data-view="all">全部</button>
+    </div>
+
+    <div class="skin-bar">
+      <span class="skin-bar-label">实物皮肤:</span>
+      <div class="skin-options" id="skin-options" role="group" aria-label="实物具象皮肤">
+        <button type="button" class="skin-opt is-on" data-skin="dot" aria-pressed="true">🟣 糖果珠</button>
+        <button type="button" class="skin-opt" data-skin="apple" aria-pressed="false">🍎 红苹果</button>
+        <button type="button" class="skin-opt" data-skin="star" aria-pressed="false">⭐ 闪闪星</button>
+        <button type="button" class="skin-opt" data-skin="cookie" aria-pressed="false">🍪 巧克饼</button>
+      </div>
     </div>
 
     <div class="stage" id="stage"></div>
@@ -266,6 +307,19 @@
   </div>
 </div>
 
+<div class="modal" id="badges-modal" hidden>
+  <div class="modal-card modal-badges-card" role="dialog" aria-modal="true" aria-labelledby="badges-title">
+    <div class="badges-modal-head">
+      <div class="badges-head-left">
+        <h2 id="badges-title">🎖️ 荣誉勋章馆</h2>
+        <span class="badge-stat" id="badge-stat">已收集 0 / 8 枚勋章</span>
+      </div>
+      <button type="button" class="btn btn-soft badges-close" id="badges-close" aria-label="关闭">✕</button>
+    </div>
+    <div class="badge-grid" id="badge-grid"></div>
+  </div>
+</div>
+
 <div id="print-root" aria-hidden="true"></div>
 
 <script src="js/core.js"></script>
@@ -273,6 +327,8 @@
 <script src="js/voice-clips.js"></script>
 <script src="js/speech.js"></script>
 <script src="js/sound.js"></script>
+<script src="js/confetti.js"></script>
+<script src="js/badges.js"></script>
 <script src="js/visuals.js"></script>
 <script src="js/explore.js"></script>
 <script src="js/table.js"></script>

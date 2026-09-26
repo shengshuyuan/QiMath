@@ -38,6 +38,11 @@
 
   function ms(v) { return Math.round(v) + 'ms'; }
 
+  function divCap(o, key, mulText) {
+    if (o.story !== 'share' && o.story !== 'measure') return mulText;
+    return MT.core.divParts(o.a, o.b, o.story)[key];
+  }
+
   function setup(wrap, o, vars) {
     if (!isAnim(o)) {
       wrap.classList.add('no-anim');
@@ -51,19 +56,22 @@
 
   function arrayViz(o) {
     var a = o.a, b = o.b, n = a * b;
-    var wrap = el('div', 'viz viz-array');
+    var skin = o.skin || (MT.progress && MT.progress.settings && MT.progress.settings.objectSkin) || 'dot';
+    var wrap = el('div', 'viz viz-array skin-' + skin);
     var grid = el('div', 'dot-grid');
     grid.style.gridTemplateColumns = 'repeat(' + b + ', 1fr)';
     for (var r = 0; r < a; r++) {
       for (var c = 0; c < b; c++) {
-        var d = el('i', 'dot');
+        var d = el('i', 'dot dot-' + skin);
         d.style.setProperty('--i', String(r * b + c));
         grid.appendChild(d);
       }
     }
     wrap.appendChild(grid);
     if (!o.compact) {
-      wrap.appendChild(el('div', 'viz-cap', a + ' 行，每行 ' + b + ' 个，一共 ' + n + ' 个'));
+      var itemWord = skin === 'apple' ? '个 🍎' : (skin === 'star' ? '颗 ⭐' : (skin === 'cookie' ? '块 🍪' : '个'));
+      var defCap = a + ' 行，每行 ' + b + ' ' + itemWord + '，一共 ' + n + ' ' + itemWord;
+      wrap.appendChild(el('div', 'viz-cap', divCap(o, 'capArray', defCap)));
     }
     setup(wrap, o, { '--stagger': Math.min(45, (o.maxStaggerTotal || 1200) / Math.max(1, n)) });
     return wrap;
@@ -73,7 +81,8 @@
 
   function groupsViz(o) {
     var a = o.a, b = o.b;
-    var wrap = el('div', 'viz viz-groups');
+    var skin = o.skin || (MT.progress && MT.progress.settings && MT.progress.settings.objectSkin) || 'dot';
+    var wrap = el('div', 'viz viz-groups skin-' + skin);
     var list = el('div', 'group-list');
     for (var g = 0; g < a; g++) {
       var box = el('div', 'group');
@@ -81,17 +90,20 @@
       var inner = el('div', 'group-dots');
       inner.style.gridTemplateColumns = 'repeat(' + Math.min(b, 5) + ', 1fr)';
       for (var i = 0; i < b; i++) {
-        var d = el('i', 'dot');
+        var d = el('i', 'dot dot-' + skin);
         d.style.setProperty('--i', String(i));
         inner.appendChild(d);
       }
       box.appendChild(inner);
-      if (!o.compact) box.appendChild(el('div', 'group-label', '第 ' + (g + 1) + ' 组'));
+      var groupWord = skin === 'apple' ? '盒' : (skin === 'cookie' ? '盘' : '组');
+      if (!o.compact) box.appendChild(el('div', 'group-label', '第 ' + (g + 1) + ' ' + groupWord));
       list.appendChild(box);
     }
     wrap.appendChild(list);
     if (!o.compact) {
-      wrap.appendChild(el('div', 'viz-cap', a + ' 组，每组 ' + b + ' 个，一共 ' + (a * b) + ' 个'));
+      var itemWord = skin === 'apple' ? '个 🍎' : (skin === 'star' ? '颗 ⭐' : (skin === 'cookie' ? '块 🍪' : '个'));
+      var defCap = a + ' 组，每组 ' + b + ' ' + itemWord + '，一共 ' + (a * b) + ' ' + itemWord;
+      wrap.appendChild(el('div', 'viz-cap', divCap(o, 'capGroups', defCap)));
     }
     setup(wrap, o, {
       '--gstagger': Math.min(200, 900 / Math.max(1, a)),
@@ -119,7 +131,7 @@
       role: 'img'
     });
     var ti = sv('title');
-    ti.textContent = '数轴跳格：跳 ' + a + ' 次，每次加 ' + b + '，一共 ' + total;
+    ti.textContent = divCap(o, 'capLine', '数轴跳格：跳 ' + a + ' 次，每次加 ' + b + '，一共 ' + total);
     svg.appendChild(ti);
 
     svg.appendChild(sv('line', { x1: padL - 10, y1: axisY, x2: W - padR + 10, y2: axisY, class: 'nl-axis' }));
@@ -167,7 +179,7 @@
     scroller.appendChild(svg);
     wrap.appendChild(scroller);
     if (!o.compact) {
-      wrap.appendChild(el('div', 'viz-cap', '从 0 开始，跳 ' + a + ' 次，每次加 ' + b + '，到 ' + total));
+      wrap.appendChild(el('div', 'viz-cap', divCap(o, 'capLine', '从 0 开始，跳 ' + a + ' 次，每次加 ' + b + '，到 ' + total)));
     }
     setup(wrap, o, { '--jstagger': Math.min(260, 1100 / Math.max(1, a)) });
     return wrap;
@@ -196,7 +208,7 @@
     }
     wrap.appendChild(g);
     if (!o.compact) {
-      wrap.appendChild(el('div', 'viz-cap', a + ' 行 × ' + b + ' 列 = ' + (a * b) + ' 个小方格'));
+      wrap.appendChild(el('div', 'viz-cap', divCap(o, 'capArea', a + ' 行 × ' + b + ' 列 = ' + (a * b) + ' 个小方格')));
     }
     setup(wrap, o, { '--stagger': Math.min(45, (o.maxStaggerTotal || 1200) / Math.max(1, a * b)) });
     return wrap;

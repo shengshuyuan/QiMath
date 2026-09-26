@@ -198,7 +198,11 @@
     if (!dom.qBudget) return;
     var left = MAX_MISS - S.misses;
     if (left < 0) left = 0;
-    dom.qBudget.textContent = '还能错 ' + left + ' 次 · 求助 ' + (MAX_HELP - S.helps);
+    var hearts = '';
+    for (var h = 0; h < MAX_MISS; h++) {
+      hearts += (h < left ? '❤️' : '🤍');
+    }
+    dom.qBudget.innerHTML = '<span class="q-lives" title="挑战机会">' + hearts + '</span><span class="q-sep"> · </span><span class="q-help-left">💡 求助 ' + (MAX_HELP - S.helps) + ' 次</span>';
     dom.qBudget.classList.toggle('is-low', left <= 1);
   }
 
@@ -255,6 +259,7 @@
     S.correct++;
     S.streak++;
     S.locked = true;
+    if (S.streak >= 3 && MT.badges) MT.badges.unlock('streak_master');
 
     var word = (S.streak >= 3 && S.streak % 3 === 0)
       ? pickWord(OK_STREAK, 'lastOk')
@@ -421,12 +426,16 @@
       }
       var now = Object.keys(p.wrong).length;
       var cut = S.wrongBefore - now;
-      box.innerHTML = '<div class="res-title">练完啦</div>' +
+      box.innerHTML = '<div class="res-title">练完啦！太棒了！</div>' +
         '<div class="res-line">答对 ' + S.correct + ' / ' + len + '</div>' +
         '<div class="res-line">' + summary + '</div>' +
-        '<div class="res-line">错题少了 ' + (cut > 0 ? cut : 0) + ' 个</div>';
+        '<div class="res-line">消灭了 ' + (cut > 0 ? cut : 0) + ' 道错题</div>';
       addResAction('回到错题本', function () { box.hidden = true; showWrongList(); });
-      if (cut > 0) MT.sound.play('win');
+      if (cut > 0) {
+        MT.sound.play('win');
+        if (MT.badges) MT.badges.unlock('mistake_slayer');
+        if (MT.confetti) MT.confetti.burst();
+      }
       return;
     }
 
@@ -437,14 +446,11 @@
     if (S.failed) {
       MT.storage.save();
       MT.bus.emit('progress:change', {});
-      var failSub = (n < 9 && !p.levels[n + 1].unlocked)
-        ? '答错超过 3 次，下一关还没解锁。'
-        : '答错超过 3 次。';
-      box.innerHTML = '<div class="res-title">这关先停一下</div>' +
+      box.innerHTML = '<div class="res-title">🌈 别灰心，再试一次！</div>' +
         '<div class="res-line">' + summary + '</div>' +
-        '<div class="res-line res-sub">' + failSub + '</div>';
-      addResAction('再来一轮', function () { box.hidden = true; startLevel(n); });
-      addResAction('选关', function () { box.hidden = true; buildLevelBar(); });
+        '<div class="res-line res-sub">小算式有点调皮，多练一次就能攻克它！</div>';
+      addResAction('再试一次 ↺', function () { box.hidden = true; startLevel(n); });
+      addResAction('换一关', function () { box.hidden = true; buildLevelBar(); });
       return;
     }
 
@@ -460,12 +466,12 @@
       starHtml += '<span class="big-star" style="--i:' + i + '">' + iconStar(i <= stars) + '</span>';
     }
 
-    box.innerHTML = '<div class="res-title">第 ' + n + ' 关通过</div>' +
+    box.innerHTML = '<div class="res-title">🎉 第 ' + n + ' 关通过！</div>' +
       '<div class="res-stars">' + starHtml + '</div>' +
       '<div class="res-line">答对 ' + S.correct + ' / ' + len + '</div>' +
       '<div class="res-line">' + summary + '</div>' +
       '<div class="res-line res-sub">' +
-      (n < 9 ? '第 ' + (n + 1) + ' 关已解锁' : '九关全部通过啦') +
+      (n < 9 ? '第 ' + (n + 1) + ' 关已解锁' : '🏆 恭喜通关全部 9 关！太厉害了！') +
       '</div>';
 
     addResAction('再来一轮', function () { box.hidden = true; startLevel(n); });
@@ -474,6 +480,8 @@
 
     MT.sound.play('win');
     MT.speech.play('第' + n + '关通过', 'ok');
+    if (MT.confetti) MT.confetti.burst();
+    if (n === 9 && MT.badges) MT.badges.unlock('level_champion');
     confetti(box);
   }
 

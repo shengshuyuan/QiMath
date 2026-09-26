@@ -258,6 +258,8 @@
     }
 
     var isLast = bState.roundIdx >= bState.totalRounds - 1;
+    if (MT.badges) MT.badges.unlock('bubble_popper');
+    if (isLast && MT.confetti) MT.confetti.burst();
     dom.bubbleSummary.hidden = false;
     dom.bubbleSummary.innerHTML =
       '<div class="summary-title">' + (isLast ? '🎉 气球大挑战全部通关！' : '🎈 找齐啦！太棒了！') + '</div>' +
@@ -459,6 +461,8 @@
   function onImpostorRoundClear(card) {
     var iState = S.impostor;
     var isLast = iState.roundIdx >= iState.totalRounds - 1;
+    if (MT.badges) MT.badges.unlock('impostor_hunter');
+    if (isLast && MT.confetti) MT.confetti.burst();
 
     dom.impostorSummary.hidden = false;
     dom.impostorSummary.innerHTML =

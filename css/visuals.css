@@ -23,7 +23,9 @@
 }
 
 .dot {
-  display: block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   aspect-ratio: 1;
   width: 100%;
   max-width: 40px;
@@ -31,9 +33,55 @@
   justify-self: center;
   align-self: center;
   border-radius: 50%;
-  background: var(--brand);
+  background: radial-gradient(circle at 35% 35%, #d5beff 0%, var(--brand) 60%, var(--brand-d) 100%);
   border: 1.5px solid var(--brand-d);
-  min-height: 12px;
+  box-shadow: 0 2px 4px rgba(110, 68, 255, .25);
+  min-height: 14px;
+  font-style: normal;
+  user-select: none;
+  transition: transform .15s var(--ease);
+}
+
+/* 🍎 苹果皮 */
+.dot.dot-apple {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  border-radius: 0;
+}
+.dot.dot-apple::before {
+  content: '🍎';
+  font-size: clamp(14px, 4vw, 24px);
+  line-height: 1;
+  filter: drop-shadow(0 2px 3px rgba(220, 50, 50, .3));
+}
+
+/* ⭐ 闪闪星 */
+.dot.dot-star {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  border-radius: 0;
+}
+.dot.dot-star::before {
+  content: '⭐';
+  font-size: clamp(13px, 3.8vw, 22px);
+  line-height: 1;
+  filter: drop-shadow(0 2px 3px rgba(255, 180, 0, .4));
+}
+
+/* 🍪 巧克饼 */
+.dot.dot-cookie {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  border-radius: 0;
+}
+.dot.dot-cookie::before {
+  content: '🍪';
+  font-size: clamp(14px, 4vw, 24px);
+  line-height: 1;
+  filter: drop-shadow(0 2px 3px rgba(160, 90, 40, .35));
 }
 
 .viz-array.anim .dot {
@@ -69,12 +117,25 @@
 }
 
 .group-dots .dot {
-  width: 20px;
-  max-width: 20px;
-  min-height: 20px;
-  max-height: 20px;
-  background: var(--brand);
+  width: 22px;
+  max-width: 22px;
+  min-height: 22px;
+  max-height: 22px;
+  background: radial-gradient(circle at 35% 35%, #d5beff 0%, var(--brand) 60%, var(--brand-d) 100%);
   border-color: var(--brand-d);
+}
+
+.group-dots .dot.dot-apple,
+.group-dots .dot.dot-star,
+.group-dots .dot.dot-cookie {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+.group-dots .dot.dot-apple::before,
+.group-dots .dot.dot-star::before,
+.group-dots .dot.dot-cookie::before {
+  font-size: 16px;
 }
 
 .group-label {

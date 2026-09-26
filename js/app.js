@@ -39,7 +39,45 @@
     if (name === 'explore') MT.explore.redraw();
     if (name === 'table') MT.table.refresh();
     if (name === 'quiz') MT.quiz.refresh();
+    syncOpNote();
     window.scrollTo(0, 0);
+  }
+
+  function syncOp() {
+    var st = MT.progress && MT.progress.settings;
+    var op = st && st.op === 'div' ? 'div' : 'mul';
+    var box = document.getElementById('op-switch');
+    if (box) {
+      var kids = box.children;
+      for (var i = 0; i < kids.length; i++) {
+        var on = kids[i].dataset.op === op;
+        kids[i].classList.toggle('is-on', on);
+        kids[i].setAttribute('aria-pressed', on ? 'true' : 'false');
+      }
+    }
+    document.body.classList.toggle('op-div', op === 'div');
+    syncOpNote();
+  }
+
+  function syncOpNote() {
+    var note = document.getElementById('op-pending');
+    if (!note) return;
+    var div = MT.progress && MT.progress.settings && MT.progress.settings.op === 'div';
+    note.hidden = !(div && current !== 'explore');
+  }
+
+  function setOp(op) {
+    if (!MT.progress || !MT.progress.settings) return false;
+    if (op !== 'mul' && op !== 'div') return false;
+    if (MT.progress.settings.op === op) {
+      syncOp();
+      return false;
+    }
+    MT.progress.settings.op = op;
+    MT.storage.save();
+    syncOp();
+    if (current === 'explore' && MT.explore) MT.explore.redraw();
+    return true;
   }
 
   function syncSegs() {
@@ -61,9 +99,19 @@
     var st = MT.progress.settings;
     document.body.classList.toggle('no-motion', st.reduceMotion === 'on');
     var sp = document.getElementById('btn-speech');
-    sp.textContent = '朗读：' + (st.speechOn ? '开' : '关');
-    sp.setAttribute('aria-pressed', st.speechOn ? 'true' : 'false');
+    if (sp) {
+      var icon = sp.querySelector('#speech-icon');
+      var txt = sp.querySelector('#speech-text');
+      if (icon && txt) {
+        icon.textContent = st.speechOn ? '🔊' : '🔇';
+        txt.textContent = st.speechOn ? '朗读' : '静音';
+      } else {
+        sp.textContent = '朗读：' + (st.speechOn ? '开' : '关');
+      }
+      sp.setAttribute('aria-pressed', st.speechOn ? 'true' : 'false');
+    }
     syncSegs();
+    syncOp();
   }
 
   function closeSettings() {
@@ -154,6 +202,19 @@
       if (e.key === 'Escape') closeSettings();
     });
 
+    var opSwitch = document.getElementById('op-switch');
+    if (opSwitch) {
+      opSwitch.addEventListener('click', function (e) {
+        var t = e.target;
+        if (!t || !t.dataset || !t.dataset.op) return;
+        MT.speech.warmup();
+        MT.sound.play('click');
+        if (setOp(t.dataset.op) && t.dataset.op === 'div' && current === 'explore' && MT.explore && MT.explore.describe) {
+          MT.speech.play(MT.explore.describe().read, 'calc');
+        }
+      });
+    }
+
     var tabs = document.querySelectorAll('.tab');
     for (var i = 0; i < tabs.length; i++) {
       (function (btn) {
@@ -201,6 +262,7 @@
       MT.table.init();
       MT.quiz.init();
       if (MT.games) MT.games.init();
+      if (MT.badges) MT.badges.init();
 
       bindHeader();
       bindSettings();

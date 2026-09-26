@@ -123,10 +123,31 @@
 }
 
 .q-budget {
-  margin-top: 6px;
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
   font-size: 13px;
-  font-weight: 500;
   color: var(--ink-2);
+}
+
+.q-lives {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 16px;
+  letter-spacing: 2px;
+  filter: drop-shadow(0 1px 2px rgba(239, 71, 111, .2));
+}
+
+.q-help-left {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent-d);
+  background: var(--accent-l);
+  padding: 2px 8px;
+  border-radius: var(--r-sm);
 }
 
 .q-budget.is-low { color: var(--bad-text); }
@@ -247,34 +268,66 @@
 /* ---------- 键盘 ---------- */
 
 .keypad {
-  margin: 12px auto 0;
+  margin: 14px auto 0;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+  gap: 10px;
   max-width: 380px;
+  user-select: none;
 }
 
 .key {
-  min-height: 56px;
+  min-height: 58px;
   border: 1.5px solid var(--line-2);
   border-radius: var(--r-md);
   background: var(--card);
   font-family: var(--font-num);
-  font-size: 22px;
-  font-weight: 500;
-  transition: transform .1s var(--ease), background .15s;
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--ink);
+  box-shadow: 0 4px 0 var(--line-2);
+  transition: transform .08s var(--ease), box-shadow .08s var(--ease), background .12s;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.key:active { transform: scale(.94); background: var(--muted); }
+.key:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 var(--line-2);
+  background: var(--muted);
+}
 
-.key-ok { background: var(--brand); border-color: var(--brand); color: #fff; transition: all .15s ease; }
+.key-del {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink-2);
+  background: #fbf9ff;
+}
+
+.key-del:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 var(--line-2);
+}
+
+.key-ok {
+  background: var(--brand);
+  border-color: var(--brand-d);
+  color: #fff;
+  font-size: 18px;
+  box-shadow: 0 4px 0 var(--brand-d);
+}
+
 .key-ok.is-ready {
-  background: var(--brand-d);
-  box-shadow: 0 0 0 3px var(--brand-l), 0 4px 10px rgba(109, 63, 217, .3);
-  transform: translateY(-1px);
+  background: var(--brand);
+  border-color: var(--brand-d);
+  box-shadow: 0 4px 0 var(--brand-d), 0 0 0 2px var(--brand-l);
 }
-.key-ok:active { background: var(--brand-d); }
-.key-del { font-size: 16px; color: var(--ink-2); }
+
+.key-ok:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 var(--brand-d);
+  background: var(--brand-d);
+}
 
 /* ---------- 结果 ---------- */
 

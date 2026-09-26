@@ -118,6 +118,39 @@
       var out = [];
       for (var a = 1; a <= n; a++) out.push(MT.core.key(a, n));
       return out;
+    },
+
+    // 同一张 a 行、每行 b 个的图，读成表内整除。
+    // share 平均分：总数 ÷ 行数 = 每行几个。measure 几个一份：总数 ÷ 每份个数 = 有几份。
+    divParts: function (a, b, story) {
+      a = parseInt(a, 10);
+      b = parseInt(b, 10);
+      var n = a * b;
+      var share = story !== 'measure';
+      var divisor = share ? a : b;
+      var quot = share ? b : a;
+      var eq = n + ' ÷ ' + divisor + ' = ' + quot;
+      return {
+        n: n,
+        divisor: divisor,
+        quot: quot,
+        share: share,
+        eq: eq,
+        read: readNumber(n) + '除以' + CN[divisor] + '，等于' + readNumber(quot),
+        readSame: readNumber(n) + '除以' + CN[divisor] + '，同样等于' + readNumber(quot),
+        capArray: share
+          ? '一共 ' + n + ' 个，平均分成 ' + a + ' 行，每行 ' + b + ' 个'
+          : '一共 ' + n + ' 个，每行 ' + b + ' 个，有 ' + a + ' 行',
+        capGroups: share
+          ? '一共 ' + n + ' 个，平均分成 ' + a + ' 组，每组 ' + b + ' 个'
+          : '一共 ' + n + ' 个，每 ' + b + ' 个一组，有 ' + a + ' 组',
+        capLine: share
+          ? '跳 ' + a + ' 次，每次 ' + b + '，一共 ' + n + '。所以 ' + eq
+          : '每次跳 ' + b + '，跳了 ' + a + ' 次到 ' + n + '。所以 ' + eq,
+        capArea: share
+          ? '分成 ' + a + ' 行，每行 ' + b + ' 格，一共 ' + n + ' 格。所以 ' + eq
+          : '每行 ' + b + ' 格，有 ' + a + ' 行，一共 ' + n + ' 格。所以 ' + eq
+      };
     }
   };
 

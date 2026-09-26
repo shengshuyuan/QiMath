@@ -214,6 +214,7 @@
   function open(a, b, trigger) {
     if (trigger) lastCell = trigger;
     cur = { a: a, b: b };
+    if (MT.badges) MT.badges.unlock('table_explorer');
     var sheet = isSheetMode();
     if (dom.detail) dom.detail.setAttribute('aria-modal', sheet ? 'true' : 'false');
     dom.detail.hidden = false;

@@ -29,6 +29,7 @@
       needsPractice: {},
       wrong: {},
       levels: defaultLevels(),
+      badges: [],
       settings: {
         speechOn: true,
         speechStyle: 'koujue',
@@ -39,7 +40,10 @@
         reduceMotion: 'off',
         printAnswers: 'off',
         lastView: 'array',
-        hapticOn: 'on'
+        objectSkin: 'dot',
+        hapticOn: 'on',
+        op: 'mul',
+        divStory: 'share'
       },
       stats: { totalCorrect: 0, totalWrong: 0, firstSeenAt: Date.now(), lastSeenAt: Date.now() }
     };
@@ -105,6 +109,9 @@
           };
         }
       }
+    }
+    if (Array.isArray(data.badges)) {
+      d.badges = data.badges;
     }
     return d;
   }
