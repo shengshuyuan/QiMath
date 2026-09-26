@@ -29,6 +29,10 @@
       needsPractice: {},
       wrong: {},
       levels: defaultLevels(),
+      divMastered: {},
+      divNeedsPractice: {},
+      divWrong: {},
+      divLevels: defaultLevels(),
       badges: [],
       settings: {
         speechOn: true,
@@ -110,6 +114,21 @@
         }
       }
     }
+    if (data.divLevels) {
+      for (var dn = 1; dn <= 9; dn++) {
+        if (data.divLevels[dn]) {
+          d.divLevels[dn] = {
+            unlocked: !!data.divLevels[dn].unlocked || dn === 1,
+            passed: !!data.divLevels[dn].passed,
+            bestStars: data.divLevels[dn].bestStars || 0,
+            roundsPlayed: data.divLevels[dn].roundsPlayed || 0
+          };
+        }
+      }
+    }
+    if (data.divWrong) d.divWrong = data.divWrong;
+    if (data.divMastered) d.divMastered = data.divMastered;
+    if (data.divNeedsPractice) d.divNeedsPractice = data.divNeedsPractice;
     if (Array.isArray(data.badges)) {
       d.badges = data.badges;
     }

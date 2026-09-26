@@ -39,7 +39,6 @@
     if (name === 'explore') MT.explore.redraw();
     if (name === 'table') MT.table.refresh();
     if (name === 'quiz') MT.quiz.refresh();
-    syncOpNote();
     window.scrollTo(0, 0);
   }
 
@@ -56,14 +55,10 @@
       }
     }
     document.body.classList.toggle('op-div', op === 'div');
-    syncOpNote();
-  }
-
-  function syncOpNote() {
-    var note = document.getElementById('op-pending');
-    if (!note) return;
-    var div = MT.progress && MT.progress.settings && MT.progress.settings.op === 'div';
-    note.hidden = !(div && current !== 'explore');
+    var tabTable = document.querySelector('.tab[data-tab="table"]');
+    if (tabTable) {
+      tabTable.textContent = (op === 'div') ? '📋 除法表' : '📋 口诀表';
+    }
   }
 
   function setOp(op) {
@@ -76,7 +71,18 @@
     MT.progress.settings.op = op;
     MT.storage.save();
     syncOp();
-    if (current === 'explore' && MT.explore) MT.explore.redraw();
+    if (MT.explore) MT.explore.redraw();
+    if (MT.table) {
+      MT.table.build();
+      MT.table.close();
+    }
+    if (MT.quiz) {
+      MT.quiz.stop();
+      MT.quiz.refresh();
+    }
+    if (MT.games) {
+      MT.games.resetAll();
+    }
     return true;
   }
 

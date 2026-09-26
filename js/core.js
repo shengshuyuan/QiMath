@@ -120,6 +120,62 @@
       return out;
     },
 
+    divKey: function (n, divisor) {
+      return n + 'd' + divisor;
+    },
+
+    divParse: function (k) {
+      var parts = String(k).split('d');
+      var n = parseInt(parts[0], 10);
+      var divisor = parseInt(parts[1], 10);
+      var quot = Math.round(n / divisor);
+      var minF = Math.min(divisor, quot);
+      var maxF = Math.max(divisor, quot);
+      var chant = CN[minF] + CN[maxF] + (n < 10 ? '得' + CN[n] : readNumber(n));
+      var think = '想：' + (divisor === minF ? CN[minF] + '(' + CN[maxF] + ')' : '(' + CN[minF] + ')' + CN[maxF]) + (n < 10 ? '得' + CN[n] : readNumber(n)) + '，商是 ' + quot;
+      return {
+        n: n,
+        divisor: divisor,
+        quot: quot,
+        chant: chant,
+        think: think,
+        eq: n + ' ÷ ' + divisor + ' = ' + quot,
+        read: readNumber(n) + '除以' + CN[divisor] + '，等于' + readNumber(quot)
+      };
+    },
+
+    // 表内除法第 n 关自身行（以除数 n 为主）
+    divRow: function (n) {
+      var out = [];
+      for (var q = 1; q <= 9; q++) {
+        out.push((n * q) + 'd' + n);
+      }
+      return out;
+    },
+
+    // 表内除法第 n 关题目池（涵盖到除数 n 的全部算式）
+    divPool: function (n) {
+      var out = [];
+      var maxDiv = Math.max(1, Math.min(9, n));
+      for (var d = 1; d <= maxDiv; d++) {
+        for (var q = 1; q <= 9; q++) {
+          out.push((d * q) + 'd' + d);
+        }
+      }
+      return out;
+    },
+
+    // 表内除法全部 81 个整除算式 key
+    allDivKeys: function () {
+      var out = [];
+      for (var d = 1; d <= 9; d++) {
+        for (var q = 1; q <= 9; q++) {
+          out.push((d * q) + 'd' + d);
+        }
+      }
+      return out;
+    },
+
     // 同一张 a 行、每行 b 个的图，读成表内整除。
     // share 平均分：总数 ÷ 行数 = 每行几个。measure 几个一份：总数 ÷ 每份个数 = 有几份。
     divParts: function (a, b, story) {
@@ -130,12 +186,18 @@
       var divisor = share ? a : b;
       var quot = share ? b : a;
       var eq = n + ' ÷ ' + divisor + ' = ' + quot;
+      var minF = Math.min(divisor, quot);
+      var maxF = Math.max(divisor, quot);
+      var chant = CN[minF] + CN[maxF] + (n < 10 ? '得' + CN[n] : readNumber(n));
+      var think = '想：' + (divisor === minF ? CN[minF] + '(' + CN[maxF] + ')' : '(' + CN[minF] + ')' + CN[maxF]) + (n < 10 ? '得' + CN[n] : readNumber(n)) + '，商是 ' + quot;
       return {
         n: n,
         divisor: divisor,
         quot: quot,
         share: share,
         eq: eq,
+        chant: chant,
+        think: think,
         read: readNumber(n) + '除以' + CN[divisor] + '，等于' + readNumber(quot),
         readSame: readNumber(n) + '除以' + CN[divisor] + '，同样等于' + readNumber(quot),
         capArray: share
@@ -151,7 +213,26 @@
           ? '分成 ' + a + ' 行，每行 ' + b + ' 格，一共 ' + n + ' 格。所以 ' + eq
           : '每行 ' + b + ' 格，有 ' + a + ' 行，一共 ' + n + ' 格。所以 ' + eq
       };
-    }
+    },
+
+    // 小学教材 15 组经典高频易错除法题库（用于挑错大侦探）
+    divImpostors: [
+      { n: 24, divisor: 4, correct: 6, fake: 7, note: '想：四六二十四，24 ÷ 4 商应该是 6，不是 7！' },
+      { n: 35, divisor: 5, correct: 7, fake: 6, note: '想：五七三十五，35 ÷ 5 商应该是 7，不是 6！' },
+      { n: 8, divisor: 2, correct: 4, fake: 16, note: '混淆乘除法啦！8 ÷ 2 是平均分成 2 份，每份 4 个，不是 8 × 2！' },
+      { n: 48, divisor: 6, correct: 8, fake: 7, note: '想：六八四十八，48 ÷ 6 商应该是 8，不是 7！' },
+      { n: 56, divisor: 7, correct: 8, fake: 9, note: '想：七八五十六，56 ÷ 7 商应该是 8，容易和六十三混淆！' },
+      { n: 18, divisor: 3, correct: 6, fake: 5, note: '想：三六十八，18 ÷ 3 商应该是 6，不是 5！' },
+      { n: 7, divisor: 1, correct: 7, fake: 1, note: '任何数除以 1 都得原数，7 ÷ 1 应该等于 7！' },
+      { n: 54, divisor: 6, correct: 9, fake: 8, note: '想：六九五十四，54 ÷ 6 商应该是 9，不是 8！' },
+      { n: 64, divisor: 8, correct: 8, fake: 7, note: '想：八八六十四，64 ÷ 8 商应该是 8，不是 7！' },
+      { n: 72, divisor: 8, correct: 9, fake: 8, note: '想：八九七十二，72 ÷ 8 商应该是 9，不是 8！' },
+      { n: 6, divisor: 3, correct: 2, fake: 18, note: '混淆乘除法！6 平均分成 3 份每份是 2，不是 6 × 3！' },
+      { n: 36, divisor: 4, correct: 9, fake: 8, note: '想：四九三十六，36 ÷ 4 商应该是 9，不是 8！' },
+      { n: 63, divisor: 9, correct: 7, fake: 6, note: '想：七九六十三，63 ÷ 9 商应该是 7，不是 6！' },
+      { n: 8, divisor: 8, correct: 1, fake: 0, note: '除数和被除数相同且不为 0 时商等于 1，8 ÷ 8 应该等于 1！' },
+      { n: 45, divisor: 5, correct: 9, fake: 8, note: '想：五九四十五，45 ÷ 5 商应该是 9，不是 8！' }
+    ]
   };
 
   MT.bus = bus;

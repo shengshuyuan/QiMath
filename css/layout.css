@@ -91,12 +91,6 @@
   .act-icon { font-size: 18px; }
 }
 
-.op-pending {
-  margin: 0 0 12px;
-  font-size: 13px;
-  color: var(--ink-2);
-}
-
 .div-story { margin-bottom: 12px; }
 
 .tabbar {
@@ -381,11 +375,44 @@
 
 .sum-row.sum-add { color: var(--ink-2); }
 .sum-row.sum-mul { font-weight: 500; }
+.sum-row.sum-div { font-weight: 600; color: var(--ink); }
 
 .sum-row .op { color: var(--ink-3); }
 
 .tk-brand { color: var(--brand-d); }
 .tk-accent { color: var(--accent-d); }
+.tk-quot { color: var(--ok-text); font-weight: 700; }
+
+.sum-desc {
+  font-size: 14px;
+  color: var(--ink-2);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 2px;
+}
+
+.sum-tag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--brand-l);
+  color: var(--brand-d);
+  padding: 2px 6px;
+  border-radius: var(--r-sm);
+}
+
+.sum-think {
+  font-size: 14px;
+  color: var(--brand-d);
+  background: rgba(139, 92, 246, 0.08);
+  border: 1px dashed rgba(139, 92, 246, 0.3);
+  padding: 5px 12px;
+  border-radius: var(--r-md);
+  margin-top: 4px;
+}
 
 .sum-legend {
   font-size: 12px;

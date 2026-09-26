@@ -49,10 +49,10 @@
         ? '紫色是分成几份，粉色是每份几个'
         : '粉色是每份几个，紫色是有几份';
       dom.sumline.innerHTML =
-        '<div class="sum-row sum-mul"><span class="tk-brand">' + p.n + '</span> <span class="op">÷</span> ' +
-        '<span class="tk-accent">' + p.divisor + '</span> <span class="op">=</span> ' + p.quot + '</div>' +
-        '<div class="sum-row sum-add"><span class="tk-brand">' + S.a + '</span> <span class="op">×</span> ' +
-        '<span class="tk-accent">' + S.b + '</span> <span class="op">=</span> ' + n + '</div>' +
+        '<div class="sum-row sum-div"><span class="tk-brand">' + p.n + '</span> <span class="op">÷</span> ' +
+        '<span class="tk-accent">' + p.divisor + '</span> <span class="op">=</span> <span class="tk-quot">' + p.quot + '</span></div>' +
+        '<div class="sum-desc"><span class="sum-tag">算式名称</span>被除数 <b>' + p.n + '</b> ÷ 除数 <b>' + p.divisor + '</b> = 商 <b>' + p.quot + '</b></div>' +
+        '<div class="sum-think">💡 想乘法口诀求商：<b>' + p.think + '</b></div>' +
         '<div class="sum-legend">' + legend + commuteHtml + '</div>';
       return;
     }

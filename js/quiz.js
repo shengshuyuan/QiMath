@@ -72,8 +72,33 @@
       'stroke-linecap="round" stroke-linejoin="round"/></svg>';
   }
 
+  function isDiv() {
+    return MT.progress && MT.progress.settings && MT.progress.settings.op === 'div';
+  }
+
+  function getLevels() {
+    if (isDiv()) {
+      if (!MT.progress.divLevels) {
+        MT.progress.divLevels = {};
+        for (var n = 1; n <= 9; n++) {
+          MT.progress.divLevels[n] = { unlocked: n === 1, passed: false, bestStars: 0, roundsPlayed: 0 };
+        }
+      }
+      return MT.progress.divLevels;
+    }
+    return MT.progress.levels;
+  }
+
+  function getWrongMap() {
+    if (isDiv()) {
+      MT.progress.divWrong = MT.progress.divWrong || {};
+      return MT.progress.divWrong;
+    }
+    return MT.progress.wrong;
+  }
+
   function starsRow(n) {
-    var lv = MT.progress.levels[n];
+    var lv = getLevels()[n];
     var out = '';
     for (var i = 1; i <= 3; i++) out += iconStar(lv.bestStars >= i);
     return out;
@@ -96,13 +121,14 @@
   function buildLevelBar() {
     var bar = dom.levelBar;
     bar.innerHTML = '';
+    var lvs = getLevels();
     for (var n = 1; n <= 9; n++) {
-      var lv = MT.progress.levels[n];
+      var lv = lvs[n];
       var b = document.createElement('button');
       b.type = 'button';
       b.className = 'lv' + (lv.unlocked ? '' : ' is-locked') + (lv.passed ? ' is-passed' : '');
       b.dataset.level = n;
-      b.setAttribute('aria-label', '第 ' + n + ' 关' + (lv.unlocked ? '' : '，未解锁'));
+      b.setAttribute('aria-label', (isDiv() ? '除法第 ' : '第 ') + n + ' 关' + (lv.unlocked ? '' : '，未解锁'));
       b.innerHTML = '<span class="lv-n">' + n + '</span>' +
         '<span class="lv-star">' + (lv.unlocked ? starsRow(n) : iconLock()) + '</span>';
       bar.appendChild(b);
@@ -134,8 +160,26 @@
     return r;
   }
 
-  // 这一行全部口诀，再加最多 4 道本关范围内错过或还没掌握的旧题。
+  // 这一行全部题目，再加最多 4 道本关范围内错过或还没掌握的旧题。
   function planRound(n, progress) {
+    if (isDiv()) {
+      var dOwn = MT.core.divRow(n);
+      var dPool = MT.core.divPool(n);
+      var dSeen = {};
+      var di;
+      for (di = 0; di < dOwn.length; di++) dSeen[dOwn[di]] = true;
+      var dReview = [];
+      var divWr = progress.divWrong || {};
+      var divPr = progress.divNeedsPractice || {};
+      var divM = progress.divMastered || {};
+      for (di = 0; di < dPool.length; di++) {
+        var dk = dPool[di];
+        if (dSeen[dk]) continue;
+        if (divWr[dk] || divPr[dk] || !divM[dk]) dReview.push(dk);
+      }
+      dReview = MT.core.shuffle(dReview);
+      return spreadDupes(dOwn.concat(dReview.slice(0, 4)));
+    }
     var own = MT.core.levelRow(n);
     var pool = MT.core.levelPool(n);
     var seen = {};
@@ -173,15 +217,21 @@
 
   function showQuestion() {
     var k = S.round[S.idx];
-    var f = MT.core.parse(k);
     S.answer = '';
     S.locked = false;
     S.hinted = false;
     dom.qCard.classList.remove('is-right', 'is-wrong');
-    dom.qTitle.textContent = S.wrongMode ? '错题本' : ('第 ' + S.level + ' 关');
+    dom.qTitle.textContent = S.wrongMode ? '错题本' : ((isDiv() ? '除法第 ' : '第 ') + S.level + ' 关');
     dom.qCount.textContent = (S.idx + 1) + ' / ' + S.round.length;
-    dom.qAsk.innerHTML = '<span class="tk-brand">' + f.a + '</span> × <span class="tk-accent">' + f.b + '</span> = ?';
-    dom.qTip.textContent = f.a + ' 个 ' + f.b + ' 相加';
+    if (isDiv()) {
+      var dp = MT.core.divParse(k);
+      dom.qAsk.innerHTML = '<span class="tk-brand">' + dp.n + '</span> ÷ <span class="tk-accent">' + dp.divisor + '</span> = ?';
+      dom.qTip.textContent = '想：' + dp.chant.slice(0, 2) + '( )' + dp.chant.slice(2) + '，商是几？';
+    } else {
+      var f = MT.core.parse(k);
+      dom.qAsk.innerHTML = '<span class="tk-brand">' + f.a + '</span> × <span class="tk-accent">' + f.b + '</span> = ?';
+      dom.qTip.textContent = f.a + ' 个 ' + f.b + ' 相加';
+    }
     dom.qInput.textContent = '';
     dom.qInput.className = 'q-input is-empty';
     dom.qFb.className = 'q-fb';
@@ -242,19 +292,39 @@
     var p = MT.progress;
     var st = p.settings;
     p.stats.totalCorrect++;
-    if (S.hinted) {
-      if (!p.mastered[k]) p.needsPractice[k] = true;
-      if (p.wrong[k]) p.wrong[k].rightStreak = 0;
-    } else if (p.wrong[k]) {
-      p.wrong[k].rightStreak = (p.wrong[k].rightStreak || 0) + 1;
-      if (p.wrong[k].rightStreak >= 2) {
-        delete p.wrong[k];
+    if (isDiv()) {
+      p.divMastered = p.divMastered || {};
+      p.divNeedsPractice = p.divNeedsPractice || {};
+      p.divWrong = p.divWrong || {};
+      if (S.hinted) {
+        if (!p.divMastered[k]) p.divNeedsPractice[k] = true;
+        if (p.divWrong[k]) p.divWrong[k].rightStreak = 0;
+      } else if (p.divWrong[k]) {
+        p.divWrong[k].rightStreak = (p.divWrong[k].rightStreak || 0) + 1;
+        if (p.divWrong[k].rightStreak >= 2) {
+          delete p.divWrong[k];
+          delete p.divNeedsPractice[k];
+          p.divMastered[k] = true;
+        }
+      } else {
+        delete p.divNeedsPractice[k];
+        p.divMastered[k] = true;
+      }
+    } else {
+      if (S.hinted) {
+        if (!p.mastered[k]) p.needsPractice[k] = true;
+        if (p.wrong[k]) p.wrong[k].rightStreak = 0;
+      } else if (p.wrong[k]) {
+        p.wrong[k].rightStreak = (p.wrong[k].rightStreak || 0) + 1;
+        if (p.wrong[k].rightStreak >= 2) {
+          delete p.wrong[k];
+          delete p.needsPractice[k];
+          p.mastered[k] = true;
+        }
+      } else {
         delete p.needsPractice[k];
         p.mastered[k] = true;
       }
-    } else {
-      delete p.needsPractice[k];
-      p.mastered[k] = true;
     }
     S.correct++;
     S.streak++;
@@ -291,15 +361,30 @@
   function onWrong(k) {
     var p = MT.progress;
     p.stats.totalWrong++;
-    var prev = p.wrong[k];
-    p.wrong[k] = {
-      wrongCount: (prev ? prev.wrongCount : 0) + 1,
-      rightStreak: 0,
-      lastAt: Date.now(),
-      fromLevel: S.level
-    };
-    delete p.mastered[k];
-    p.needsPractice[k] = true;
+    if (isDiv()) {
+      p.divWrong = p.divWrong || {};
+      p.divNeedsPractice = p.divNeedsPractice || {};
+      p.divMastered = p.divMastered || {};
+      var dprev = p.divWrong[k];
+      p.divWrong[k] = {
+        wrongCount: (dprev ? dprev.wrongCount : 0) + 1,
+        rightStreak: 0,
+        lastAt: Date.now(),
+        fromLevel: S.level
+      };
+      delete p.divMastered[k];
+      p.divNeedsPractice[k] = true;
+    } else {
+      var prev = p.wrong[k];
+      p.wrong[k] = {
+        wrongCount: (prev ? prev.wrongCount : 0) + 1,
+        rightStreak: 0,
+        lastAt: Date.now(),
+        fromLevel: S.level
+      };
+      delete p.mastered[k];
+      p.needsPractice[k] = true;
+    }
     S.misses++;
     S.streak = 0;
     MT.storage.save();
@@ -350,33 +435,50 @@
       return;
     }
     var k = S.round[S.idx];
-    var f = MT.core.parse(k);
-    if (parseInt(S.answer, 10) === f.a * f.b) onRight(k);
-    else onWrong(k);
+    if (isDiv()) {
+      var dp = MT.core.divParse(k);
+      if (parseInt(S.answer, 10) === dp.quot) onRight(k);
+      else onWrong(k);
+    } else {
+      var f = MT.core.parse(k);
+      if (parseInt(S.answer, 10) === f.a * f.b) onRight(k);
+      else onWrong(k);
+    }
   }
 
   function useHelp() {
     if (!S.active || S.failed || S.hinted || S.helps >= MAX_HELP) return;
     if (S.locked && dom.qCard.classList.contains('is-right')) return;
     var k = S.round[S.idx];
-    var f = MT.core.parse(k);
     S.helps++;
     S.hinted = true;
     S.locked = false;
     S.answer = '';
     dom.qHint.hidden = false;
-    MT.visuals.render(dom.qHint, 'array', { a: f.a, b: f.b, animate: true, compact: true });
-    var tip = document.createElement('div');
-    tip.className = 'hint-cap';
-    tip.textContent = '一共 ' + (f.a * f.b) + ' 个';
-    dom.qHint.appendChild(tip);
+    if (isDiv()) {
+      var dp = MT.core.divParse(k);
+      MT.visuals.render(dom.qHint, 'groups', { a: dp.divisor, b: dp.quot, animate: true, compact: true, story: 'share' });
+      var dtip = document.createElement('div');
+      dtip.className = 'hint-cap';
+      dtip.textContent = '💡 ' + dp.think;
+      dom.qHint.appendChild(dtip);
+      MT.speech.warmup();
+      MT.speech.play(dp.read, 'calc');
+    } else {
+      var f = MT.core.parse(k);
+      MT.visuals.render(dom.qHint, 'array', { a: f.a, b: f.b, animate: true, compact: true });
+      var tip = document.createElement('div');
+      tip.className = 'hint-cap';
+      tip.textContent = '一共 ' + (f.a * f.b) + ' 个';
+      dom.qHint.appendChild(tip);
+      MT.speech.warmup();
+      MT.speech.play(MT.core.read(f.a, f.b), 'koujue');
+    }
     dom.qInput.className = 'q-input is-empty';
     dom.qInput.textContent = '';
     renderInput();
     renderBudget();
     renderHelpButton();
-    MT.speech.warmup();
-    MT.speech.play(MT.core.read(f.a, f.b), 'koujue');
   }
 
   function retry() {
@@ -424,7 +526,8 @@
         addResAction('回到错题本', function () { box.hidden = true; showWrongList(); });
         return;
       }
-      var now = Object.keys(p.wrong).length;
+      var wrMap = getWrongMap();
+      var now = Object.keys(wrMap).length;
       var cut = S.wrongBefore - now;
       box.innerHTML = '<div class="res-title">练完啦！太棒了！</div>' +
         '<div class="res-line">答对 ' + S.correct + ' / ' + len + '</div>' +
@@ -440,7 +543,8 @@
     }
 
     var n = S.level;
-    var lv = p.levels[n];
+    var lvs = getLevels();
+    var lv = lvs[n];
     lv.roundsPlayed++;
 
     if (S.failed) {
@@ -457,7 +561,7 @@
     var stars = starsFor(S.misses, S.helps);
     lv.passed = true;
     if (stars > lv.bestStars) lv.bestStars = stars;
-    if (n < 9) p.levels[n + 1].unlocked = true;
+    if (n < 9) lvs[n + 1].unlocked = true;
     MT.storage.save();
     MT.bus.emit('progress:change', {});
 
@@ -540,12 +644,13 @@
   }
 
   function startWrong() {
-    var keys = Object.keys(MT.progress.wrong);
+    var wrMap = getWrongMap();
+    var keys = Object.keys(wrMap);
     if (!keys.length) return;
     S.wrongMode = true;
     S.wrongBefore = keys.length;
     keys.sort(function (a, b) {
-      return (MT.progress.wrong[b].wrongCount || 0) - (MT.progress.wrong[a].wrongCount || 0);
+      return (wrMap[b].wrongCount || 0) - (wrMap[a].wrongCount || 0);
     });
     S.round = spreadDupes(keys.slice(0, 10));
     resetRound();
@@ -556,9 +661,10 @@
 
   function showWrongList() {
     var list = dom.wrongList;
-    var keys = Object.keys(MT.progress.wrong);
+    var wrMap = getWrongMap();
+    var keys = Object.keys(wrMap);
     keys.sort(function (x, y) {
-      return (MT.progress.wrong[y].wrongCount || 0) - (MT.progress.wrong[x].wrongCount || 0);
+      return (wrMap[y].wrongCount || 0) - (wrMap[x].wrongCount || 0);
     });
     dom.wrongStat.textContent = keys.length
       ? ('共 ' + keys.length + ' 个，错得多的排在前面')
@@ -567,12 +673,18 @@
     list.innerHTML = '';
     for (var i = 0; i < keys.length; i++) {
       (function (k) {
-        var f = MT.core.parse(k);
         var b = document.createElement('button');
         b.type = 'button';
         b.className = 'wrong-item';
-        b.innerHTML = '<span class="wi-eq">' + f.a + ' × ' + f.b + ' = ?</span>' +
-          '<span class="wi-count">错 ' + MT.progress.wrong[k].wrongCount + ' 次</span>';
+        if (isDiv()) {
+          var dp = MT.core.divParse(k);
+          b.innerHTML = '<span class="wi-eq">' + dp.n + ' ÷ ' + dp.divisor + ' = ?</span>' +
+            '<span class="wi-count">错 ' + wrMap[k].wrongCount + ' 次</span>';
+        } else {
+          var f = MT.core.parse(k);
+          b.innerHTML = '<span class="wi-eq">' + f.a + ' × ' + f.b + ' = ?</span>' +
+            '<span class="wi-count">错 ' + wrMap[k].wrongCount + ' 次</span>';
+        }
         b.addEventListener('click', function () {
           var box = dom.wrongDetail;
           box.hidden = false;
@@ -594,7 +706,13 @@
           viz.className = 'detail-viz';
           box.appendChild(viz);
           var draw = function (t) {
-            MT.visuals.render(viz, t, { a: f.a, b: f.b, animate: true });
+            if (isDiv()) {
+              var dp2 = MT.core.divParse(k);
+              MT.visuals.render(viz, t, { a: dp2.divisor, b: dp2.quot, story: 'share', animate: true });
+            } else {
+              var f2 = MT.core.parse(k);
+              MT.visuals.render(viz, t, { a: f2.a, b: f2.b, animate: true });
+            }
           };
           seg.addEventListener('click', function (e) {
             var tg = e.target;
@@ -609,7 +727,13 @@
           draw(type);
           MT.speech.warmup();
           MT.sound.play('click');
-          MT.speech.play(MT.core.read(f.a, f.b), 'koujue');
+          if (isDiv()) {
+            var dp3 = MT.core.divParse(k);
+            MT.speech.play(dp3.read, 'calc');
+          } else {
+            var f3 = MT.core.parse(k);
+            MT.speech.play(MT.core.read(f3.a, f3.b), 'koujue');
+          }
         });
         list.appendChild(b);
       })(keys[i]);
@@ -670,7 +794,11 @@
 
   function resetLevels() {
     MT.speech.stop();
-    MT.progress.levels = freshLevels();
+    if (isDiv()) {
+      MT.progress.divLevels = freshLevels();
+    } else {
+      MT.progress.levels = freshLevels();
+    }
     MT.storage.save();
     MT.bus.emit('progress:change', {});
     resetClose();
