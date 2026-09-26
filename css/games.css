@@ -1,0 +1,422 @@
+/* ---------- 游乐场（趣味小游戏） ---------- */
+
+.games-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.btn-game-reset {
+  font-size: 13px;
+  padding: 6px 14px;
+}
+
+.game-view {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  animation: fadein .2s ease-out both;
+}
+
+/* ---------- HUD 顶部状态栏 ---------- */
+
+.game-hud {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: 12px 16px;
+  box-shadow: var(--shadow);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.hud-target {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 15px;
+  color: var(--ink);
+}
+
+.hud-label {
+  font-weight: 500;
+  color: var(--ink-2);
+}
+
+.hud-num {
+  font-family: var(--font-num);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--brand-d);
+  line-height: 1;
+}
+
+.hud-stats {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 14px;
+  color: var(--ink-2);
+}
+
+.hud-score b {
+  font-family: var(--font-num);
+  font-size: 18px;
+  color: var(--brand-d);
+}
+
+.hud-round {
+  background: var(--brand-l);
+  color: var(--brand-d);
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* ---------- 游戏 1：气球天空 ---------- */
+
+.bubble-sky {
+  background: linear-gradient(180deg, #F3EDFD 0%, #FAF7FE 60%, #FFFFFF 100%);
+  border: 1.5px dashed var(--line-2);
+  border-radius: var(--r-lg);
+  padding: 24px 16px 36px;
+  min-height: 320px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: inset 0 2px 8px rgba(91, 63, 150, .04);
+}
+
+.balloon {
+  width: 104px;
+  height: 122px;
+  border-radius: 50% 50% 50% 50% / 44% 44% 56% 56%;
+  border: 2px solid transparent;
+  background: var(--card);
+  box-shadow: 0 8px 18px rgba(91, 63, 150, .12), inset 0 -4px 8px rgba(0, 0, 0, .05);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  transition: transform .15s var(--ease), opacity .2s;
+  animation: balloonFloat 3.2s ease-in-out infinite alternate;
+  animation-delay: calc(var(--bi, 0) * -0.6s);
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.balloon:active {
+  transform: scale(0.92);
+}
+
+/* 气球高光 */
+.balloon::before {
+  content: '';
+  position: absolute;
+  top: 14px;
+  left: 18px;
+  width: 16px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .65);
+  transform: rotate(-35deg);
+}
+
+/* 气球系绳 */
+.balloon::after {
+  content: '';
+  position: absolute;
+  bottom: -7px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 8px;
+  height: 8px;
+  background: inherit;
+  border: inherit;
+  border-top: none;
+  border-left: none;
+  clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+}
+
+.balloon-string {
+  position: absolute;
+  bottom: -22px;
+  left: 50%;
+  width: 1.5px;
+  height: 16px;
+  background: var(--line-2);
+  transform-origin: top center;
+  animation: stringWave 2.8s ease-in-out infinite alternate;
+}
+
+@keyframes stringWave {
+  0% { transform: rotate(-8deg); }
+  100% { transform: rotate(8deg); }
+}
+
+.balloon-text {
+  font-family: var(--font-num);
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: .5px;
+  pointer-events: none;
+}
+
+/* 气球配色变体 */
+.balloon-color-0 {
+  background: #F2ECFE;
+  border-color: #A78BFA;
+  color: #5B21B6;
+}
+.balloon-color-1 {
+  background: #FDF2F8;
+  border-color: #F472B6;
+  color: #9D174D;
+}
+.balloon-color-2 {
+  background: #ECFDF5;
+  border-color: #34D399;
+  color: #065F46;
+}
+.balloon-color-3 {
+  background: #FFFBEB;
+  border-color: #FBBF24;
+  color: #92400E;
+}
+.balloon-color-4 {
+  background: #EFF6FF;
+  border-color: #60A5FA;
+  color: #1E40AF;
+}
+
+/* 气球爆破与摇晃 */
+.balloon.is-popped {
+  animation: balloonPop .25s ease-out forwards;
+  pointer-events: none;
+}
+
+.balloon.is-popped-idle {
+  display: none;
+  pointer-events: none;
+}
+
+.balloon.is-wobble {
+  animation: cardWobble .45s ease-in-out both;
+  border-color: var(--bad);
+}
+
+@keyframes balloonFloat {
+  0% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-10px) rotate(2deg); }
+  100% { transform: translateY(0px) rotate(-2deg); }
+}
+
+@keyframes balloonPop {
+  0% { transform: scale(1); opacity: 1; }
+  40% { transform: scale(1.4); opacity: .8; filter: brightness(1.2); }
+  100% { transform: scale(0); opacity: 0; }
+}
+
+/* ---------- 游戏 2：找出捣蛋鬼（卡片网格） ---------- */
+
+.impostor-cards {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.impostor-card {
+  background: var(--card);
+  border: 2px solid var(--line-2);
+  border-radius: var(--r-lg);
+  padding: 22px 14px;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  position: relative;
+  transition: transform .12s var(--ease), border-color .15s, background .15s;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.impostor-card:active {
+  transform: scale(0.96);
+}
+
+.impostor-formula {
+  font-family: var(--font-num);
+  font-size: clamp(20px, 4.8vw, 28px);
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: .5px;
+}
+
+.impostor-tag {
+  font-size: 13px;
+  color: var(--ink-3);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* 抓住捣蛋鬼状态 */
+.impostor-card.is-caught {
+  border-color: var(--bad);
+  background: var(--bad-l);
+  animation: cardPulse .35s ease-out;
+}
+
+.impostor-card.is-caught .impostor-formula {
+  color: var(--bad-text);
+}
+
+.impostor-strike {
+  text-decoration: line-through;
+  opacity: .6;
+  margin-right: 4px;
+}
+
+.impostor-fixed {
+  color: var(--ok-text);
+  font-weight: 700;
+}
+
+.impostor-badge {
+  background: var(--bad);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+
+/* 正确卡片被点击时的验证状态 */
+.impostor-card.is-correct-checked {
+  border-color: var(--ok);
+  background: var(--ok-l);
+}
+
+.impostor-badge-ok {
+  background: var(--ok);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+
+@keyframes cardWobble {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-6px) rotate(-2deg); }
+  40%, 80% { transform: translateX(6px) rotate(2deg); }
+}
+
+@keyframes cardPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+/* ---------- 反馈与结算通用卡片 ---------- */
+
+.game-feedback {
+  background: var(--brand-l);
+  border: 1px dashed var(--brand);
+  border-radius: var(--r-sm);
+  padding: 10px 14px;
+  font-size: 14px;
+  color: var(--brand-d);
+  line-height: 1.5;
+  animation: fadein .18s ease-out;
+}
+
+.game-feedback.is-bad {
+  background: var(--bad-l);
+  border-color: var(--bad);
+  color: var(--bad-text);
+}
+
+.game-feedback.is-ok {
+  background: var(--ok-l);
+  border-color: var(--ok);
+  color: var(--ok-text);
+}
+
+.game-summary-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: 20px 16px;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+  animation: fadein .2s ease-out both;
+}
+
+.summary-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.summary-list {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.summary-chip {
+  background: var(--brand-l);
+  color: var(--brand-d);
+  font-family: var(--font-num);
+  font-size: 16px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: var(--r-sm);
+}
+
+.summary-note {
+  font-size: 14px;
+  color: var(--ink-2);
+}
+
+.summary-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+@media (min-width: 640px) {
+  .balloon {
+    width: 120px;
+    height: 140px;
+  }
+  .balloon-text {
+    font-size: 23px;
+  }
+  .impostor-card {
+    padding: 30px 18px;
+  }
+}

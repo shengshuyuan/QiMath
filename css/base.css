@@ -1,0 +1,284 @@
+:root {
+  /* 底色与表面 */
+  --bg: #F5F2FC;
+  --bg-glass: rgba(245, 242, 252, .92);
+  --card: #FFFFFF;
+  --card-glass: rgba(255, 255, 255, .82);
+  --field: #FBF9FF;
+  --muted: #F1EEF8;
+  --muted-dot: #E4DFF0;
+
+  /* 文字 */
+  --ink: #2F2A3D;
+  --ink-2: #6E6784;
+  --ink-3: #8C85A0;
+
+  /* 边框 */
+  --line: rgba(91, 63, 150, .13);
+  --line-2: rgba(91, 63, 150, .24);
+
+  /* 主色：酷洛米紫 */
+  --brand: #8B5CF6;
+  --brand-d: #6D3FD9;
+  --brand-l: #EDE7FE;
+
+  /* 副色：酷洛米粉 */
+  --accent: #F472B6;
+  --accent-d: #DB4E93;
+  --accent-l: #FDE7F3;
+
+  /* 语义色 */
+  --ok: #2FBFA0;
+  --ok-l: #E2F7F1;
+  --ok-text: #16705C;
+
+  --warn: #F2B544;
+  --warn-l: #FFF3D9;
+
+  --bad: #EF4F6B;
+  --bad-l: #FDE8EC;
+  --bad-text: #B3243C;
+
+  --star: #EE6FA8;
+
+  /* 数轴 */
+  --axis: #B7AECF;
+  --axis-minor: #D6CFE6;
+  --axis-major: #6A6280;
+
+  --r-sm: 10px;
+  --r-md: 14px;
+  --r-lg: 20px;
+  --ease: cubic-bezier(.34, 1.4, .64, 1);
+  --shadow: 0 4px 14px rgba(91, 63, 150, .08);
+  --font: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Heiti SC", sans-serif;
+  --font-num: ui-rounded, "SF Pro Rounded", -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+h1, h2, h3, p { margin: 0; }
+
+button {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button, .tap { user-select: none; }
+
+:focus-visible {
+  outline: 3px solid var(--brand);
+  outline-offset: 2px;
+}
+
+/* ---------- buttons ---------- */
+
+.btn {
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1.5px solid var(--line-2);
+  border-radius: var(--r-sm);
+  background: var(--card);
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 500;
+  transition: transform .12s var(--ease), background .15s;
+}
+
+.btn:active { transform: scale(.96); }
+
+.btn-soft {
+  background: var(--card-glass);
+  border-color: var(--line);
+  font-size: 14px;
+  padding: 0 12px;
+  min-height: 40px;
+}
+
+.btn-main {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #fff;
+  font-size: 16px;
+}
+
+.btn-main:active { background: var(--brand-d); }
+
+.btn-danger {
+  border-color: var(--bad);
+  color: var(--bad-text);
+  background: var(--card);
+}
+
+.mini {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  border-radius: 50%;
+  border: 1.5px solid var(--line-2);
+  background: var(--card);
+  font-size: 18px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mini:active { transform: scale(.92); }
+
+/* ---------- segmented control ---------- */
+
+.seg {
+  display: inline-flex;
+  border: 1.5px solid var(--line-2);
+  border-radius: var(--r-sm);
+  overflow: hidden;
+  background: var(--card);
+}
+
+.seg-btn {
+  border: 0;
+  background: transparent;
+  min-height: 40px;
+  padding: 0 14px;
+  font-size: 14px;
+  color: var(--ink-2);
+}
+
+.seg-btn + .seg-btn { border-left: 1.5px solid var(--line); }
+
+.seg-btn.is-on {
+  background: var(--brand-l);
+  color: var(--brand-d);
+  font-weight: 500;
+}
+
+.hint-small {
+  font-size: 13px;
+  color: var(--ink-3);
+}
+
+/* ---------- 内联 SVG 图标（颜色由主题变量驱动） ---------- */
+
+.star-on { fill: var(--star); }
+.star-off { fill: var(--muted-dot); }
+.lock-shackle { fill: none; stroke: var(--axis); }
+.lock-body { fill: var(--muted-dot); }
+.check-stroke { stroke: var(--ok); }
+.check-path { stroke: var(--ok); }
+
+/* ---------- 启动兜底 ---------- */
+
+.boot-error {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 24px;
+  display: flex;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.boot-error[hidden] {
+  display: none !important;
+}
+
+.boot-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: 20px;
+  max-width: 420px;
+  box-shadow: var(--shadow);
+}
+
+.boot-card h2 { font-size: 17px; font-weight: 500; margin-bottom: 8px; }
+.boot-card p { font-size: 14px; color: var(--ink-2); }
+
+/* ---------- animations ---------- */
+
+@keyframes pop {
+  from { transform: scale(.2); opacity: 0; }
+  to   { transform: scale(1);  opacity: 1; }
+}
+
+@keyframes rise {
+  from { transform: translateY(8px); opacity: 0; }
+  to   { transform: translateY(0);   opacity: 1; }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25%      { transform: translateX(-6px); }
+  75%      { transform: translateX(6px); }
+}
+
+@keyframes draw {
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes hop {
+  0%   { transform: translateY(0) scale(.6); opacity: 0; }
+  60%  { transform: translateY(-16px) scale(1.1); opacity: 1; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+@keyframes check {
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes confetti {
+  0%   { transform: translate(0, 0) scale(1); opacity: 1; }
+  100% { transform: translate(var(--dx), var(--dy)) scale(.4); opacity: 0; }
+}
+
+@keyframes fadein {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: .01ms !important;
+  }
+}
+
+.no-motion, .no-motion * {
+  animation-duration: .01ms !important;
+  animation-delay: 0ms !important;
+  transition-duration: .01ms !important;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

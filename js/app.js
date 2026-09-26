@@ -1,0 +1,240 @@
+(function (MT) {
+  'use strict';
+
+  var current = 'explore';
+
+  function showFatal(msg) {
+    var box = document.getElementById('boot-error');
+    if (!box) return;
+    box.hidden = false;
+    box.style.display = 'flex';
+    var card = box.querySelector('.boot-card');
+    if (card) {
+      var h = card.querySelector('h2');
+      var p = card.querySelector('p');
+      if (h) h.textContent = '页面出了点问题';
+      if (p) p.textContent = msg || '请刷新页面重试。';
+    }
+  }
+
+  function showTab(name) {
+    MT.speech.stop();
+    if (name !== 'quiz') MT.quiz.stop();
+    if (name !== 'games' && MT.games) MT.games.pause();
+    if (name === 'games' && MT.games) MT.games.resume();
+
+    current = name;
+    var panels = ['explore', 'table', 'quiz', 'games'];
+    for (var i = 0; i < panels.length; i++) {
+      var p = document.getElementById('panel-' + panels[i]);
+      if (p) p.hidden = (panels[i] !== name);
+    }
+    var tabs = document.querySelectorAll('.tab');
+    for (var j = 0; j < tabs.length; j++) {
+      var on = tabs[j].dataset.tab === name;
+      tabs[j].classList.toggle('is-on', on);
+      tabs[j].setAttribute('aria-selected', on ? 'true' : 'false');
+    }
+    closeSettings();
+    if (name === 'explore') MT.explore.redraw();
+    if (name === 'table') MT.table.refresh();
+    if (name === 'quiz') MT.quiz.refresh();
+    window.scrollTo(0, 0);
+  }
+
+  function syncSegs() {
+    var segs = document.querySelectorAll('.seg[data-setting]');
+    for (var i = 0; i < segs.length; i++) {
+      var seg = segs[i];
+      var name = seg.dataset.setting;
+      var val = MT.progress.settings[name];
+      var kids = seg.children;
+      for (var j = 0; j < kids.length; j++) {
+        var on = kids[j].dataset.value === val;
+        kids[j].classList.toggle('is-on', on);
+        kids[j].setAttribute('aria-pressed', on ? 'true' : 'false');
+      }
+    }
+  }
+
+  function applySettings() {
+    var st = MT.progress.settings;
+    document.body.classList.toggle('no-motion', st.reduceMotion === 'on');
+    var sp = document.getElementById('btn-speech');
+    sp.textContent = '朗读：' + (st.speechOn ? '开' : '关');
+    sp.setAttribute('aria-pressed', st.speechOn ? 'true' : 'false');
+    syncSegs();
+  }
+
+  function closeSettings() {
+    var box = document.getElementById('settings');
+    if (box.hidden) return;
+    box.hidden = true;
+    document.getElementById('btn-settings').setAttribute('aria-expanded', 'false');
+  }
+
+  function toggleSettings() {
+    var box = document.getElementById('settings');
+    box.hidden = !box.hidden;
+    document.getElementById('btn-settings').setAttribute('aria-expanded', box.hidden ? 'false' : 'true');
+  }
+
+  function bindSettings() {
+    var segs = document.querySelectorAll('.seg[data-setting]');
+    for (var i = 0; i < segs.length; i++) {
+      (function (seg) {
+        seg.addEventListener('click', function (e) {
+          var t = e.target;
+          if (!t || !t.dataset || !t.dataset.value) return;
+          var key = seg.dataset.setting;
+          MT.progress.settings[key] = t.dataset.value;
+          MT.storage.save();
+          applySettings();
+          if (key === 'tableMode') MT.table.build();
+          if (key === 'reduceMotion') MT.explore.redraw();
+          if (key === 'soundOn' && t.dataset.value === 'on') MT.sound.play('right');
+          if (key === 'speechRate') MT.speech.play('三、四、十二', 'koujue');
+          if (key === 'hapticOn' && t.dataset.value === 'on' && 'vibrate' in navigator) {
+            try { navigator.vibrate(20); } catch (err) {}
+          }
+        });
+      })(segs[i]);
+    }
+
+    document.getElementById('btn-reset').addEventListener('click', function () {
+      if (!window.confirm('清空全部学习进度？已掌握的标记、闯关星星和错题都会没有。')) return;
+      MT.storage.reset();
+      MT.progress = MT.storage.load();
+      applySettings();
+      MT.table.build();
+      MT.table.close();
+      MT.quiz.stop();
+      MT.quiz.refresh();
+      if (MT.games) MT.games.resetAll();
+      MT.explore.redraw();
+      closeSettings();
+    });
+  }
+
+  function bindHeader() {
+    document.getElementById('btn-speech').addEventListener('click', function () {
+      var st = MT.progress.settings;
+      st.speechOn = !st.speechOn;
+      MT.storage.save();
+      applySettings();
+      if (st.speechOn) {
+        MT.speech.warmup();
+        MT.speech.play('朗读打开啦', 'ok');
+      } else {
+        MT.speech.stop();
+      }
+    });
+
+    document.getElementById('btn-print').addEventListener('click', function () {
+      MT.sound.play('click');
+      closeSettings();
+      MT.print.run();
+    });
+
+    document.getElementById('btn-settings').addEventListener('click', function (e) {
+      e.stopPropagation();
+      MT.sound.play('click');
+      toggleSettings();
+    });
+
+    document.getElementById('settings').addEventListener('click', function (e) {
+      e.stopPropagation();
+    });
+
+    document.addEventListener('click', function () {
+      if (!document.getElementById('settings').hidden) closeSettings();
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') closeSettings();
+    });
+
+    var tabs = document.querySelectorAll('.tab');
+    for (var i = 0; i < tabs.length; i++) {
+      (function (btn) {
+        btn.addEventListener('click', function () {
+          MT.speech.warmup();
+          MT.sound.play('click');
+          showTab(btn.dataset.tab);
+        });
+      })(tabs[i]);
+    }
+  }
+
+  function notes() {
+    if (!MT.storage.available) {
+      document.getElementById('storage-note').hidden = false;
+    }
+    if (!MT.speech.supported) {
+      document.getElementById('speech-note').hidden = false;
+      document.getElementById('btn-speech').style.display = 'none';
+    }
+  }
+
+  var rt = null;
+  function onResize() {
+    if (rt) clearTimeout(rt);
+    rt = setTimeout(function () {
+      if (current === 'explore') MT.explore.redraw();
+      if (current === 'table') MT.table.redraw();
+    }, 200);
+  }
+
+  function registerSW() {
+    if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('./sw.js').catch(function () {});
+      });
+    }
+  }
+
+  MT.app = {
+    init: function () {
+      MT.progress = MT.storage.load();
+
+      MT.explore.init();
+      MT.table.init();
+      MT.quiz.init();
+      if (MT.games) MT.games.init();
+
+      bindHeader();
+      bindSettings();
+      notes();
+      applySettings();
+      showTab('explore');
+      registerSW();
+
+      window.addEventListener('resize', onResize);
+      window.addEventListener('orientationchange', onResize);
+      window.addEventListener('pagehide', function () { MT.speech.stop(); });
+
+      document.addEventListener('pointerdown', function once() {
+        MT.speech.warmup();
+        MT.sound.unlock();
+        document.removeEventListener('pointerdown', once);
+      });
+    },
+
+    showFatal: showFatal
+  };
+
+  function boot() {
+    try {
+      MT.app.init();
+    } catch (e) {
+      console.error(e);
+      showFatal('页面初始化失败：' + (e && e.message ? e.message : '未知错误'));
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
+})(window.MT = window.MT || {});

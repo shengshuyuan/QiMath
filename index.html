@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F5F2FC">
+<title>QiMath 启数乐学 · 看得见的数学</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%238B5CF6'/%3E%3Ccircle cx='20' cy='20' r='5' fill='%23fff'/%3E%3Ccircle cx='32' cy='20' r='5' fill='%23F472B6'/%3E%3Ccircle cx='44' cy='20' r='5' fill='%23fff'/%3E%3Ccircle cx='20' cy='32' r='5' fill='%23F472B6'/%3E%3Ccircle cx='32' cy='32' r='5' fill='%23fff'/%3E%3Ccircle cx='44' cy='32' r='5' fill='%23F472B6'/%3E%3Ccircle cx='20' cy='44' r='5' fill='%23fff'/%3E%3Ccircle cx='32' cy='44' r='5' fill='%23F472B6'/%3E%3Ccircle cx='44' cy='44' r='5' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/layout.css">
+<link rel="stylesheet" href="css/visuals.css">
+<link rel="stylesheet" href="css/quiz.css">
+<link rel="stylesheet" href="css/games.css">
+<link rel="stylesheet" href="css/print.css">
+</head>
+<body>
+
+<div class="boot-error" id="boot-error" hidden style="display: none;">
+  <div class="boot-card">
+    <h2>页面没有加载起来</h2>
+    <p>请把<b>整个文件夹</b>（index.html 和 css、js 两个目录）一起拷贝，然后双击 index.html 打开。只拷 index.html 会白屏。</p>
+  </div>
+</div>
+
+<header class="app-header" id="app-header">
+  <div class="header-top">
+    <h1 class="app-title">QiMath · 九九乘法表</h1>
+    <div class="header-actions">
+      <button type="button" class="btn btn-soft" id="btn-speech" aria-pressed="true">朗读：开</button>
+      <button type="button" class="btn btn-soft" id="btn-print">打印练习</button>
+      <button type="button" class="btn btn-soft" id="btn-settings" aria-expanded="false">设置</button>
+    </div>
+  </div>
+  <nav class="tabbar" role="tablist" aria-label="主导航">
+    <button type="button" class="tab is-on" data-tab="explore" role="tab" aria-selected="true" aria-controls="panel-explore">探究台</button>
+    <button type="button" class="tab" data-tab="table" role="tab" aria-selected="false" aria-controls="panel-table">口诀表</button>
+    <button type="button" class="tab" data-tab="quiz" role="tab" aria-selected="false" aria-controls="panel-quiz">闯关</button>
+    <button type="button" class="tab" data-tab="games" role="tab" aria-selected="false" aria-controls="panel-games">游乐场</button>
+  </nav>
+</header>
+
+<div class="settings" id="settings" hidden>
+  <div class="settings-inner">
+    <div class="set-row">
+      <span class="set-label">朗读风格</span>
+      <div class="seg" data-setting="speechStyle">
+        <button type="button" class="seg-btn" data-value="koujue">口诀</button>
+        <button type="button" class="seg-btn" data-value="full">完整算式</button>
+      </div>
+    </div>
+    <div class="set-row">
+      <span class="set-label">朗读语速</span>
+      <div class="seg" data-setting="speechRate">
+        <button type="button" class="seg-btn" data-value="slow">慢</button>
+        <button type="button" class="seg-btn" data-value="normal">正常</button>
+        <button type="button" class="seg-btn" data-value="fast">快</button>
+      </div>
+    </div>
+    <div class="set-row">
+      <span class="set-label">音效</span>
+      <div class="seg" data-setting="soundOn">
+        <button type="button" class="seg-btn" data-value="on">开</button>
+        <button type="button" class="seg-btn" data-value="off">关</button>
+      </div>
+    </div>
+    <div class="set-row">
+      <span class="set-label">口诀表</span>
+      <div class="seg" data-setting="tableMode">
+        <button type="button" class="seg-btn" data-value="triangle">三角 45 式</button>
+        <button type="button" class="seg-btn" data-value="full">完整 81 格</button>
+      </div>
+    </div>
+    <div class="set-row">
+      <span class="set-label">答对自动下一题</span>
+      <div class="seg" data-setting="autoNext">
+        <button type="button" class="seg-btn" data-value="on">开</button>
+        <button type="button" class="seg-btn" data-value="off">关</button>
+      </div>
+    </div>
+    <div class="set-row">
+      <span class="set-label">减少动画</span>
+      <div class="seg" data-setting="reduceMotion">
+        <button type="button" class="seg-btn" data-value="on">开</button>
+        <button type="button" class="seg-btn" data-value="off">关</button>
+      </div>
+    </div>
+    <div class="set-row">
+      <span class="set-label">练习卡带答案页</span>
+      <div class="seg" data-setting="printAnswers">
+        <button type="button" class="seg-btn" data-value="on">开</button>
+        <button type="button" class="seg-btn" data-value="off">关</button>
+      </div>
+    </div>
+    <div class="set-row">
+      <span class="set-label">触感震动</span>
+      <div class="seg" data-setting="hapticOn">
+        <button type="button" class="seg-btn" data-value="on">开</button>
+        <button type="button" class="seg-btn" data-value="off">关</button>
+      </div>
+    </div>
+    <p class="set-note" id="storage-note" hidden>这个浏览器不允许保存数据，学习记录只在本次使用中保留。</p>
+    <p class="set-note" id="speech-note" hidden>这个浏览器不支持朗读，已隐藏朗读按钮。</p>
+    <div class="set-row set-row-end">
+      <button type="button" class="btn btn-danger" id="btn-reset">重置全部进度</button>
+    </div>
+  </div>
+</div>
+
+<main class="app-main">
+
+  <section class="panel" id="panel-explore" role="tabpanel" aria-label="图示探究台">
+    <div class="pickers">
+      <div class="picker">
+        <div class="picker-title">有几行？<b class="pv" id="pv-a">3</b></div>
+        <div class="nums" id="nums-a"></div>
+        <div class="slider-row">
+          <button type="button" class="mini" data-factor="a" data-delta="-1" aria-label="减少一行">－</button>
+          <input type="range" class="slider" id="slider-a" min="1" max="9" step="1" value="3" aria-label="行数">
+          <button type="button" class="mini" data-factor="a" data-delta="1" aria-label="增加一行">＋</button>
+        </div>
+      </div>
+      <div class="picker">
+        <div class="picker-title">每行有几个？<b class="pv" id="pv-b">4</b></div>
+        <div class="nums" id="nums-b"></div>
+        <div class="slider-row">
+          <button type="button" class="mini" data-factor="b" data-delta="-1" aria-label="减少一个">－</button>
+          <input type="range" class="slider" id="slider-b" min="1" max="9" step="1" value="4" aria-label="每行个数">
+          <button type="button" class="mini" data-factor="b" data-delta="1" aria-label="增加一个">＋</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="viewswitch" id="view-switch">
+      <button type="button" class="vs is-on" data-view="array">阵列</button>
+      <button type="button" class="vs" data-view="groups">分组</button>
+      <button type="button" class="vs" data-view="numberline">数轴</button>
+      <button type="button" class="vs" data-view="area">方格</button>
+      <button type="button" class="vs" data-view="all">全部</button>
+    </div>
+
+    <div class="stage" id="stage"></div>
+    <div class="sumline" id="sumline"></div>
+
+    <div class="explore-actions">
+      <button type="button" class="btn btn-main" id="btn-say">读一遍</button>
+      <button type="button" class="btn" id="btn-replay">再看一次</button>
+      <button type="button" class="btn" id="btn-swap" title="交换行与列 (乘法交换律)">交换因数 ⇄</button>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-table" role="tabpanel" aria-label="口诀表" hidden>
+    <div class="table-top">
+      <div class="stat" id="table-stat">已掌握 0 / 45</div>
+    </div>
+    <div class="table-split">
+      <div class="table-wrap">
+        <table class="mul-table" id="mul-table"></table>
+      </div>
+      <div class="sheet-backdrop" id="sheet-backdrop" hidden></div>
+      <aside class="detail" id="table-detail" role="dialog" aria-label="算式详情" hidden>
+        <button type="button" class="detail-close" id="detail-close">收起</button>
+        <div class="detail-body" id="detail-body"></div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-quiz" role="tabpanel" aria-label="闯关练习" hidden>
+    <div class="quiz-toolbar">
+      <div class="seg seg-mode" id="quiz-mode">
+        <button type="button" class="seg-btn is-on" data-mode="levels">闯关</button>
+        <button type="button" class="seg-btn" data-mode="wrong">错题本</button>
+      </div>
+      <button type="button" class="btn btn-danger" id="btn-quiz-reset">重置闯关</button>
+    </div>
+
+    <div id="quiz-levels">
+      <div class="level-bar" id="level-bar"></div>
+      <div class="quiz-play" id="quiz-play" hidden>
+        <div class="qcard" id="qcard">
+          <div class="q-head">
+            <span id="q-title">第 1 关</span>
+            <span id="q-count">1 / 6</span>
+          </div>
+          <div class="q-budget" id="q-budget">还能错 3 次 · 求助 2</div>
+          <div class="q-dots" id="q-dots"></div>
+          <div class="q-ask" id="q-ask">1 × 1 = ?</div>
+          <div class="q-tip" id="q-tip">1 个 1 相加</div>
+          <div class="q-input" id="q-input"></div>
+          <div class="q-fb" id="q-fb" role="status" aria-live="polite"></div>
+          <div class="q-hint" id="q-hint" hidden></div>
+          <button type="button" class="btn q-help" id="btn-quiz-help">求助解答</button>
+          <div class="q-actions" id="q-actions"></div>
+        </div>
+        <div class="keypad" id="keypad"></div>
+      </div>
+      <div class="quiz-result" id="quiz-result" hidden></div>
+    </div>
+
+    <div class="quiz-wrong" id="quiz-wrong" hidden>
+      <div class="wrong-head">
+        <span id="wrong-stat">还没有错题</span>
+        <button type="button" class="btn btn-main" id="btn-practice-wrong" hidden>只练错题</button>
+      </div>
+      <div class="wrong-list" id="wrong-list"></div>
+      <div class="wrong-detail" id="wrong-detail" hidden></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-games" role="tabpanel" aria-label="趣味游乐场" hidden>
+    <div class="games-top">
+      <div class="seg seg-mode" id="game-submode">
+        <button type="button" class="seg-btn is-on" data-game="bubbles">🎈 气球爆破</button>
+        <button type="button" class="seg-btn" data-game="impostor">🕵️ 找出捣蛋鬼</button>
+      </div>
+      <button type="button" class="btn btn-soft btn-game-reset" id="btn-game-reset">重新开始</button>
+    </div>
+
+    <!-- 游戏 1：气球爆破（逆向因数找朋友） -->
+    <div class="game-view" id="game-view-bubbles">
+      <div class="game-hud">
+        <div class="hud-target">
+          <span class="hud-label">找一找结果等于</span>
+          <b class="hud-num" id="bubble-target-num">24</b>
+          <span class="hud-label">的气球！</span>
+        </div>
+        <div class="hud-stats">
+          <span class="hud-score">已找到: <b id="bubble-found-count">0</b> / <span id="bubble-total-target">2</span></span>
+          <span class="hud-round" id="bubble-round-num">第 1 / 5 轮</span>
+        </div>
+      </div>
+      <div class="bubble-sky" id="bubble-sky"></div>
+      <div class="game-feedback" id="bubble-feedback" hidden></div>
+      <div class="game-summary-card" id="bubble-summary" hidden></div>
+    </div>
+
+    <!-- 游戏 2：找出捣蛋鬼（挑错游戏） -->
+    <div class="game-view" id="game-view-impostor" hidden>
+      <div class="game-hud">
+        <div class="hud-target">
+          <span class="hud-label">哪只小捣蛋鬼算错了？把它揪出来！</span>
+        </div>
+        <div class="hud-stats">
+          <span class="hud-score">连胜: <b id="impostor-streak">0</b></span>
+          <span class="hud-round" id="impostor-round-num">第 1 / 5 轮</span>
+        </div>
+      </div>
+      <div class="impostor-cards" id="impostor-cards"></div>
+      <div class="game-feedback" id="impostor-feedback" hidden></div>
+      <div class="game-summary-card" id="impostor-summary" hidden></div>
+    </div>
+  </section>
+
+</main>
+
+<div class="modal" id="quiz-reset-modal" hidden>
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="quiz-reset-title">
+    <h2 id="quiz-reset-title">重新开始闯关？</h2>
+    <p>星星和已解锁的关卡会清空，从第 1 关再来。错题本和已经掌握的口诀还会留着。</p>
+    <div class="modal-actions">
+      <button type="button" class="btn" id="quiz-reset-cancel">取消</button>
+      <button type="button" class="btn btn-danger" id="quiz-reset-ok">确认重置</button>
+    </div>
+  </div>
+</div>
+
+<div id="print-root" aria-hidden="true"></div>
+
+<script src="js/core.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/voice-clips.js"></script>
+<script src="js/speech.js"></script>
+<script src="js/sound.js"></script>
+<script src="js/visuals.js"></script>
+<script src="js/explore.js"></script>
+<script src="js/table.js"></script>
+<script src="js/quiz.js"></script>
+<script src="js/games.js"></script>
+<script src="js/print.js"></script>
+<script src="js/app.js"></script>
+<script>
+(function () {
+  var ok = window.MT && MT.core && MT.visuals && MT.app;
+  if (!ok) {
+    var err = document.getElementById('boot-error');
+    if (err) {
+      err.hidden = false;
+      err.style.display = 'flex';
+    }
+    document.getElementById('app-header').style.display = 'none';
+  }
+})();
+</script>
+</body>
+</html>

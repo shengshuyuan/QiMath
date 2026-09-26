@@ -1,0 +1,227 @@
+.viz {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.viz-cap {
+  font-size: 13px;
+  color: var(--ink-2);
+  text-align: center;
+  line-height: 1.5;
+}
+
+/* ---------- 阵列图 ---------- */
+
+.dot-grid {
+  display: grid;
+  gap: 6px;
+  width: 100%;
+  max-width: 420px;
+}
+
+.dot {
+  display: block;
+  aspect-ratio: 1;
+  width: 100%;
+  max-width: 40px;
+  max-height: 40px;
+  justify-self: center;
+  align-self: center;
+  border-radius: 50%;
+  background: var(--brand);
+  border: 1.5px solid var(--brand-d);
+  min-height: 12px;
+}
+
+.viz-array.anim .dot {
+  animation: pop .32s var(--ease) both;
+  animation-delay: calc(var(--i, 0) * var(--stagger, 40ms));
+}
+
+/* ---------- 等组图 ---------- */
+
+.group-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  width: 100%;
+}
+
+.group {
+  border: 2px dashed var(--accent);
+  border-radius: 14px;
+  background: var(--accent-l);
+  padding: 8px 10px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.group-dots {
+  display: grid;
+  gap: 5px;
+  justify-content: center;
+}
+
+.group-dots .dot {
+  width: 20px;
+  max-width: 20px;
+  min-height: 20px;
+  max-height: 20px;
+  background: var(--brand);
+  border-color: var(--brand-d);
+}
+
+.group-label {
+  font-size: 11px;
+  color: var(--accent-d);
+}
+
+.viz-groups.anim .group {
+  animation: pop .34s var(--ease) both;
+  animation-delay: calc(var(--gi, 0) * var(--gstagger, 160ms));
+}
+
+.viz-groups.anim .group .dot {
+  animation: pop .3s var(--ease) both;
+  animation-delay: calc(var(--gi, 0) * var(--gstagger, 160ms) + var(--i, 0) * var(--stagger, 35ms));
+}
+
+/* ---------- 数轴跳格 ---------- */
+
+.nl-scroll {
+  width: 100%;
+  overflow-x: auto;
+  text-align: center;
+}
+
+.nl-svg {
+  display: inline-block;
+  max-width: none;
+  height: auto;
+}
+
+.nl-axis { stroke: var(--axis); stroke-width: 2; }
+.nl-minor { stroke: var(--axis-minor); stroke-width: 1.5; }
+.nl-major { stroke: var(--axis-major); stroke-width: 2; }
+
+.nl-num {
+  font-family: var(--font-num);
+  font-size: 14px;
+  fill: var(--ink);
+}
+
+.nl-plus {
+  font-family: var(--font-num);
+  font-size: 13px;
+  font-weight: 500;
+  fill: var(--accent-d);
+}
+
+.nl-arc {
+  stroke: var(--accent);
+  stroke-width: 3;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.nl-ball {
+  fill: var(--brand);
+  stroke: var(--brand-d);
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+}
+
+.nl-ball-start { fill: var(--card); }
+
+.viz-nl.anim .nl-arc {
+  stroke-dasharray: var(--len, 200);
+  stroke-dashoffset: var(--len, 200);
+  animation: draw .4s ease-out both;
+  animation-delay: calc(var(--i, 0) * var(--jstagger, 160ms));
+}
+
+.viz-nl.anim .nl-ball {
+  animation: hop .42s cubic-bezier(.34, 1.4, .64, 1) both;
+  animation-delay: calc((var(--i, 0) + 1) * var(--jstagger, 160ms));
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.viz-nl.anim .nl-plus {
+  animation: pop .3s var(--ease) both;
+  animation-delay: calc(var(--i, 0) * var(--jstagger, 160ms));
+}
+
+/* ---------- 面积模型（作用域限定，避免影响口诀表格子） ---------- */
+
+.area-grid {
+  display: grid;
+  gap: 3px;
+  width: 100%;
+  max-width: 420px;
+}
+
+.ax {
+  font-family: var(--font-num);
+  font-size: 11px;
+  color: var(--ink-3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.area-grid .cell {
+  border: 1.5px solid var(--brand);
+  border-radius: 4px;
+  background: var(--brand-l);
+  min-height: 12px;
+}
+
+.viz-area.anim .cell {
+  animation: pop .28s var(--ease) both;
+  animation-delay: calc(var(--i, 0) * var(--stagger, 40ms));
+}
+
+/* ---------- 并排四图 ---------- */
+
+.viz-all {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  width: 100%;
+}
+
+.viz-card {
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--card);
+  padding: 8px 10px 10px;
+}
+
+.viz-card-title {
+  font-size: 12px;
+  color: var(--ink-3);
+  margin-bottom: 6px;
+}
+
+.viz-card-body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 90px;
+}
+
+.viz-card .dot-grid { max-width: 300px; }
+.viz-card .area-grid { max-width: 300px; }
+.viz-card .group-dots .dot { width: 16px; max-width: 16px; min-height: 16px; max-height: 16px; }
+.viz-card .group { padding: 6px 8px 4px; }
+
+@media (min-width: 640px) {
+  .viz-all { grid-template-columns: 1fr 1fr; }
+}

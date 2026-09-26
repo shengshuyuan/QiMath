@@ -1,0 +1,19 @@
+{
+  "name": "QiMath 启数乐学 · 看得见的数学",
+  "short_name": "QiMath",
+  "description": "专为小学生打造的可视化、强交互数学探究学习工具。",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#F5F2FC",
+  "theme_color": "#8B5CF6",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "64x64 128x128 192x192 512x512 any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

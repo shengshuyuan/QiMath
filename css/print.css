@@ -1,0 +1,89 @@
+@media screen {
+  #print-root { display: none; }
+}
+
+@media print {
+  @page { size: A4 portrait; margin: 12mm; }
+
+  html, body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+
+  .app-header,
+  .settings,
+  .tabbar,
+  .app-main,
+  .boot-error {
+    display: none !important;
+  }
+
+  #print-root {
+    display: block !important;
+  }
+
+  .print-sheet {
+    page-break-after: always;
+    break-after: page;
+  }
+
+  .print-sheet:last-child {
+    page-break-after: auto;
+    break-after: auto;
+  }
+
+  .print-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10mm;
+    border-bottom: 1px solid #333;
+    padding-bottom: 3mm;
+    margin-bottom: 6mm;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .print-title { font-size: 15pt; font-weight: 500; }
+  .print-meta { font-size: 9pt; color: #444; }
+
+  .pt-grid {
+    display: grid;
+    grid-template-columns: 8mm repeat(9, 1fr);
+    gap: 1mm;
+  }
+
+  .pt-cell {
+    border: 1px solid #333;
+    min-height: 11mm;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11pt;
+  }
+
+  .pt-head { background: #F0F0F0 !important; font-weight: 500; }
+  .pt-corner { border-color: #333; }
+  .pt-blank { background: #fff !important; }
+
+  .print-problems {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 5mm 4mm;
+    margin-top: 4mm;
+  }
+
+  .print-problem {
+    font-size: 15pt;
+    break-inside: avoid;
+    page-break-inside: avoid;
+    white-space: nowrap;
+  }
+
+  .print-answers .print-problem { font-size: 12pt; }
+
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
