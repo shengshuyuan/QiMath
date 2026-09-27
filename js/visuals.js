@@ -39,8 +39,8 @@
   function ms(v) { return Math.round(v) + 'ms'; }
 
   function divCap(o, key, mulText) {
-    if (o.story !== 'share' && o.story !== 'measure') return mulText;
-    return MT.core.divParts(o.a, o.b, o.story)[key];
+    if (o.captions && o.captions[key]) return o.captions[key];
+    return mulText;
   }
 
   function setup(wrap, o, vars) {

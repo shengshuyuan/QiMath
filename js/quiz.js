@@ -72,33 +72,12 @@
       'stroke-linecap="round" stroke-linejoin="round"/></svg>';
   }
 
-  function isDiv() {
-    return MT.progress && MT.progress.settings && MT.progress.settings.op === 'div';
-  }
+  function sub() { return MT.op.current(); }
 
-  function getLevels() {
-    if (isDiv()) {
-      if (!MT.progress.divLevels) {
-        MT.progress.divLevels = {};
-        for (var n = 1; n <= 9; n++) {
-          MT.progress.divLevels[n] = { unlocked: n === 1, passed: false, bestStars: 0, roundsPlayed: 0 };
-        }
-      }
-      return MT.progress.divLevels;
-    }
-    return MT.progress.levels;
-  }
-
-  function getWrongMap() {
-    if (isDiv()) {
-      MT.progress.divWrong = MT.progress.divWrong || {};
-      return MT.progress.divWrong;
-    }
-    return MT.progress.wrong;
-  }
+  function bags() { return sub().bag(MT.progress); }
 
   function starsRow(n) {
-    var lv = getLevels()[n];
+    var lv = bags().levels[n];
     var out = '';
     for (var i = 1; i <= 3; i++) out += iconStar(lv.bestStars >= i);
     return out;
@@ -121,14 +100,14 @@
   function buildLevelBar() {
     var bar = dom.levelBar;
     bar.innerHTML = '';
-    var lvs = getLevels();
+    var lvs = bags().levels;
     for (var n = 1; n <= 9; n++) {
       var lv = lvs[n];
       var b = document.createElement('button');
       b.type = 'button';
       b.className = 'lv' + (lv.unlocked ? '' : ' is-locked') + (lv.passed ? ' is-passed' : '');
       b.dataset.level = n;
-      b.setAttribute('aria-label', (isDiv() ? '除法第 ' : '第 ') + n + ' 关' + (lv.unlocked ? '' : '，未解锁'));
+      b.setAttribute('aria-label', sub().levelTitle(n) + (lv.unlocked ? '' : '，未解锁'));
       b.innerHTML = '<span class="lv-n">' + n + '</span>' +
         '<span class="lv-star">' + (lv.unlocked ? starsRow(n) : iconLock()) + '</span>';
       bar.appendChild(b);
@@ -136,14 +115,6 @@
   }
 
   /* ---------- 出题 ---------- */
-
-  function reviewScore(k, p) {
-    var s = 0;
-    if (p.wrong[k]) s += 100 + Math.min(p.wrong[k].wrongCount || 0, 9);
-    if (p.needsPractice[k]) s += 20;
-    if (!p.mastered[k]) s += 5;
-    return s;
-  }
 
   function spreadDupes(list) {
     var r = MT.core.shuffle(list);
@@ -162,26 +133,10 @@
 
   // 这一行全部题目，再加最多 4 道本关范围内错过或还没掌握的旧题。
   function planRound(n, progress) {
-    if (isDiv()) {
-      var dOwn = MT.core.divRow(n);
-      var dPool = MT.core.divPool(n);
-      var dSeen = {};
-      var di;
-      for (di = 0; di < dOwn.length; di++) dSeen[dOwn[di]] = true;
-      var dReview = [];
-      var divWr = progress.divWrong || {};
-      var divPr = progress.divNeedsPractice || {};
-      var divM = progress.divMastered || {};
-      for (di = 0; di < dPool.length; di++) {
-        var dk = dPool[di];
-        if (dSeen[dk]) continue;
-        if (divWr[dk] || divPr[dk] || !divM[dk]) dReview.push(dk);
-      }
-      dReview = MT.core.shuffle(dReview);
-      return spreadDupes(dOwn.concat(dReview.slice(0, 4)));
-    }
-    var own = MT.core.levelRow(n);
-    var pool = MT.core.levelPool(n);
+    var mod = sub();
+    var b = mod.bag(progress);
+    var own = mod.row(n);
+    var pool = mod.pool(n);
     var seen = {};
     var i;
     for (i = 0; i < own.length; i++) seen[own[i]] = true;
@@ -189,15 +144,15 @@
     for (i = 0; i < pool.length; i++) {
       var k = pool[i];
       if (seen[k]) continue;
-      if (progress.wrong[k] || progress.needsPractice[k] || !progress.mastered[k]) review.push(k);
+      if (b.wrong[k] || b.needs[k] || !b.mastered[k]) review.push(k);
     }
     review = MT.core.shuffle(review);
-    review.sort(function (a, b) { return reviewScore(b, progress) - reviewScore(a, progress); });
+    review.sort(function (a, c) { return mod.score(c, b) - mod.score(a, b); });
     return spreadDupes(own.concat(review.slice(0, 4)));
   }
 
   function starsFor(misses, helps) {
-    if (misses > MAX_MISS) return 0;
+    if (misses >= MAX_MISS) return 0;
     if (misses === 0 && helps === 0) return 3;
     if (misses <= 1 && helps <= 1) return 2;
     return 1;
@@ -221,17 +176,11 @@
     S.locked = false;
     S.hinted = false;
     dom.qCard.classList.remove('is-right', 'is-wrong');
-    dom.qTitle.textContent = S.wrongMode ? '错题本' : ((isDiv() ? '除法第 ' : '第 ') + S.level + ' 关');
+    var fact = sub().fact(k);
+    dom.qTitle.textContent = S.wrongMode ? '错题本' : sub().levelTitle(S.level);
     dom.qCount.textContent = (S.idx + 1) + ' / ' + S.round.length;
-    if (isDiv()) {
-      var dp = MT.core.divParse(k);
-      dom.qAsk.innerHTML = '<span class="tk-brand">' + dp.n + '</span> ÷ <span class="tk-accent">' + dp.divisor + '</span> = ?';
-      dom.qTip.textContent = '想：' + dp.chant.slice(0, 2) + '( )' + dp.chant.slice(2) + '，商是几？';
-    } else {
-      var f = MT.core.parse(k);
-      dom.qAsk.innerHTML = '<span class="tk-brand">' + f.a + '</span> × <span class="tk-accent">' + f.b + '</span> = ?';
-      dom.qTip.textContent = f.a + ' 个 ' + f.b + ' 相加';
-    }
+    dom.qAsk.innerHTML = fact.askHTML;
+    dom.qTip.textContent = fact.tip;
     dom.qInput.textContent = '';
     dom.qInput.className = 'q-input is-empty';
     dom.qFb.className = 'q-fb';
@@ -292,39 +241,20 @@
     var p = MT.progress;
     var st = p.settings;
     p.stats.totalCorrect++;
-    if (isDiv()) {
-      p.divMastered = p.divMastered || {};
-      p.divNeedsPractice = p.divNeedsPractice || {};
-      p.divWrong = p.divWrong || {};
-      if (S.hinted) {
-        if (!p.divMastered[k]) p.divNeedsPractice[k] = true;
-        if (p.divWrong[k]) p.divWrong[k].rightStreak = 0;
-      } else if (p.divWrong[k]) {
-        p.divWrong[k].rightStreak = (p.divWrong[k].rightStreak || 0) + 1;
-        if (p.divWrong[k].rightStreak >= 2) {
-          delete p.divWrong[k];
-          delete p.divNeedsPractice[k];
-          p.divMastered[k] = true;
-        }
-      } else {
-        delete p.divNeedsPractice[k];
-        p.divMastered[k] = true;
+    var book = bags();
+    if (S.hinted) {
+      if (!book.mastered[k]) book.needs[k] = true;
+      if (book.wrong[k]) book.wrong[k].rightStreak = 0;
+    } else if (book.wrong[k]) {
+      book.wrong[k].rightStreak = (book.wrong[k].rightStreak || 0) + 1;
+      if (book.wrong[k].rightStreak >= 2) {
+        delete book.wrong[k];
+        delete book.needs[k];
+        book.mastered[k] = true;
       }
     } else {
-      if (S.hinted) {
-        if (!p.mastered[k]) p.needsPractice[k] = true;
-        if (p.wrong[k]) p.wrong[k].rightStreak = 0;
-      } else if (p.wrong[k]) {
-        p.wrong[k].rightStreak = (p.wrong[k].rightStreak || 0) + 1;
-        if (p.wrong[k].rightStreak >= 2) {
-          delete p.wrong[k];
-          delete p.needsPractice[k];
-          p.mastered[k] = true;
-        }
-      } else {
-        delete p.needsPractice[k];
-        p.mastered[k] = true;
-      }
+      delete book.needs[k];
+      book.mastered[k] = true;
     }
     S.correct++;
     S.streak++;
@@ -361,37 +291,23 @@
   function onWrong(k) {
     var p = MT.progress;
     p.stats.totalWrong++;
-    if (isDiv()) {
-      p.divWrong = p.divWrong || {};
-      p.divNeedsPractice = p.divNeedsPractice || {};
-      p.divMastered = p.divMastered || {};
-      var dprev = p.divWrong[k];
-      p.divWrong[k] = {
-        wrongCount: (dprev ? dprev.wrongCount : 0) + 1,
-        rightStreak: 0,
-        lastAt: Date.now(),
-        fromLevel: S.level
-      };
-      delete p.divMastered[k];
-      p.divNeedsPractice[k] = true;
-    } else {
-      var prev = p.wrong[k];
-      p.wrong[k] = {
-        wrongCount: (prev ? prev.wrongCount : 0) + 1,
-        rightStreak: 0,
-        lastAt: Date.now(),
-        fromLevel: S.level
-      };
-      delete p.mastered[k];
-      p.needsPractice[k] = true;
-    }
+    var book = bags();
+    var prev = book.wrong[k];
+    book.wrong[k] = {
+      wrongCount: (prev ? prev.wrongCount : 0) + 1,
+      rightStreak: 0,
+      lastAt: Date.now(),
+      fromLevel: S.level
+    };
+    delete book.mastered[k];
+    book.needs[k] = true;
     S.misses++;
     S.streak = 0;
     MT.storage.save();
     MT.bus.emit('progress:change', { key: k });
 
     S.locked = true;
-    var failedNow = S.misses > MAX_MISS;
+    var failedNow = S.misses >= MAX_MISS;
     var word = failedNow
       ? (S.wrongMode ? '这轮先停一下' : '这关先停一下')
       : pickWord(BAD_WORDS, 'lastBad');
@@ -435,15 +351,8 @@
       return;
     }
     var k = S.round[S.idx];
-    if (isDiv()) {
-      var dp = MT.core.divParse(k);
-      if (parseInt(S.answer, 10) === dp.quot) onRight(k);
-      else onWrong(k);
-    } else {
-      var f = MT.core.parse(k);
-      if (parseInt(S.answer, 10) === f.a * f.b) onRight(k);
-      else onWrong(k);
-    }
+    if (parseInt(S.answer, 10) === sub().fact(k).answer) onRight(k);
+    else onWrong(k);
   }
 
   function useHelp() {
@@ -455,25 +364,14 @@
     S.locked = false;
     S.answer = '';
     dom.qHint.hidden = false;
-    if (isDiv()) {
-      var dp = MT.core.divParse(k);
-      MT.visuals.render(dom.qHint, 'groups', { a: dp.divisor, b: dp.quot, animate: true, compact: true, story: 'share' });
-      var dtip = document.createElement('div');
-      dtip.className = 'hint-cap';
-      dtip.textContent = '💡 ' + dp.think;
-      dom.qHint.appendChild(dtip);
-      MT.speech.warmup();
-      MT.speech.play(dp.read, 'calc');
-    } else {
-      var f = MT.core.parse(k);
-      MT.visuals.render(dom.qHint, 'array', { a: f.a, b: f.b, animate: true, compact: true });
-      var tip = document.createElement('div');
-      tip.className = 'hint-cap';
-      tip.textContent = '一共 ' + (f.a * f.b) + ' 个';
-      dom.qHint.appendChild(tip);
-      MT.speech.warmup();
-      MT.speech.play(MT.core.read(f.a, f.b), 'koujue');
-    }
+    var fact = sub().fact(k);
+    MT.visuals.render(dom.qHint, fact.helpViz.type, fact.helpViz.opts);
+    var tip = document.createElement('div');
+    tip.className = 'hint-cap';
+    tip.textContent = fact.helpCaption;
+    dom.qHint.appendChild(tip);
+    MT.speech.warmup();
+    MT.speech.play(fact.speak, fact.scene);
     dom.qInput.className = 'q-input is-empty';
     dom.qInput.textContent = '';
     renderInput();
@@ -508,6 +406,7 @@
   function finish() {
     clearTimer();
     S.active = false;
+    MT.bus.emit('quiz:end', {});
     dom.quizPlay.hidden = true;
     var box = dom.quizResult;
     box.hidden = false;
@@ -522,11 +421,11 @@
       if (S.failed) {
         box.innerHTML = '<div class="res-title">这轮先停一下</div>' +
           '<div class="res-line">' + summary + '</div>' +
-          '<div class="res-line res-sub">错了超过 3 次，这轮先停。</div>';
+          '<div class="res-line res-sub">3 次挑战机会用完啦，这轮先停。</div>';
         addResAction('回到错题本', function () { box.hidden = true; showWrongList(); });
         return;
       }
-      var wrMap = getWrongMap();
+      var wrMap = bags().wrong;
       var now = Object.keys(wrMap).length;
       var cut = S.wrongBefore - now;
       box.innerHTML = '<div class="res-title">练完啦！太棒了！</div>' +
@@ -543,7 +442,7 @@
     }
 
     var n = S.level;
-    var lvs = getLevels();
+    var lvs = bags().levels;
     var lv = lvs[n];
     lv.roundsPlayed++;
 
@@ -634,7 +533,7 @@
   }
 
   function startLevel(n) {
-    var lv = MT.progress.levels[n];
+    var lv = bags().levels[n];
     if (!lv || !lv.unlocked) return;
     S.level = n;
     S.wrongMode = false;
@@ -644,7 +543,7 @@
   }
 
   function startWrong() {
-    var wrMap = getWrongMap();
+    var wrMap = bags().wrong;
     var keys = Object.keys(wrMap);
     if (!keys.length) return;
     S.wrongMode = true;
@@ -661,7 +560,7 @@
 
   function showWrongList() {
     var list = dom.wrongList;
-    var wrMap = getWrongMap();
+    var wrMap = bags().wrong;
     var keys = Object.keys(wrMap);
     keys.sort(function (x, y) {
       return (wrMap[y].wrongCount || 0) - (wrMap[x].wrongCount || 0);
@@ -676,15 +575,9 @@
         var b = document.createElement('button');
         b.type = 'button';
         b.className = 'wrong-item';
-        if (isDiv()) {
-          var dp = MT.core.divParse(k);
-          b.innerHTML = '<span class="wi-eq">' + dp.n + ' ÷ ' + dp.divisor + ' = ?</span>' +
-            '<span class="wi-count">错 ' + wrMap[k].wrongCount + ' 次</span>';
-        } else {
-          var f = MT.core.parse(k);
-          b.innerHTML = '<span class="wi-eq">' + f.a + ' × ' + f.b + ' = ?</span>' +
-            '<span class="wi-count">错 ' + wrMap[k].wrongCount + ' 次</span>';
-        }
+        var item = sub().fact(k);
+        b.innerHTML = '<span class="wi-eq">' + item.listHTML + '</span>' +
+          '<span class="wi-count">错 ' + wrMap[k].wrongCount + ' 次</span>';
         b.addEventListener('click', function () {
           var box = dom.wrongDetail;
           box.hidden = false;
@@ -706,13 +599,8 @@
           viz.className = 'detail-viz';
           box.appendChild(viz);
           var draw = function (t) {
-            if (isDiv()) {
-              var dp2 = MT.core.divParse(k);
-              MT.visuals.render(viz, t, { a: dp2.divisor, b: dp2.quot, story: 'share', animate: true });
-            } else {
-              var f2 = MT.core.parse(k);
-              MT.visuals.render(viz, t, { a: f2.a, b: f2.b, animate: true });
-            }
+            var view = sub().fact(k).viz(t, true);
+            MT.visuals.render(viz, view.type, view.opts);
           };
           seg.addEventListener('click', function (e) {
             var tg = e.target;
@@ -727,13 +615,8 @@
           draw(type);
           MT.speech.warmup();
           MT.sound.play('click');
-          if (isDiv()) {
-            var dp3 = MT.core.divParse(k);
-            MT.speech.play(dp3.read, 'calc');
-          } else {
-            var f3 = MT.core.parse(k);
-            MT.speech.play(MT.core.read(f3.a, f3.b), 'koujue');
-          }
+          var heard = sub().fact(k);
+          MT.speech.play(heard.speak, heard.scene);
         });
         list.appendChild(b);
       })(keys[i]);
@@ -772,14 +655,6 @@
     }
   }
 
-  function freshLevels() {
-    var lv = {};
-    for (var n = 1; n <= 9; n++) {
-      lv[n] = { unlocked: n === 1, passed: false, bestStars: 0, roundsPlayed: 0 };
-    }
-    return lv;
-  }
-
   function resetOpen() {
     if (!dom.resetModal) return;
     dom.resetModal.hidden = false;
@@ -794,11 +669,7 @@
 
   function resetLevels() {
     MT.speech.stop();
-    if (isDiv()) {
-      MT.progress.divLevels = freshLevels();
-    } else {
-      MT.progress.levels = freshLevels();
-    }
+    sub().resetLevels(MT.progress);
     MT.storage.save();
     MT.bus.emit('progress:change', {});
     resetClose();
@@ -905,7 +776,7 @@
         var t = e.target.closest ? e.target.closest('.lv') : null;
         if (!t) return;
         var n = parseInt(t.dataset.level, 10);
-        var lv = MT.progress.levels[n];
+        var lv = bags().levels[n];
         if (!lv.unlocked) {
           dom.levelBar.classList.remove('is-nudge');
           void dom.levelBar.offsetWidth;
@@ -963,6 +834,10 @@
       S.active = false;
       if (dom.quizPlay) dom.quizPlay.hidden = true;
       if (dom.quizResult) dom.quizResult.hidden = true;
+    },
+
+    isActive: function () {
+      return !!S.active;
     },
 
     planRound: planRound,

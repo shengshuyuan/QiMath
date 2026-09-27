@@ -3,41 +3,6 @@
 
   var dom = {};
 
-  var BUBBLE_TARGETS = [
-    12, 16, 18, 20, 24, 27, 28, 30, 32, 36, 40, 42, 45, 48, 54, 56, 63, 72, 8, 9, 15
-  ];
-
-  var IMPOSTOR_TRAPS = [
-    { a: 7, b: 8, correct: 56, fake: 54, note: '七八五十六，容易和六九五十四混淆！' },
-    { a: 6, b: 7, correct: 42, fake: 48, note: '六七四十二，容易和六八四十八混淆！' },
-    { a: 4, b: 8, correct: 32, fake: 36, note: '四八三十二，容易和四九三十六混淆！' },
-    { a: 8, b: 8, correct: 64, fake: 62, note: '八八六十四，得数是双数 64 哦！' },
-    { a: 6, b: 9, correct: 54, fake: 56, note: '六九五十四，不是 56 哦！' },
-    { a: 6, b: 6, correct: 36, fake: 32, note: '六六三十六，是个漂亮的平方数！' },
-    { a: 3, b: 8, correct: 24, fake: 26, note: '三八二十四，可别粗心算成 26 啦！' },
-    { a: 7, b: 7, correct: 49, fake: 47, note: '七七四十九，不是 47 哦！' },
-    { a: 4, b: 9, correct: 36, fake: 38, note: '四九三十六，个位是 6 哦！' },
-    { a: 8, b: 9, correct: 72, fake: 74, note: '八九七十二，十位和个位相加等于 9！' },
-    { a: 7, b: 9, correct: 63, fake: 64, note: '七九六十三，容易和八八六十四混淆！' },
-    { a: 3, b: 9, correct: 27, fake: 28, note: '三九二十七，各位数字相加是 9！' },
-    { a: 6, b: 8, correct: 48, fake: 46, note: '六八四十八，可不是 46 哦！' },
-    { a: 5, b: 7, correct: 35, fake: 30, note: '五七三十五，5乘单数个位一定是 5！' },
-    { a: 9, b: 9, correct: 81, fake: 89, note: '九九八十一，是口诀表最大的一个！' }
-  ];
-
-  function haptic(type) {
-    var st = MT.progress && MT.progress.settings;
-    if (st && st.hapticOn === 'off') return;
-    if (!('vibrate' in navigator)) return;
-    try {
-      if (type === 'tap') navigator.vibrate(10);
-      else if (type === 'ok') navigator.vibrate([20, 30, 20]);
-      else if (type === 'bad') navigator.vibrate([45, 35, 45]);
-    } catch (e) {}
-  }
-
-  /* ---------- 内存状态（在标签切换时缓存，除非刷新网页） ---------- */
-
   var S = {
     submode: 'bubbles',
     timer: null,
@@ -77,78 +42,6 @@
      游戏 1：气球爆破（逆向因数找朋友）
      ============================================================== */
 
-  function isDiv() {
-    return MT.progress && MT.progress.settings && MT.progress.settings.op === 'div';
-  }
-
-  var DIV_BUBBLE_TARGETS = [2, 3, 4, 5, 6, 7, 8, 9];
-
-  function getAllDivisorsFor(targetQuot) {
-    var list = [];
-    for (var d = 1; d <= 9; d++) {
-      var n = d * targetQuot;
-      if (n <= 81) {
-        list.push({ n: n, divisor: d, quot: targetQuot, text: n + ' ÷ ' + d });
-      }
-    }
-    return list;
-  }
-
-  function getDistractorDivisors(targetQuot, count) {
-    var pool = [];
-    for (var d = 1; d <= 9; d++) {
-      for (var q = 1; q <= 9; q++) {
-        if (q !== targetQuot) {
-          pool.push({
-            n: d * q,
-            divisor: d,
-            quot: q,
-            text: (d * q) + ' ÷ ' + d,
-            diff: Math.abs(q - targetQuot)
-          });
-        }
-      }
-    }
-    pool = MT.core.shuffle(pool);
-    var close = pool.filter(function (it) { return it.diff > 0 && it.diff <= 2; });
-    var others = pool.filter(function (it) { return it.diff > 2; });
-    var selected = close.slice(0, count);
-    if (selected.length < count) {
-      selected = selected.concat(others.slice(0, count - selected.length));
-    }
-    return selected;
-  }
-
-  function getAllMultipliersFor(target) {
-    var list = [];
-    for (var a = 1; a <= 9; a++) {
-      for (var b = 1; b <= 9; b++) {
-        if (a * b === target) list.push({ a: a, b: b, text: a + ' × ' + b });
-      }
-    }
-    return list;
-  }
-
-  function getDistractorMultipliers(target, count) {
-    var pool = [];
-    for (var a = 1; a <= 9; a++) {
-      for (var b = 1; b <= 9; b++) {
-        if (a * b !== target) {
-          pool.push({ a: a, b: b, prod: a * b, diff: Math.abs(a * b - target), text: a + ' × ' + b });
-        }
-      }
-    }
-    pool = MT.core.shuffle(pool);
-    // 优先选差值在 12 以内的迷惑性因数（如目标 24，出现 3×7=21 或 4×7=28）
-    var close = pool.filter(function (it) { return it.diff > 0 && it.diff <= 12; });
-    var others = pool.filter(function (it) { return it.diff > 12; });
-    var selected = close.slice(0, count);
-    if (selected.length < count) {
-      selected = selected.concat(others.slice(0, count - selected.length));
-    }
-    return selected;
-  }
-
   function startBubbleRound(roundIdx) {
     clearTimer();
     var bState = S.bubbles;
@@ -156,96 +49,15 @@
     bState.isRoundClear = false;
     bState.isGameComplete = false;
     bState.foundCount = 0;
-    bState.currentOp = isDiv() ? 'div' : 'mul';
-
-    var divMode = isDiv();
-    if (divMode) {
-      if (roundIdx === 0 || !bState.divTargetList || !bState.divTargetList.length) {
-        bState.divTargetList = MT.core.shuffle(DIV_BUBBLE_TARGETS);
-      }
-      bState.targetNum = bState.divTargetList[roundIdx % bState.divTargetList.length];
-
-      var validD = getAllDivisorsFor(bState.targetNum);
-      validD = MT.core.shuffle(validD);
-
-      var targetCountD = Math.min(validD.length, 3);
-      var targetPairsD = validD.slice(0, targetCountD);
-      bState.targetTotal = targetPairsD.length;
-
-      var distractorCountD = 6 - targetCountD;
-      var distractorsD = getDistractorDivisors(bState.targetNum, distractorCountD);
-
-      var itemsD = [];
-      var idCounterD = 0;
-
-      for (var di = 0; di < targetPairsD.length; di++) {
-        itemsD.push({
-          id: 't_' + (++idCounterD),
-          n: targetPairsD[di].n,
-          divisor: targetPairsD[di].divisor,
-          quot: targetPairsD[di].quot,
-          text: targetPairsD[di].text,
-          isTarget: true,
-          isPopped: false
-        });
-      }
-
-      for (var dj = 0; dj < distractorsD.length; dj++) {
-        itemsD.push({
-          id: 'd_' + (++idCounterD),
-          n: distractorsD[dj].n,
-          divisor: distractorsD[dj].divisor,
-          quot: distractorsD[dj].quot,
-          text: distractorsD[dj].text,
-          isTarget: false,
-          isPopped: false
-        });
-      }
-
-      bState.items = MT.core.shuffle(itemsD);
-    } else {
-      if (roundIdx === 0 || !bState.targetList || !bState.targetList.length) {
-        bState.targetList = MT.core.shuffle(BUBBLE_TARGETS);
-      }
-      bState.targetNum = bState.targetList[roundIdx % bState.targetList.length];
-
-      var valid = getAllMultipliersFor(bState.targetNum);
-      valid = MT.core.shuffle(valid);
-
-      var targetCount = Math.min(valid.length, valid.length >= 3 ? 3 : 2);
-      var targetPairs = valid.slice(0, targetCount);
-      bState.targetTotal = targetPairs.length;
-
-      var distractorCount = 6 - targetCount;
-      var distractors = getDistractorMultipliers(bState.targetNum, distractorCount);
-
-      var items = [];
-      var idCounter = 0;
-
-      for (var i = 0; i < targetPairs.length; i++) {
-        items.push({
-          id: 't_' + (++idCounter),
-          a: targetPairs[i].a,
-          b: targetPairs[i].b,
-          text: targetPairs[i].a + ' × ' + targetPairs[i].b,
-          isTarget: true,
-          isPopped: false
-        });
-      }
-
-      for (var j = 0; j < distractors.length; j++) {
-        items.push({
-          id: 'd_' + (++idCounter),
-          a: distractors[j].a,
-          b: distractors[j].b,
-          text: distractors[j].a + ' × ' + distractors[j].b,
-          isTarget: false,
-          isPopped: false
-        });
-      }
-
-      bState.items = MT.core.shuffle(items);
-    }
+    var pack = MT.op.current().makeBubbles(roundIdx, bState);
+    bState.currentOp = MT.op.current().id;
+    bState.targetNum = pack.targetNum;
+    bState.items = pack.items;
+    bState.targetTotal = pack.total;
+    bState.hudPrefix = pack.prefix;
+    bState.hudSuffix = pack.suffix;
+    bState.summaryNote = pack.summaryNote;
+    bState.summaryLines = pack.summaryLines;
     renderBubblesHUD();
     renderBubblesStage();
   }
@@ -253,15 +65,9 @@
   function renderBubblesHUD() {
     var bState = S.bubbles;
     if (!dom.bubbleTargetNum) return;
-    if (isDiv()) {
-      if (dom.bubbleTargetPrefix) dom.bubbleTargetPrefix.textContent = '找一找商等于';
-      dom.bubbleTargetNum.textContent = bState.targetNum;
-      if (dom.bubbleTargetSuffix) dom.bubbleTargetSuffix.textContent = '的除法气球！';
-    } else {
-      if (dom.bubbleTargetPrefix) dom.bubbleTargetPrefix.textContent = '找一找积等于';
-      dom.bubbleTargetNum.textContent = bState.targetNum;
-      if (dom.bubbleTargetSuffix) dom.bubbleTargetSuffix.textContent = '的气球！';
-    }
+    if (dom.bubbleTargetPrefix) dom.bubbleTargetPrefix.textContent = bState.hudPrefix || '找一找积等于';
+    dom.bubbleTargetNum.textContent = bState.targetNum;
+    if (dom.bubbleTargetSuffix) dom.bubbleTargetSuffix.textContent = bState.hudSuffix || '的气球！';
     dom.bubbleFoundCount.textContent = bState.foundCount;
     dom.bubbleTotalTarget.textContent = bState.targetTotal;
     dom.bubbleRoundNum.textContent = '第 ' + (bState.roundIdx + 1) + ' / ' + bState.totalRounds + ' 轮';
@@ -319,11 +125,7 @@
 
       haptic('tap');
       MT.sound.play('pop');
-      if (isDiv()) {
-        MT.speech.play(item.n + '除以' + MT.core.CN[item.divisor] + '，等于' + MT.core.readNumber(item.quot), 'ok');
-      } else {
-        MT.speech.play(MT.core.read(item.a, item.b), 'ok');
-      }
+      if (item.speak) MT.speech.play(item.speak, item.scene || 'ok');
 
       if (bState.foundCount >= bState.targetTotal) {
         onBubbleRoundClear();
@@ -333,13 +135,7 @@
       void btn.offsetWidth;
       btn.classList.add('is-wobble');
 
-      var msg;
-      if (isDiv()) {
-        msg = item.text + ' = ' + item.quot + '，商不是 ' + bState.targetNum + ' 哦～';
-      } else {
-        var prod = item.a * item.b;
-        msg = item.a + ' × ' + item.b + ' = ' + prod + '，不是 ' + bState.targetNum + ' 哦～';
-      }
+      var msg = item.miss || (item.text + ' 不是这一题哦～');
       showBubbleFeedback(msg, false);
 
       haptic('bad');
@@ -360,19 +156,7 @@
     haptic('ok');
     MT.sound.play('win');
 
-    var formulas = [];
-    if (isDiv()) {
-      var validAllD = getAllDivisorsFor(bState.targetNum);
-      for (var di = 0; di < validAllD.length; di++) {
-        var dp = MT.core.divParts(validAllD[di].divisor, validAllD[di].quot, 'share');
-        formulas.push(validAllD[di].text + ' = ' + bState.targetNum + '（' + dp.chant + '）');
-      }
-    } else {
-      var validAll = getAllMultipliersFor(bState.targetNum);
-      for (var i = 0; i < validAll.length; i++) {
-        formulas.push(validAll[i].a + ' × ' + validAll[i].b + ' = ' + bState.targetNum + '（' + MT.core.koujue(validAll[i].a, validAll[i].b) + '）');
-      }
-    }
+    var formulas = bState.summaryLines || [];
 
     var isLast = bState.roundIdx >= bState.totalRounds - 1;
     if (MT.badges) MT.badges.unlock('bubble_popper');
@@ -380,7 +164,7 @@
     dom.bubbleSummary.hidden = false;
     dom.bubbleSummary.innerHTML =
       '<div class="summary-title">' + (isLast ? '🎉 气球大挑战全部通关！' : '🎈 找齐啦！太棒了！') + '</div>' +
-      '<div class="summary-note">' + (isDiv() ? '商等于 <b>' + bState.targetNum + '</b> 的算式都在这里：' : '能算出 <b>' + bState.targetNum + '</b> 的口诀朋友都在这里：') + '</div>' +
+      '<div class="summary-note">' + (bState.summaryNote || '') + '</div>' +
       '<div class="summary-list">' +
       formulas.map(function (f) { return '<span class="summary-chip">' + f + '</span>'; }).join('') +
       '</div>' +
@@ -416,101 +200,9 @@
     iState.isRoundClear = false;
     iState.isGameComplete = false;
     iState.madeMistake = false;
-    iState.currentOp = isDiv() ? 'div' : 'mul';
-
-    var divMode = isDiv();
-    if (divMode) {
-      if (roundIdx === 0 || !iState.divTrapList || !iState.divTrapList.length) {
-        iState.divTrapList = MT.core.shuffle(MT.core.divImpostors);
-      }
-      var dTrap = iState.divTrapList[roundIdx % iState.divTrapList.length];
-      iState.currentTrap = dTrap;
-
-      var correctPoolD = [];
-      var allDKeys = MT.core.allDivKeys();
-      for (var dki = 0; dki < allDKeys.length; dki++) {
-        var dpk = MT.core.divParse(allDKeys[dki]);
-        if (dpk.n !== dTrap.n || dpk.divisor !== dTrap.divisor) {
-          correctPoolD.push(dpk);
-        }
-      }
-      correctPoolD = MT.core.shuffle(correctPoolD).slice(0, 3);
-
-      var dCards = [
-        {
-          id: 'impostor_card',
-          n: dTrap.n,
-          divisor: dTrap.divisor,
-          correctVal: dTrap.correct,
-          displayVal: dTrap.fake,
-          isImpostor: true,
-          note: dTrap.note,
-          isChecked: false
-        }
-      ];
-
-      for (var cdi = 0; cdi < correctPoolD.length; cdi++) {
-        var cpd = correctPoolD[cdi];
-        dCards.push({
-          id: 'correct_' + cdi,
-          n: cpd.n,
-          divisor: cpd.divisor,
-          correctVal: cpd.quot,
-          displayVal: cpd.quot,
-          isImpostor: false,
-          note: '',
-          isChecked: false
-        });
-      }
-
-      iState.cards = MT.core.shuffle(dCards);
-    } else {
-      if (roundIdx === 0 || !iState.trapList || !iState.trapList.length) {
-        iState.trapList = MT.core.shuffle(IMPOSTOR_TRAPS);
-      }
-      var trap = iState.trapList[roundIdx % iState.trapList.length];
-      iState.currentTrap = trap;
-
-      var correctPool = [];
-      var allKeys = MT.core.triangleKeys();
-      for (var k = 0; k < allKeys.length; k++) {
-        var p = MT.core.parse(allKeys[k]);
-        if (p.a !== trap.a || p.b !== trap.b) {
-          correctPool.push(p);
-        }
-      }
-      correctPool = MT.core.shuffle(correctPool).slice(0, 3);
-
-      var cards = [
-        {
-          id: 'impostor_card',
-          a: trap.a,
-          b: trap.b,
-          correctVal: trap.correct,
-          displayVal: trap.fake,
-          isImpostor: true,
-          note: trap.note,
-          isChecked: false
-        }
-      ];
-
-      for (var i = 0; i < correctPool.length; i++) {
-        var cp = correctPool[i];
-        cards.push({
-          id: 'correct_' + i,
-          a: cp.a,
-          b: cp.b,
-          correctVal: cp.a * cp.b,
-          displayVal: cp.a * cp.b,
-          isImpostor: false,
-          note: '',
-          isChecked: false
-        });
-      }
-
-      iState.cards = MT.core.shuffle(cards);
-    }
-
+    var pack = MT.op.current().makeImpostors(roundIdx, iState);
+    iState.currentOp = MT.op.current().id;
+    iState.cards = pack.cards;
     renderImpostorHUD();
     renderImpostorStage();
   }
@@ -541,7 +233,7 @@
       var formula = document.createElement('div');
       formula.className = 'impostor-formula';
 
-      var leftStr = isDiv() ? (card.n + ' ÷ ' + card.divisor) : (card.a + ' × ' + card.b);
+      var leftStr = card.left;
 
       if (card.isChecked && card.isImpostor) {
         formula.innerHTML = leftStr + ' = ' +
@@ -580,8 +272,7 @@
 
     MT.speech.warmup();
 
-    var divMode = isDiv();
-    var leftStr = divMode ? (card.n + ' ÷ ' + card.divisor) : (card.a + ' × ' + card.b);
+    var leftStr = card.left;
 
     if (card.isImpostor) {
       card.isChecked = true;
@@ -605,11 +296,7 @@
 
       haptic('ok');
       MT.sound.play('win');
-      if (divMode) {
-        MT.speech.play(card.n + '除以' + MT.core.CN[card.divisor] + '，等于' + MT.core.readNumber(card.correctVal), 'ok');
-      } else {
-        MT.speech.play(MT.core.read(card.a, card.b), 'ok');
-      }
+      if (card.speak) MT.speech.play(card.speak, card.scene || 'ok');
 
       onImpostorRoundClear(card);
     } else {
@@ -640,10 +327,7 @@
     if (MT.badges) MT.badges.unlock('impostor_hunter');
     if (isLast && MT.confetti) MT.confetti.burst();
 
-    var divMode = isDiv();
-    var correctFormulaStr = divMode
-      ? ('<b>' + card.n + ' ÷ ' + card.divisor + ' = ' + card.correctVal + '</b>')
-      : ('<b>' + card.a + ' × ' + card.b + ' = ' + card.correctVal + '</b>（' + MT.core.koujue(card.a, card.b) + '）');
+    var correctFormulaStr = '<b>' + card.left + ' = ' + card.correctVal + '</b>' + (card.aside || '');
 
     dom.impostorSummary.hidden = false;
     dom.impostorSummary.innerHTML =
@@ -687,7 +371,7 @@
     dom.viewBubbles.hidden = (mode !== 'bubbles');
     dom.viewImpostor.hidden = (mode !== 'impostor');
 
-    var curOp = isDiv() ? 'div' : 'mul';
+    var curOp = MT.op.current().id;
     if (mode === 'bubbles') {
       if (S.bubbles.currentOp !== curOp || !S.bubbles.items || !S.bubbles.items.length) {
         startBubbleRound(0);
@@ -719,7 +403,7 @@
 
   function resetAll() {
     clearTimer();
-    var curOp = isDiv() ? 'div' : 'mul';
+    var curOp = MT.op.current().id;
     S.bubbles.currentOp = curOp;
     S.bubbles.score = 0;
     S.bubbles.roundIdx = 0;
@@ -784,7 +468,7 @@
     },
 
     resume: function () {
-      var curOp = isDiv() ? 'div' : 'mul';
+      var curOp = MT.op.current().id;
       if (S.submode === 'bubbles') {
         if (S.bubbles.currentOp !== curOp || !S.bubbles.items || !S.bubbles.items.length) {
           startBubbleRound(0);
@@ -800,6 +484,17 @@
           renderImpostorStage();
         }
       }
+    },
+
+    isActive: function () {
+      if (!dom.panel || dom.panel.hidden) return false;
+      if (S.submode === 'bubbles') {
+        return !S.bubbles.isGameComplete && S.bubbles.roundIdx < S.bubbles.totalRounds;
+      }
+      if (S.submode === 'impostor') {
+        return !S.impostor.isGameComplete && S.impostor.roundIdx < S.impostor.totalRounds;
+      }
+      return false;
     },
 
     resetAll: resetAll,

@@ -39,6 +39,7 @@
     if (name === 'explore') MT.explore.redraw();
     if (name === 'table') MT.table.refresh();
     if (name === 'quiz') MT.quiz.refresh();
+    if (MT.bus && MT.bus.emit) MT.bus.emit('tab:change', { tab: name });
     window.scrollTo(0, 0);
   }
 
@@ -57,7 +58,7 @@
     document.body.classList.toggle('op-div', op === 'div');
     var tabTable = document.querySelector('.tab[data-tab="table"]');
     if (tabTable) {
-      tabTable.textContent = (op === 'div') ? '📋 除法表' : '📋 口诀表';
+      tabTable.textContent = (MT.op.current() && MT.op.current().tableTab) || '📋 口诀表';
     }
     var tmSeg = document.querySelector('.seg[data-setting="tableMode"]');
     if (tmSeg) {
@@ -221,7 +222,8 @@
         MT.speech.warmup();
         MT.sound.play('click');
         if (setOp(t.dataset.op) && t.dataset.op === 'div' && current === 'explore' && MT.explore && MT.explore.describe) {
-          MT.speech.play(MT.explore.describe().read, 'calc');
+          var heard = MT.explore.describe();
+          MT.speech.play(heard.read, heard.scene || 'koujue');
         }
       });
     }
@@ -260,12 +262,40 @@
   function registerSW() {
     if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) {
       var refreshing = false;
-      navigator.serviceWorker.addEventListener('controllerchange', function () {
-        if (!refreshing) {
-          refreshing = true;
-          window.location.reload();
+      var pendingReload = false;
+
+      function shouldDeferReload() {
+        if (MT.quiz && MT.quiz.isActive && MT.quiz.isActive()) return true;
+        if (MT.games && MT.games.isActive && MT.games.isActive()) return true;
+        return false;
+      }
+
+      function performReload() {
+        if (refreshing) return;
+        if (shouldDeferReload()) {
+          pendingReload = true;
+          return;
         }
+        refreshing = true;
+        window.location.reload();
+      }
+
+      navigator.serviceWorker.addEventListener('controllerchange', function () {
+        performReload();
       });
+
+      if (MT.bus && MT.bus.on) {
+        MT.bus.on('quiz:end', function () {
+          if (pendingReload) performReload();
+        });
+        MT.bus.on('game:end', function () {
+          if (pendingReload) performReload();
+        });
+        MT.bus.on('tab:change', function () {
+          if (pendingReload) performReload();
+        });
+      }
+
       window.addEventListener('load', function () {
         navigator.serviceWorker.register('./sw.js').then(function (reg) {
           try { reg.update(); } catch (e) {}

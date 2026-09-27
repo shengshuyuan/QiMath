@@ -9,16 +9,12 @@
     return (MT.progress && MT.progress.settings) || {};
   }
 
-  function isDiv() {
-    return settings().op === 'div';
-  }
-
   function story() {
     return settings().divStory === 'measure' ? 'measure' : 'share';
   }
 
-  function parts() {
-    return MT.core.divParts(S.a, S.b, story());
+  function view() {
+    return MT.op.current().explore(S.a, S.b, story());
   }
 
   function num(target, v) {
@@ -39,31 +35,7 @@
   }
 
   function sumline() {
-    var n = S.a * S.b;
-    var commuteHtml = (S.a !== S.b)
-      ? ' · <span class="sum-commute">⇄ ' + (isDiv() ? '对调后：' + MT.core.divParts(S.b, S.a, story()).eq : '交换律：' + S.b + ' × ' + S.a + ' = ' + n) + '</span>'
-      : ' · <span class="sum-commute">⭐ 两个数相同，是正方形</span>';
-    if (isDiv()) {
-      var p = parts();
-      var legend = p.share
-        ? '紫色是分成几份，粉色是每份几个'
-        : '粉色是每份几个，紫色是有几份';
-      dom.sumline.innerHTML =
-        '<div class="sum-row sum-div"><span class="tk-brand">' + p.n + '</span> <span class="op">÷</span> ' +
-        '<span class="tk-accent">' + p.divisor + '</span> <span class="op">=</span> <span class="tk-quot">' + p.quot + '</span></div>' +
-        '<div class="sum-desc"><span class="sum-tag">算式名称</span>被除数 <b>' + p.n + '</b> ÷ 除数 <b>' + p.divisor + '</b> = 商 <b>' + p.quot + '</b></div>' +
-        '<div class="sum-think">💡 用乘法口诀求商：<b>' + p.think + '</b></div>' +
-        '<div class="sum-bridge" style="font-size:13px; color:var(--ink-2); margin-top:3px;">🔗 乘除互逆：同一副图，既是 <b>' + S.a + ' × ' + S.b + ' = ' + n + '</b>，也是 <b>' + p.n + ' ÷ ' + p.divisor + ' = ' + p.quot + '</b></div>' +
-        '<div class="sum-legend">' + legend + commuteHtml + '</div>';
-      return;
-    }
-    var add = [];
-    for (var i = 0; i < S.a; i++) add.push('<span class="tk-accent">' + S.b + '</span>');
-    dom.sumline.innerHTML =
-      '<div class="sum-row sum-add">' + add.join(' <span class="op">+</span> ') + ' <span class="op">=</span> ' + n + '</div>' +
-      '<div class="sum-row sum-mul"><span class="tk-brand">' + S.a + '</span> <span class="op">×</span> ' +
-      '<span class="tk-accent">' + S.b + '</span> <span class="op">=</span> ' + n + '</div>' +
-      '<div class="sum-legend">紫色是有几行几组，粉色是每行有几个' + commuteHtml + '</div>';
+    dom.sumline.innerHTML = view().sumHTML;
   }
 
   function swapFactors() {
@@ -79,21 +51,18 @@
     render(true);
     if (MT.badges) MT.badges.unlock('swap_magician');
     MT.speech.warmup();
-    var line = isDiv()
-      ? parts().readSame
-      : (MT.core.CN[S.a] + '乘' + MT.core.CN[S.b] + '，同样等于' + MT.core.readNumber(S.a * S.b));
-    MT.speech.play(line, 'ok');
+    var v = view();
+    MT.speech.play(v.swapSpeech, v.scene);
   }
 
   function paintChrome() {
-    var div = isDiv();
-    var share = story() !== 'measure';
-    if (dom.labelA) dom.labelA.textContent = div ? (share ? '分成几份？' : '有几份？') : '有几行？';
-    if (dom.labelB) dom.labelB.textContent = div ? '每份几个？' : '每行有几个？';
-    if (dom.storySeg) dom.storySeg.hidden = !div;
+    var v = view();
+    if (dom.labelA) dom.labelA.textContent = v.labelA;
+    if (dom.labelB) dom.labelB.textContent = v.labelB;
+    if (dom.storySeg) dom.storySeg.hidden = !v.showStory;
     if (dom.btnSwap) {
-      dom.btnSwap.textContent = div ? '对调除数和商 ⇄' : '交换因数 ⇄';
-      dom.btnSwap.title = div ? '12÷3=4 和 12÷4=3 是同一张图' : '交换行与列 (乘法交换律)';
+      dom.btnSwap.textContent = v.swapLabel;
+      dom.btnSwap.title = v.swapTitle;
     }
     if (dom.storySeg) {
       var kids = dom.storySeg.children;
@@ -103,8 +72,8 @@
         kids[i].setAttribute('aria-pressed', on ? 'true' : 'false');
       }
     }
-    var aWord = div ? (share ? '份数 ' : '份数 ') : '行数 ';
-    var bWord = div ? '每份 ' : '每行 ';
+    var aWord = v.showStory ? '份数 ' : '行数 ';
+    var bWord = v.showStory ? '每份 ' : '每行 ';
     ['a', 'b'].forEach(function (target) {
       var box = dom['nums-' + target];
       if (!box) return;
@@ -113,22 +82,23 @@
         box.children[j].setAttribute('aria-label', prefix + box.children[j].dataset.v);
       }
       var slider = dom['slider-' + target];
-      if (slider) slider.setAttribute('aria-label', target === 'a' ? (div ? (share ? '分成几份' : '有几份') : '行数') : (div ? '每份几个' : '每行个数'));
+      if (slider) slider.setAttribute('aria-label', target === 'a' ? v.labelA : v.labelB);
     });
     var minusA = document.querySelector('.mini[data-factor="a"][data-delta="-1"]');
     var plusA = document.querySelector('.mini[data-factor="a"][data-delta="1"]');
     var minusB = document.querySelector('.mini[data-factor="b"][data-delta="-1"]');
     var plusB = document.querySelector('.mini[data-factor="b"][data-delta="1"]');
-    if (minusA) minusA.setAttribute('aria-label', div ? '减少一份' : '减少一行');
-    if (plusA) plusA.setAttribute('aria-label', div ? '增加一份' : '增加一行');
-    if (minusB) minusB.setAttribute('aria-label', div ? '每份减少一个' : '减少一个');
-    if (plusB) plusB.setAttribute('aria-label', div ? '每份增加一个' : '增加一个');
+    if (minusA) minusA.setAttribute('aria-label', v.showStory ? '减少一份' : '减少一行');
+    if (plusA) plusA.setAttribute('aria-label', v.showStory ? '增加一份' : '增加一行');
+    if (minusB) minusB.setAttribute('aria-label', v.showStory ? '每份减少一个' : '减少一个');
+    if (plusB) plusB.setAttribute('aria-label', v.showStory ? '每份增加一个' : '增加一个');
   }
 
   // 拖动滑块时关掉逐个弹出的动画，避免动画永远播不完导致的抖动/掉帧
   function render(animate) {
-    var opts = { a: S.a, b: S.b, animate: animate !== false };
-    if (isDiv()) opts.story = story();
+    var v = view();
+    var opts = v.viz;
+    opts.animate = animate !== false;
     MT.visuals.render(dom.stage, S.view, opts);
     paintChrome();
     sumline();
@@ -246,7 +216,8 @@
 
       document.getElementById('btn-say').addEventListener('click', function () {
         MT.speech.warmup();
-        MT.speech.play(isDiv() ? parts().read : MT.core.read(S.a, S.b), isDiv() ? 'calc' : 'koujue');
+        var heard = view();
+        MT.speech.play(heard.speech, heard.scene);
       });
 
       document.getElementById('btn-replay').addEventListener('click', function () {
@@ -272,7 +243,8 @@
           MT.speech.warmup();
           MT.sound.play('click');
           render(true);
-          MT.speech.play(parts().read, 'calc');
+          var heard = view();
+          MT.speech.play(heard.speech, heard.scene);
         });
       }
 
@@ -318,15 +290,14 @@
     redraw: function () { render(false); },
 
     describe: function () {
-      var div = isDiv();
-      var p = div ? parts() : null;
+      var v = view();
       return {
-        op: div ? 'div' : 'mul',
+        op: MT.op.current().id,
         story: story(),
         a: S.a,
         b: S.b,
-        eq: div ? p.eq : (S.a + ' × ' + S.b + ' = ' + (S.a * S.b)),
-        read: div ? p.read : MT.core.read(S.a, S.b)
+        read: v.speech,
+        scene: v.scene
       };
     }
   };

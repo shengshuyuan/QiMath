@@ -49,7 +49,7 @@
 
   .pt-grid {
     display: grid;
-    grid-template-columns: 8mm repeat(9, 1fr);
+    grid-template-columns: 10mm repeat(9, 1fr);
     gap: 1mm;
   }
 
@@ -62,7 +62,7 @@
     font-size: 11pt;
   }
 
-  .pt-head { background: #F0F0F0 !important; font-weight: 500; }
+  .pt-head { background: #F0F0F0 !important; font-weight: 500; font-size: 10pt; }
   .pt-corner { border-color: #333; }
   .pt-blank { background: #fff !important; }
 

@@ -68,8 +68,11 @@
     if (!map) return out;
     for (var k in map) {
       if (!Object.prototype.hasOwnProperty.call(map, k)) continue;
-      var f = MT.core.parse(k);
-      var ck = (f.a && f.b) ? MT.core.canon(f.a, f.b) : k;
+      var ck = k;
+      if (String(k).indexOf('x') !== -1 && MT.mul) {
+        var f = MT.mul.parse(k);
+        if (f.a && f.b) ck = MT.mul.canon(f.a, f.b);
+      }
       if (!Object.prototype.hasOwnProperty.call(out, ck)) out[ck] = map[k];
       else if (merge) out[ck] = merge(out[ck], map[k]);
     }

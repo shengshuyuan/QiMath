@@ -6,37 +6,25 @@
   var dom = {};
   var lastCell = null;
 
-  function isDiv() {
-    return MT.progress && MT.progress.settings && MT.progress.settings.op === 'div';
-  }
-
-  function isTriangle() {
-    var st = MT.progress && MT.progress.settings;
-    return !st || st.tableMode !== 'full';
-  }
-
   function isSheetMode() {
     return !!(window.matchMedia && window.matchMedia('(max-width: 639px)').matches);
   }
 
   function build() {
     var t = dom.table;
+    var mod = MT.op.current();
     t.innerHTML = '';
-    var divMode = isDiv();
-    var tri = !divMode && isTriangle();
 
     var thead = document.createElement('thead');
     var hr = document.createElement('tr');
     var corner = document.createElement('th');
-    corner.textContent = divMode ? '÷' : '×';
+    corner.textContent = mod.corner;
     corner.className = 'table-corner';
-    corner.title = divMode ? '表内除法 81 式整理表' : '乘法口诀表';
     hr.appendChild(corner);
     for (var a = 1; a <= 9; a++) {
       var th = document.createElement('th');
-      th.textContent = divMode ? '商' + a : a;
+      th.textContent = mod.colHead(a);
       th.scope = 'col';
-      th.title = divMode ? '商是 ' + a : '因数 ' + a;
       hr.appendChild(th);
     }
     thead.appendChild(hr);
@@ -46,33 +34,24 @@
     for (var b = 1; b <= 9; b++) {
       var tr = document.createElement('tr');
       var rh = document.createElement('th');
-      rh.textContent = divMode ? '÷' + b : b;
+      rh.textContent = mod.rowHead(b);
       rh.scope = 'row';
-      rh.title = divMode ? '除数是 ' + b : '因数 ' + b;
       tr.appendChild(rh);
       for (var a2 = 1; a2 <= 9; a2++) {
         var td = document.createElement('td');
-        if (tri && a2 > b) {
+        if (mod.omit(a2, b)) {
           var empty = document.createElement('div');
           empty.className = 'cell-empty';
           td.appendChild(empty);
         } else {
+          var spec = mod.cell(a2, b);
           var cell = document.createElement('button');
           cell.type = 'button';
-          cell.className = 'cell' + (divMode ? ' is-div-cell' : '');
+          cell.className = 'cell' + (mod.id === 'div' ? ' is-div-cell' : '');
           cell.dataset.a = a2;
           cell.dataset.b = b;
-          if (divMode) {
-            cell.innerHTML =
-              '<div class="div-cell-inner">' +
-              '<span class="div-cell-eq">' + (a2 * b) + '÷' + b + '</span>' +
-              '<span class="div-cell-ans">=' + a2 + '</span>' +
-              '</div>';
-            cell.setAttribute('aria-label', (a2 * b) + '除以' + b + '等于' + a2);
-          } else {
-            cell.textContent = a2 * b;
-            cell.setAttribute('aria-label', MT.core.koujue(a2, b));
-          }
+          cell.innerHTML = spec.html;
+          cell.setAttribute('aria-label', spec.aria);
           td.appendChild(cell);
         }
         tr.appendChild(td);
@@ -84,22 +63,17 @@
   }
 
   function cellState(a, b) {
-    var p = MT.progress;
-    if (isDiv()) {
-      var dk = (a * b) + 'd' + b;
-      if (p.divWrong && p.divWrong[dk]) return 'is-wrong';
-      if (p.divNeedsPractice && p.divNeedsPractice[dk]) return 'is-practice';
-      if (p.divMastered && p.divMastered[dk]) return 'is-mastered';
-      return '';
-    }
-    var k = MT.core.canon(a, b);
-    if (p.wrong[k]) return 'is-wrong';
-    if (p.needsPractice[k]) return 'is-practice';
-    if (p.mastered[k]) return 'is-mastered';
+    var mod = MT.op.current();
+    var book = mod.bag(MT.progress);
+    var k = mod.cellKey(a, b);
+    if (book.wrong[k]) return 'is-wrong';
+    if (book.needs[k]) return 'is-practice';
+    if (book.mastered[k]) return 'is-mastered';
     return '';
   }
 
   function refresh() {
+    if (!dom.table) return;
     var cells = dom.table.querySelectorAll('.cell');
     for (var i = 0; i < cells.length; i++) {
       var c = cells[i];
@@ -109,29 +83,34 @@
       if (st) c.classList.add(st);
       if (cur && cur.a === a && cur.b === b) c.classList.add('is-on');
     }
-    if (isDiv()) {
-      var divKeys = MT.core.allDivKeys();
-      var dn = 0;
-      for (var di = 0; di < divKeys.length; di++) {
-        if (MT.progress.divMastered && MT.progress.divMastered[divKeys[di]]) dn++;
-      }
-      dom.stat.textContent = '表内除法算式整理表 · 已掌握 ' + dn + ' / ' + divKeys.length;
-    } else {
-      var keys = MT.core.triangleKeys();
-      var n = 0;
-      for (var j = 0; j < keys.length; j++) {
-        if (MT.progress.mastered[keys[j]]) n++;
-      }
-      dom.stat.textContent = '乘法口诀表 · 已掌握 ' + n + ' / ' + keys.length;
+    if (dom.stat) dom.stat.textContent = MT.op.current().stat(MT.progress);
+    updateScrollHint();
+  }
+
+  function updateScrollHint() {
+    if (!dom.scrollHint || !dom.wrap) return;
+    var canScroll = dom.wrap.scrollWidth > dom.wrap.clientWidth + 6;
+    if (!canScroll) {
+      dom.scrollHint.hidden = true;
+      return;
     }
+    var atEnd = (dom.wrap.scrollLeft + dom.wrap.clientWidth) >= (dom.wrap.scrollWidth - 10);
+    if (atEnd) {
+      dom.scrollHint.textContent = '👈 滑动查看前面列';
+    } else {
+      dom.scrollHint.textContent = '👈 左右滑动查看完整表格 👉';
+    }
+    dom.scrollHint.hidden = false;
   }
 
   function renderDetail() {
     if (!cur) return;
     var a = cur.a, b = cur.b;
     var body = dom.detailBody;
-    var divMode = isDiv();
-    var p = MT.progress;
+    var mod = MT.op.current();
+    var info = mod.detail(a, b, MT.progress);
+    var book = mod.bag(MT.progress);
+    var k = info.key;
 
     body.innerHTML = '';
 
@@ -139,36 +118,21 @@
     head.className = 'detail-head';
     var eq = document.createElement('div');
     eq.className = 'detail-eq';
+    eq.innerHTML = info.eqHTML;
 
     var kj = document.createElement('div');
     kj.className = 'detail-koujue';
-
-    var k;
-    if (divMode) {
-      var nVal = a * b;
-      k = nVal + 'd' + b;
-      var dBadge = (p.divMastered && p.divMastered[k]) ? '已掌握' :
-        ((p.divWrong && p.divWrong[k]) ? '答错过' :
-        ((p.divNeedsPractice && p.divNeedsPractice[k]) ? '需再练' : ''));
-      eq.innerHTML = '<span class="tk-brand">' + nVal + '</span> ÷ <span class="tk-accent">' + b + '</span> = ' + a;
-      var dParts = MT.core.divParts(b, a, 'share');
-      kj.textContent = '💡 用乘法口诀求商：想' + dParts.chant + '，商是 ' + a + (dBadge ? '　' + dBadge : '');
-    } else {
-      k = MT.core.canon(a, b);
-      var badge = p.mastered[k] ? '已掌握' : (p.wrong[k] ? '答错过' : (p.needsPractice[k] ? '需再练' : ''));
-      eq.innerHTML = '<span class="tk-brand">' + a + '</span> × <span class="tk-accent">' + b + '</span> = ' + (a * b);
-      kj.textContent = MT.core.koujue(a, b) + (badge ? '　' + badge : '');
-    }
+    kj.textContent = info.koujueText;
 
     head.appendChild(eq);
     head.appendChild(kj);
     body.appendChild(head);
 
-    if (divMode) {
+    if (info.nameHTML) {
       var nameRow = document.createElement('div');
       nameRow.className = 'sum-desc';
       nameRow.style.marginBottom = '10px';
-      nameRow.innerHTML = '<span class="sum-tag">算式名称</span>被除数 <b>' + (a * b) + '</b> ÷ 除数 <b>' + b + '</b> = 商 <b>' + a + '</b>';
+      nameRow.innerHTML = info.nameHTML;
       body.appendChild(nameRow);
     }
 
@@ -198,41 +162,25 @@
     bSay.textContent = '读一遍';
     bSay.addEventListener('click', function () {
       MT.speech.warmup();
-      if (divMode) {
-        var dp = MT.core.divParts(b, a, 'share');
-        MT.speech.play(dp.read, 'calc');
-      } else {
-        MT.speech.play(MT.core.read(a, b), 'koujue');
-      }
+      var heard = MT.op.current().speakCell(a, b);
+      MT.speech.play(heard.text, heard.scene);
     });
     acts.appendChild(bSay);
 
     var bOk = document.createElement('button');
     bOk.type = 'button';
     bOk.className = 'btn';
-    var isM = divMode ? (p.divMastered && p.divMastered[k]) : p.mastered[k];
+    var isM = !!book.mastered[k];
     bOk.textContent = isM ? '取消掌握' : '已掌握';
     bOk.addEventListener('click', function () {
       MT.sound.play('click');
-      if (divMode) {
-        p.divMastered = p.divMastered || {};
-        p.divNeedsPractice = p.divNeedsPractice || {};
-        p.divWrong = p.divWrong || {};
-        if (p.divMastered[k]) {
-          delete p.divMastered[k];
-        } else {
-          p.divMastered[k] = true;
-          delete p.divNeedsPractice[k];
-          delete p.divWrong[k];
-        }
+      var live = MT.op.current().bag(MT.progress);
+      if (live.mastered[k]) {
+        delete live.mastered[k];
       } else {
-        if (p.mastered[k]) {
-          delete p.mastered[k];
-        } else {
-          p.mastered[k] = true;
-          delete p.needsPractice[k];
-          delete p.wrong[k];
-        }
+        live.mastered[k] = true;
+        delete live.needs[k];
+        delete live.wrong[k];
       }
       MT.storage.save();
       MT.bus.emit('progress:change', { key: k });
@@ -242,26 +190,16 @@
     var bAgain = document.createElement('button');
     bAgain.type = 'button';
     bAgain.className = 'btn';
-    var isNP = divMode ? (p.divNeedsPractice && p.divNeedsPractice[k]) : p.needsPractice[k];
+    var isNP = !!book.needs[k];
     bAgain.textContent = isNP ? '取消标记' : '需再练';
     bAgain.addEventListener('click', function () {
       MT.sound.play('click');
-      if (divMode) {
-        p.divMastered = p.divMastered || {};
-        p.divNeedsPractice = p.divNeedsPractice || {};
-        if (p.divNeedsPractice[k]) {
-          delete p.divNeedsPractice[k];
-        } else {
-          p.divNeedsPractice[k] = true;
-          delete p.divMastered[k];
-        }
+      var live = MT.op.current().bag(MT.progress);
+      if (live.needs[k]) {
+        delete live.needs[k];
       } else {
-        if (p.needsPractice[k]) {
-          delete p.needsPractice[k];
-        } else {
-          p.needsPractice[k] = true;
-          delete p.mastered[k];
-        }
+        live.needs[k] = true;
+        delete live.mastered[k];
       }
       MT.storage.save();
       MT.bus.emit('progress:change', { key: k });
@@ -289,11 +227,8 @@
     if (!cur) return;
     var box = dom.detailBody.querySelector('.detail-viz');
     if (!box) return;
-    if (isDiv()) {
-      MT.visuals.render(box, vizType, { a: cur.b, b: cur.a, story: 'share', animate: true });
-    } else {
-      MT.visuals.render(box, vizType, { a: cur.a, b: cur.b, animate: true });
-    }
+    var view = MT.op.current().detail(cur.a, cur.b, MT.progress).viz(vizType, true);
+    MT.visuals.render(box, view.type, view.opts);
   }
 
   // 窗口在桌面/手机宽度之间变化时，同步弹层相关的状态
@@ -319,7 +254,8 @@
     refresh();
     MT.speech.warmup();
     MT.sound.play('click');
-    MT.speech.play(MT.core.read(a, b), 'koujue');
+    var heard = MT.op.current().speakCell(a, b);
+    MT.speech.play(heard.text, heard.scene);
     if (sheet && dom.detailClose) {
       try { dom.detailClose.focus(); } catch (e) {}
     }
@@ -342,6 +278,8 @@
     init: function () {
       dom.table = document.getElementById('mul-table');
       dom.stat = document.getElementById('table-stat');
+      dom.scrollHint = document.getElementById('table-scroll-hint');
+      dom.wrap = document.getElementById('table-wrap') || document.querySelector('.table-wrap');
       dom.detail = document.getElementById('table-detail');
       dom.detailBody = document.getElementById('detail-body');
       dom.detailClose = document.getElementById('detail-close');
@@ -349,10 +287,15 @@
       dom.split = document.querySelector('.table-split');
 
       dom.table.addEventListener('click', function (e) {
-        var t = e.target;
+        var t = e.target && e.target.closest ? e.target.closest('.cell') : null;
         if (!t || !t.dataset || !t.dataset.a) return;
         open(parseInt(t.dataset.a, 10), parseInt(t.dataset.b, 10), t);
       });
+
+      if (dom.wrap) {
+        dom.wrap.addEventListener('scroll', updateScrollHint, { passive: true });
+      }
+      window.addEventListener('resize', updateScrollHint);
 
       dom.detailClose.addEventListener('click', close);
       if (dom.backdrop) dom.backdrop.addEventListener('click', close);
@@ -375,6 +318,7 @@
     redraw: function () {
       syncMode();
       drawViz();
+      updateScrollHint();
     }
   };
 })(window.MT = window.MT || {});
