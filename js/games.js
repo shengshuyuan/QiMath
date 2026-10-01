@@ -159,6 +159,10 @@
     var formulas = bState.summaryLines || [];
 
     var isLast = bState.roundIdx >= bState.totalRounds - 1;
+    if (isLast) {
+      bState.isGameComplete = true;
+      if (MT.bus && MT.bus.emit) MT.bus.emit('game:end', {});
+    }
     if (MT.badges) MT.badges.unlock('bubble_popper');
     if (isLast && MT.confetti) MT.confetti.burst();
     dom.bubbleSummary.hidden = false;
@@ -324,6 +328,10 @@
   function onImpostorRoundClear(card) {
     var iState = S.impostor;
     var isLast = iState.roundIdx >= iState.totalRounds - 1;
+    if (isLast) {
+      iState.isGameComplete = true;
+      if (MT.bus && MT.bus.emit) MT.bus.emit('game:end', {});
+    }
     if (MT.badges) MT.badges.unlock('impostor_hunter');
     if (isLast && MT.confetti) MT.confetti.burst();
 
@@ -489,10 +497,10 @@
     isActive: function () {
       if (!dom.panel || dom.panel.hidden) return false;
       if (S.submode === 'bubbles') {
-        return !S.bubbles.isGameComplete && S.bubbles.roundIdx < S.bubbles.totalRounds;
+        return !S.bubbles.isGameComplete && !S.bubbles.isRoundClear && S.bubbles.roundIdx < S.bubbles.totalRounds;
       }
       if (S.submode === 'impostor') {
-        return !S.impostor.isGameComplete && S.impostor.roundIdx < S.impostor.totalRounds;
+        return !S.impostor.isGameComplete && !S.impostor.isRoundClear && S.impostor.roundIdx < S.impostor.totalRounds;
       }
       return false;
     },

@@ -174,6 +174,9 @@
         modal.addEventListener('click', function (e) {
           if (e.target === modal) closeModal();
         });
+        document.addEventListener('keydown', function (e) {
+          if (e.key === 'Escape' && !modal.hidden) closeModal();
+        });
       }
     },
     unlock: unlock,

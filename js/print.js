@@ -104,7 +104,10 @@
     return s;
   }
 
+  var clearTimer = null;
+
   function clear() {
+    if (clearTimer) { clearTimeout(clearTimer); clearTimer = null; }
     var root = document.getElementById('print-root');
     if (root) root.innerHTML = '';
   }
@@ -113,7 +116,7 @@
     run: function () {
       var root = document.getElementById('print-root');
       if (!root) return;
-      root.innerHTML = '';
+      clear();
       var mod = MT.op.current();
       var isDiv = (mod && mod.id === 'div');
       var subtitle = isDiv ? '表内除法练习' : '九九乘法表练习';
@@ -127,12 +130,14 @@
       }
 
       try { window.print(); } catch (e) {}
-      // 以 afterprint 为主，这里只是兜底（部分浏览器打印是异步的）
-      window.setTimeout(clear, 3000);
+      // 以 afterprint 为主，长延迟兜底防止慢速打印预览下 DOM 被提前清空
+      if (clearTimer) clearTimeout(clearTimer);
+      clearTimer = window.setTimeout(clear, 60000);
     }
   };
 
   window.addEventListener('afterprint', function () {
+    if (clearTimer) { clearTimeout(clearTimer); clearTimer = null; }
     window.setTimeout(clear, 300);
   });
 })(window.MT = window.MT || {});
