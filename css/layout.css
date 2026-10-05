@@ -203,6 +203,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
   font-size: 15px;
   font-weight: 600;
   color: var(--ink);
@@ -212,7 +214,8 @@
 .stepper-wrap {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  flex-shrink: 0;
 }
 
 .pv {
@@ -223,17 +226,21 @@
   font-size: 26px;
   font-weight: 700;
   color: var(--brand-d);
+  flex-shrink: 0;
 }
 
 .nums {
   display: grid;
-  grid-template-columns: repeat(9, 1fr);
+  grid-template-columns: repeat(10, 1fr);
   gap: 6px;
+  width: 100%;
 }
 
 .num {
+  grid-column: span 2;
   aspect-ratio: 1;
   min-height: 44px;
+  min-width: 0;
   border: 1.5px solid var(--line-2);
   border-radius: var(--r-md);
   background: var(--card);
@@ -244,6 +251,10 @@
   box-shadow: 0 3px 0 var(--line-2);
   padding: 0;
   transition: transform .08s ease, box-shadow .08s ease, background .15s;
+}
+
+.num:nth-child(6) {
+  grid-column: 2 / span 2;
 }
 
 .num:active {
@@ -427,12 +438,16 @@
 
 .explore-actions {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   margin-top: 14px;
   padding-bottom: env(safe-area-inset-bottom);
+  flex-wrap: wrap;
 }
 
-.explore-actions .btn { flex: 1; }
+.explore-actions .btn {
+  flex: 1 1 auto;
+  min-width: 80px;
+}
 
 /* ---------- table ---------- */
 
@@ -625,12 +640,22 @@ body.no-scroll { overflow: hidden; }
 /* ---------- responsive ---------- */
 
 @media (min-width: 640px) {
-  .pickers { grid-template-columns: 1fr 1fr; }
   .app-main { padding: 20px; }
-  .num { min-height: 46px; font-size: 20px; }
+  .nums {
+    grid-template-columns: repeat(9, 1fr);
+  }
+  .num {
+    grid-column: auto;
+    min-height: 46px;
+    font-size: 20px;
+  }
+  .num:nth-child(6) {
+    grid-column: auto;
+  }
 }
 
 @media (min-width: 900px) {
+  .pickers { grid-template-columns: 1fr 1fr; }
   .table-split.has-detail { grid-template-columns: 55fr 45fr; }
 }
 

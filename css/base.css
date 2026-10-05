@@ -67,6 +67,7 @@ html, body {
   font-size: 16px;
   line-height: 1.6;
   -webkit-text-size-adjust: 100%;
+  overflow-x: hidden;
 }
 
 body {
@@ -157,6 +158,7 @@ button, .tap { user-select: none; }
   width: 44px;
   height: 44px;
   min-width: 44px;
+  flex-shrink: 0;
   border-radius: var(--r-md);
   border: 1.5px solid var(--line-2);
   background: var(--card);

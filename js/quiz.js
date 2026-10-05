@@ -422,7 +422,8 @@
         box.innerHTML = '<div class="res-title">这轮先停一下</div>' +
           '<div class="res-line">' + summary + '</div>' +
           '<div class="res-line res-sub">3 次挑战机会用完啦，这轮先停。</div>';
-        addResAction('回到错题本', function () { box.hidden = true; showWrongList(); });
+        addResAction('继续巩固', function () { box.hidden = true; startWrong(); });
+        addResAction('回到错题本', function () { backToWrong(); });
         return;
       }
       var wrMap = bags().wrong;
@@ -432,7 +433,10 @@
         '<div class="res-line">答对 ' + S.correct + ' / ' + len + '</div>' +
         '<div class="res-line">' + summary + '</div>' +
         '<div class="res-line">消灭了 ' + (cut > 0 ? cut : 0) + ' 道错题</div>';
-      addResAction('回到错题本', function () { box.hidden = true; showWrongList(); });
+      if (now > 0) {
+        addResAction('继续巩固', function () { box.hidden = true; startWrong(); });
+      }
+      addResAction('回到错题本', function () { backToWrong(); });
       if (cut > 0) {
         MT.sound.play('win');
         if (MT.badges) MT.badges.unlock('mistake_slayer');
@@ -453,7 +457,7 @@
         '<div class="res-line">' + summary + '</div>' +
         '<div class="res-line res-sub">小算式有点调皮，多练一次就能攻克它！</div>';
       addResAction('再试一次 ↺', function () { box.hidden = true; startLevel(n); });
-      addResAction('换一关', function () { box.hidden = true; buildLevelBar(); });
+      addResAction('换一关', function () { box.hidden = true; if (dom.levelsBox) dom.levelsBox.hidden = false; buildLevelBar(); });
       return;
     }
 
@@ -479,7 +483,7 @@
 
     addResAction('再来一轮', function () { box.hidden = true; startLevel(n); });
     if (n < 9) addResAction('下一关', function () { box.hidden = true; startLevel(n + 1); });
-    addResAction('选关', function () { box.hidden = true; buildLevelBar(); });
+    addResAction('选关', function () { box.hidden = true; if (dom.levelsBox) dom.levelsBox.hidden = false; buildLevelBar(); });
 
     MT.sound.play('win');
     MT.speech.play('第' + n + '关通过', 'ok');
@@ -538,6 +542,8 @@
     S.level = n;
     S.wrongMode = false;
     S.round = planRound(n, MT.progress);
+    if (dom.wrongBox) dom.wrongBox.hidden = true;
+    if (dom.levelsBox) dom.levelsBox.hidden = false;
     resetRound();
     showQuestion();
   }
@@ -552,8 +558,22 @@
       return (wrMap[b].wrongCount || 0) - (wrMap[a].wrongCount || 0);
     });
     S.round = spreadDupes(keys.slice(0, 10));
+    if (dom.wrongBox) dom.wrongBox.hidden = true;
+    if (dom.levelsBox) dom.levelsBox.hidden = true;
+    if (dom.wrongDetail) dom.wrongDetail.hidden = true;
     resetRound();
     showQuestion();
+  }
+
+  function backToWrong() {
+    clearTimer();
+    S.active = false;
+    if (dom.quizResult) dom.quizResult.hidden = true;
+    if (dom.quizPlay) dom.quizPlay.hidden = true;
+    if (dom.wrongDetail) dom.wrongDetail.hidden = true;
+    if (dom.levelsBox) dom.levelsBox.hidden = true;
+    if (dom.wrongBox) dom.wrongBox.hidden = false;
+    showWrongList();
   }
 
   /* ---------- 错题本 ---------- */
@@ -715,11 +735,11 @@
     var isWrong = m === 'wrong';
     dom.levelsBox.hidden = isWrong;
     dom.wrongBox.hidden = !isWrong;
+    MT.quiz.stop();
     if (isWrong) {
-      MT.quiz.stop();
+      if (dom.wrongDetail) dom.wrongDetail.hidden = true;
       showWrongList();
     } else {
-      MT.quiz.stop();
       buildLevelBar();
     }
   }
@@ -826,7 +846,15 @@
 
     refresh: function () {
       buildLevelBar();
-      if (S.mode === 'wrong') showWrongList();
+      if (S.mode === 'wrong') {
+        if (dom.wrongBox) dom.wrongBox.hidden = false;
+        if (dom.levelsBox) dom.levelsBox.hidden = true;
+        if (dom.wrongDetail) dom.wrongDetail.hidden = true;
+        showWrongList();
+      } else {
+        if (dom.wrongBox) dom.wrongBox.hidden = true;
+        if (dom.levelsBox) dom.levelsBox.hidden = false;
+      }
     },
 
     stop: function () {
