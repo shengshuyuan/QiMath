@@ -119,6 +119,12 @@
   MT.mul = {
     id: 'mul',
     tableTab: '📋 口诀表',
+    levelCount: 9,
+    layout: 'grid',
+    views: ['array', 'groups', 'numberline', 'area', 'all'],
+    detailViews: ['array', 'groups', 'numberline', 'area'],
+    min: 1,
+    max: 9,
     levelTitle: function (n) { return '第 ' + n + ' 关'; },
     bag: bag,
     row: levelRow,
@@ -178,6 +184,32 @@
       var f = fact(key(col, row));
       return { text: f.speak, scene: f.scene };
     },
+    fit: function (changed, a, b) {
+      void changed;
+      return {
+        a: MT.core.clamp(parseInt(a, 10) || 1, 1, 9),
+        b: MT.core.clamp(parseInt(b, 10) || 1, 1, 9)
+      };
+    },
+    span: function () { return { min: 1, max: 9 }; },
+    allow: function (which, n) {
+      void which;
+      return n >= 1 && n <= 9;
+    },
+    problemText: function (k) {
+      var f = parse(k);
+      return f.a + ' × ' + f.b + ' = ______';
+    },
+    answerText: function (k) {
+      var f = parse(k);
+      return f.a + ' × ' + f.b + ' = ' + (f.a * f.b);
+    },
+    printMeta: {
+      blankTitle: '空白口诀表',
+      subtitle: '九九乘法表练习',
+      answerTitle: '乘法参考答案',
+      problemTitle: function (n) { return '乘法算一算（共 ' + n + ' 题）'; }
+    },
     explore: function (a, b) {
       var n = a * b;
       var add = [];
@@ -188,6 +220,7 @@
       var line = spoken(a, b);
       return {
         showStory: false,
+        canSwap: true,
         labelA: '有几行？',
         labelB: '每行有几个？',
         swapTitle: '交换因数 ⇄',

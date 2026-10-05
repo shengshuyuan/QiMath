@@ -14,10 +14,26 @@
     available = false;
   }
 
-  function defaultLevels() {
+  function defaultLevels(count) {
     var lv = {};
-    for (var n = 1; n <= 9; n++) {
+    var n;
+    for (n = 1; n <= count; n++) {
       lv[n] = { unlocked: n === 1, passed: false, bestStars: 0, roundsPlayed: 0 };
+    }
+    return lv;
+  }
+
+  function copyLevels(src, count) {
+    var lv = defaultLevels(count);
+    if (!src) return lv;
+    for (var n = 1; n <= count; n++) {
+      if (!src[n]) continue;
+      lv[n] = {
+        unlocked: !!src[n].unlocked || n === 1,
+        passed: !!src[n].passed,
+        bestStars: src[n].bestStars || 0,
+        roundsPlayed: src[n].roundsPlayed || 0
+      };
     }
     return lv;
   }
@@ -28,11 +44,19 @@
       mastered: {},
       needsPractice: {},
       wrong: {},
-      levels: defaultLevels(),
+      levels: defaultLevels(9),
       divMastered: {},
       divNeedsPractice: {},
       divWrong: {},
-      divLevels: defaultLevels(),
+      divLevels: defaultLevels(9),
+      addMastered: {},
+      addNeedsPractice: {},
+      addWrong: {},
+      addLevels: defaultLevels(6),
+      subMastered: {},
+      subNeedsPractice: {},
+      subWrong: {},
+      subLevels: defaultLevels(6),
       badges: [],
       settings: {
         speechOn: true,
@@ -105,33 +129,19 @@
         if (Object.prototype.hasOwnProperty.call(data.settings, k)) d.settings[k] = data.settings[k];
       }
     }
-    if (data.levels) {
-      for (var n = 1; n <= 9; n++) {
-        if (data.levels[n]) {
-          d.levels[n] = {
-            unlocked: !!data.levels[n].unlocked || n === 1,
-            passed: !!data.levels[n].passed,
-            bestStars: data.levels[n].bestStars || 0,
-            roundsPlayed: data.levels[n].roundsPlayed || 0
-          };
-        }
-      }
-    }
-    if (data.divLevels) {
-      for (var dn = 1; dn <= 9; dn++) {
-        if (data.divLevels[dn]) {
-          d.divLevels[dn] = {
-            unlocked: !!data.divLevels[dn].unlocked || dn === 1,
-            passed: !!data.divLevels[dn].passed,
-            bestStars: data.divLevels[dn].bestStars || 0,
-            roundsPlayed: data.divLevels[dn].roundsPlayed || 0
-          };
-        }
-      }
-    }
+    d.levels = copyLevels(data.levels, 9);
+    d.divLevels = copyLevels(data.divLevels, 9);
+    d.addLevels = copyLevels(data.addLevels, 6);
+    d.subLevels = copyLevels(data.subLevels, 6);
     if (data.divWrong) d.divWrong = data.divWrong;
     if (data.divMastered) d.divMastered = data.divMastered;
     if (data.divNeedsPractice) d.divNeedsPractice = data.divNeedsPractice;
+    if (data.addWrong) d.addWrong = data.addWrong;
+    if (data.addMastered) d.addMastered = data.addMastered;
+    if (data.addNeedsPractice) d.addNeedsPractice = data.addNeedsPractice;
+    if (data.subWrong) d.subWrong = data.subWrong;
+    if (data.subMastered) d.subMastered = data.subMastered;
+    if (data.subNeedsPractice) d.subNeedsPractice = data.subNeedsPractice;
     if (Array.isArray(data.badges)) {
       d.badges = data.badges;
     }

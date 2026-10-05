@@ -74,6 +74,15 @@
 
   function sub() { return MT.op.current(); }
 
+  function levelCount() {
+    var n = sub().levelCount;
+    return n || 9;
+  }
+
+  function detailViews() {
+    return sub().detailViews || ['array', 'groups', 'numberline', 'area'];
+  }
+
   function bags() { return sub().bag(MT.progress); }
 
   function starsRow(n) {
@@ -101,14 +110,17 @@
     var bar = dom.levelBar;
     bar.innerHTML = '';
     var lvs = bags().levels;
-    for (var n = 1; n <= 9; n++) {
+    for (var n = 1; n <= levelCount(); n++) {
       var lv = lvs[n];
+      if (!lv) continue;
       var b = document.createElement('button');
       b.type = 'button';
       b.className = 'lv' + (lv.unlocked ? '' : ' is-locked') + (lv.passed ? ' is-passed' : '');
       b.dataset.level = n;
+      var name = sub().levelName ? sub().levelName(n) : '';
       b.setAttribute('aria-label', sub().levelTitle(n) + (lv.unlocked ? '' : '，未解锁'));
       b.innerHTML = '<span class="lv-n">' + n + '</span>' +
+        (name ? '<span class="lv-name">' + name + '</span>' : '') +
         '<span class="lv-star">' + (lv.unlocked ? starsRow(n) : iconLock()) + '</span>';
       bar.appendChild(b);
     }
@@ -131,7 +143,7 @@
     return r;
   }
 
-  // 这一行全部题目，再加最多 4 道本关范围内错过或还没掌握的旧题。
+  // 最多 10 道本关题，再加最多 4 道已学范围内要优先复习的题。题不够就不重复。
   function planRound(n, progress) {
     var mod = sub();
     var b = mod.bag(progress);
@@ -139,7 +151,9 @@
     var pool = mod.pool(n);
     var seen = {};
     var i;
-    for (i = 0; i < own.length; i++) seen[own[i]] = true;
+    var main = own.slice();
+    if (main.length > 10) main = MT.core.shuffle(main).slice(0, 10);
+    for (i = 0; i < main.length; i++) seen[main[i]] = true;
     var review = [];
     for (i = 0; i < pool.length; i++) {
       var k = pool[i];
@@ -148,7 +162,7 @@
     }
     review = MT.core.shuffle(review);
     review.sort(function (a, c) { return mod.score(c, b) - mod.score(a, b); });
-    return spreadDupes(own.concat(review.slice(0, 4)));
+    return spreadDupes(main.concat(review.slice(0, 4)));
   }
 
   function starsFor(misses, helps) {
@@ -464,7 +478,8 @@
     var stars = starsFor(S.misses, S.helps);
     lv.passed = true;
     if (stars > lv.bestStars) lv.bestStars = stars;
-    if (n < 9) lvs[n + 1].unlocked = true;
+    var totalLv = levelCount();
+    if (n < totalLv && lvs[n + 1]) lvs[n + 1].unlocked = true;
     MT.storage.save();
     MT.bus.emit('progress:change', {});
 
@@ -478,17 +493,17 @@
       '<div class="res-line">答对 ' + S.correct + ' / ' + len + '</div>' +
       '<div class="res-line">' + summary + '</div>' +
       '<div class="res-line res-sub">' +
-      (n < 9 ? '第 ' + (n + 1) + ' 关已解锁' : '🏆 恭喜通关全部 9 关！太厉害了！') +
+      (n < totalLv ? '第 ' + (n + 1) + ' 关已解锁' : '🏆 恭喜通关全部 ' + totalLv + ' 关！太厉害了！') +
       '</div>';
 
     addResAction('再来一轮', function () { box.hidden = true; startLevel(n); });
-    if (n < 9) addResAction('下一关', function () { box.hidden = true; startLevel(n + 1); });
+    if (n < totalLv) addResAction('下一关', function () { box.hidden = true; startLevel(n + 1); });
     addResAction('选关', function () { box.hidden = true; if (dom.levelsBox) dom.levelsBox.hidden = false; buildLevelBar(); });
 
     MT.sound.play('win');
     MT.speech.play('第' + n + '关通过', 'ok');
     if (MT.confetti) MT.confetti.burst();
-    if (n === 9 && MT.badges) MT.badges.unlock('level_champion');
+    if (n === totalLv && MT.badges) MT.badges.unlock('level_champion');
     confetti(box);
   }
 
@@ -602,10 +617,10 @@
           var box = dom.wrongDetail;
           box.hidden = false;
           box.innerHTML = '';
-          var type = 'array';
+          var type = detailViews()[0];
           var seg = document.createElement('div');
           seg.className = 'seg seg-viz';
-          var views = ['array', 'groups', 'numberline', 'area'];
+          var views = detailViews();
           for (var vi = 0; vi < views.length; vi++) {
             var btn = document.createElement('button');
             btn.type = 'button';

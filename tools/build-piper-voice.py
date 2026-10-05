@@ -74,6 +74,14 @@ def phrases():
         for q in range(1, 10):
             lines.append(read_number(d * q) + "、除以、" + CN[d] + "、得" + CN[q])
 
+    # 6. 20 以内加法、减法完整算式。先加后减，两种顺序都保留。
+    for a in range(0, 21):
+        for b in range(0, 21 - a):
+            lines.append(read_number(a) + "加" + read_number(b) + "等于" + read_number(a + b))
+    for m in range(0, 21):
+        for s in range(0, m + 1):
+            lines.append(read_number(m) + "减" + read_number(s) + "等于" + read_number(m - s))
+
     seen = set()
     out = []
     for line in lines:
@@ -118,23 +126,52 @@ def bump_sw_cache():
         SW_JS.write_text(new_text, encoding="utf-8")
 
 
+def load_existing():
+    if not CLIPS_JS.is_file():
+        return {}
+    text = CLIPS_JS.read_text(encoding="utf-8")
+    match = re.search(r"MT\.voiceClips = (\{.*?\});\s*\n\}\)\(window", text, re.S)
+    if not match:
+        return {}
+    data = json.loads(match.group(1))
+    kept = {}
+    for line, rel in data.items():
+        path = ROOT / rel
+        if path.is_file() and path.stat().st_size > 0:
+            kept[line] = rel
+    return kept
+
+
 def main():
     TMP.mkdir(parents=True, exist_ok=True)
     STAGE_DIR.mkdir(parents=True, exist_ok=True)
     AUDIO_DIR.mkdir(parents=True, exist_ok=True)
 
     all_phrases = phrases()
+    existing = load_existing()
+    used_names = {Path(rel).name for rel in existing.values()}
     jobs = []
     mapping_order = []
+    next_index = 0
 
-    # 先从现有已录制文件中复用，避免中断或重复工作；新录制全部在 STAGE_DIR 中进行
-    for i, text in enumerate(all_phrases):
-        name = "%03d.mp3" % i
-        stage_file = STAGE_DIR / name
-        existing_file = AUDIO_DIR / name
-        if existing_file.is_file() and existing_file.stat().st_size > 0:
-            shutil.copy2(existing_file, stage_file)
+    def alloc_name():
+        nonlocal next_index
+        while True:
+            name = "%03d.mp3" % next_index
+            next_index += 1
+            if name not in used_names:
+                used_names.add(name)
+                return name
 
+    # 按原句复用已有录音。新句子另给文件名，避免序号错位。
+    for text in all_phrases:
+        rel = existing.get(text)
+        if not rel:
+            rel = "audio/piper/" + alloc_name()
+        dest = AUDIO_DIR / Path(rel).name
+        stage_file = STAGE_DIR / Path(rel).name
+        if dest.is_file() and dest.stat().st_size > 0:
+            shutil.copy2(dest, stage_file)
         jobs.append((text, stage_file))
         mapping_order.append(text)
 
@@ -144,17 +181,15 @@ def main():
             mapping[text] = url
             print(url, text)
 
-    # 验证全部目标文件在 STAGE_DIR 中完整生成且非空
-    for i, _ in enumerate(mapping_order):
-        name = "%03d.mp3" % i
-        target = STAGE_DIR / name
-        if not target.is_file() or target.stat().st_size == 0:
-            raise RuntimeError(f"Audio file failed to generate: {target}")
+    # 验证全部目标文件在临时目录中完整生成且非空，再按原文件名写入。
+    for text, stage_file in jobs:
+        if not stage_file.is_file() or stage_file.stat().st_size == 0:
+            raise RuntimeError("Audio file failed to generate: %s (%s)" % (stage_file, text))
+        if mapping.get(text) != "audio/piper/" + stage_file.name:
+            raise RuntimeError("Audio map drifted for: %s" % text)
 
-    # 全部成功后再替换实际音频目录中的文件，杜绝数据丢失
-    for i, _ in enumerate(mapping_order):
-        name = "%03d.mp3" % i
-        shutil.copy2(STAGE_DIR / name, AUDIO_DIR / name)
+    for text, stage_file in jobs:
+        shutil.copy2(stage_file, AUDIO_DIR / stage_file.name)
 
     ordered = {text: mapping[text] for text in mapping_order}
     body = json.dumps(ordered, ensure_ascii=False, indent=2)

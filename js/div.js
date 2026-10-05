@@ -133,6 +133,12 @@
   MT.div = {
     id: 'div',
     tableTab: '📋 除法表',
+    levelCount: 9,
+    layout: 'grid',
+    views: ['array', 'groups', 'numberline', 'area', 'all'],
+    detailViews: ['array', 'groups', 'numberline', 'area'],
+    min: 1,
+    max: 9,
     levelTitle: function (n) { return '除法第 ' + n + ' 关'; },
     bag: bag,
     row: levelRow,
@@ -186,6 +192,32 @@
     speakCell: function (col, row) {
       return { text: speak(col * row, row), scene: 'calc' };
     },
+    fit: function (changed, a, b) {
+      void changed;
+      return {
+        a: MT.core.clamp(parseInt(a, 10) || 1, 1, 9),
+        b: MT.core.clamp(parseInt(b, 10) || 1, 1, 9)
+      };
+    },
+    span: function () { return { min: 1, max: 9 }; },
+    allow: function (which, n) {
+      void which;
+      return n >= 1 && n <= 9;
+    },
+    problemText: function (k) {
+      var d = parse(k);
+      return d.n + ' ÷ ' + d.divisor + ' = ______';
+    },
+    answerText: function (k) {
+      var d = parse(k);
+      return d.n + ' ÷ ' + d.divisor + ' = ' + d.quot;
+    },
+    printMeta: {
+      blankTitle: '空白除法算式整理表',
+      subtitle: '表内除法练习',
+      answerTitle: '除法参考答案',
+      problemTitle: function (n) { return '除法算一算（共 ' + n + ' 题）'; }
+    },
     explore: function (a, b, story) {
       var part = fromFactors(a, b, story);
       var n = a * b;
@@ -200,6 +232,7 @@
         : '粉色是每份几个，紫色是有几份';
       return {
         showStory: true,
+        canSwap: true,
         labelA: part.share ? '分成几份？' : '有几份？',
         labelB: '每份几个？',
         swapTitle: '12÷3=4 和 12÷4=3 是同一张图',

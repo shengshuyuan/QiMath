@@ -60,7 +60,10 @@
 
 .lv {
   flex: 0 0 auto;
-  width: 62px;
+  width: auto;
+  min-width: 62px;
+  max-width: 92px;
+  padding: 4px 6px;
   min-height: 70px;
   border: 1.5px solid var(--line-2);
   border-radius: var(--r-md);

@@ -82,6 +82,22 @@
 
   .print-answers .print-problem { font-size: 12pt; }
 
+  .pt-decomp { display: flex; flex-direction: column; gap: 2.5mm; }
+  .pt-sum-row {
+    display: flex;
+    gap: 2mm;
+    align-items: flex-start;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .pt-sum-label {
+    flex: 0 0 22mm;
+    font-size: 10pt;
+    font-weight: 700;
+  }
+  .pt-sum-cells { display: flex; flex-wrap: wrap; gap: 1.2mm 3mm; }
+  .pt-sum-cell { font-size: 11pt; white-space: nowrap; }
+
   * {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;

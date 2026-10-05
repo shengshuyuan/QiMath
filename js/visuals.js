@@ -114,7 +114,126 @@
 
   /* ---------- ③ 数轴跳格 ---------- */
 
+  function numberlineMove(o) {
+    var max = Math.max(1, o.max || 20);
+    var from = o.from;
+    var to = o.to;
+    var step = o.step;
+    var dir = o.dir < 0 ? -1 : 1;
+    var W = Math.max(220, Math.min(760, o.width || 620));
+    var H = 136, axisY = 98, padL = 24, padR = 24;
+    var avail = W - padL - padR;
+    var u = avail / max;
+
+    function X(v) { return padL + v * u; }
+
+    var svg = sv('svg', {
+      viewBox: '0 0 ' + W + ' ' + H,
+      width: W,
+      height: H,
+      class: 'nl-svg',
+      role: 'img'
+    });
+    var cap = divCap(o, 'capLine', (dir < 0 ? '向左' : '向右') + '跳 ' + step);
+    var ti = sv('title');
+    ti.textContent = cap;
+    svg.appendChild(ti);
+    svg.appendChild(sv('line', { x1: padL - 10, y1: axisY, x2: W - padR + 10, y2: axisY, class: 'nl-axis' }));
+
+    var v;
+    for (v = 0; v <= max; v++) {
+      var major = (u >= 16) || v % 5 === 0 || v === from || v === to || v === max;
+      if (!major) {
+        if (u >= 8) {
+          svg.appendChild(sv('line', { x1: X(v), y1: axisY - 4, x2: X(v), y2: axisY + 4, class: 'nl-minor' }));
+        }
+        continue;
+      }
+      svg.appendChild(sv('line', { x1: X(v), y1: axisY - 9, x2: X(v), y2: axisY + 9, class: 'nl-major' }));
+      var label = sv('text', { x: X(v), y: axisY + 28, class: 'nl-num', 'text-anchor': 'middle' });
+      label.textContent = String(v);
+      svg.appendChild(label);
+    }
+
+    svg.appendChild(sv('circle', { cx: X(from), cy: axisY - 13, r: 9, class: 'nl-ball nl-ball-start' }));
+    if (from !== to) {
+      var x1 = X(from), x2 = X(to), cxm = (x1 + x2) / 2;
+      var lift = dir < 0 ? 72 : 84;
+      var p = sv('path', {
+        d: 'M' + x1 + ' ' + axisY + ' Q' + cxm + ' ' + (axisY - lift) + ' ' + x2 + ' ' + axisY,
+        class: 'nl-arc',
+        fill: 'none'
+      });
+      p.style.setProperty('--i', '0');
+      svg.appendChild(p);
+      var lb = sv('text', { x: cxm, y: axisY - 48, class: 'nl-plus', 'text-anchor': 'middle' });
+      lb.textContent = (dir < 0 ? '−' : '+') + step;
+      lb.style.setProperty('--i', '0');
+      svg.appendChild(lb);
+      var ball = sv('circle', { cx: x2, cy: axisY - 13, r: 9, class: 'nl-ball' });
+      ball.style.setProperty('--i', '0');
+      svg.appendChild(ball);
+    }
+
+    var wrap = el('div', 'viz viz-nl');
+    var scroller = el('div', 'nl-scroll');
+    scroller.appendChild(svg);
+    wrap.appendChild(scroller);
+    if (!o.compact) wrap.appendChild(el('div', 'viz-cap', cap));
+    setup(wrap, o, { '--jstagger': 280 });
+    return wrap;
+  }
+
+  function objectsViz(o) {
+    var skin = o.skin || (MT.progress && MT.progress.settings && MT.progress.settings.objectSkin) || 'dot';
+    var wrap = el('div', 'viz viz-objects skin-' + skin);
+    var grid = el('div', 'dot-grid');
+    var total = 0;
+    var i;
+    if (o.kind === 'sub') {
+      var m = o.minuend || 0;
+      var s = o.sub || 0;
+      total = m;
+      var cols = Math.min(10, Math.max(m, 1));
+      grid.style.gridTemplateColumns = 'repeat(' + cols + ', 1fr)';
+      for (i = 0; i < m; i++) {
+        var taken = i >= m - s;
+        var d = el('i', 'dot dot-' + skin + (taken ? ' is-taken' : ' is-a'));
+        d.style.setProperty('--i', String(i));
+        grid.appendChild(d);
+      }
+    } else {
+      var a = o.a || 0;
+      var b = o.b || 0;
+      total = a + b;
+      cols = Math.min(10, Math.max(total, 1));
+      grid.style.gridTemplateColumns = 'repeat(' + cols + ', 1fr)';
+      for (i = 0; i < a; i++) {
+        d = el('i', 'dot dot-' + skin + ' is-a');
+        d.style.setProperty('--i', String(i));
+        grid.appendChild(d);
+      }
+      for (i = 0; i < b; i++) {
+        d = el('i', 'dot dot-' + skin + ' is-b');
+        d.style.setProperty('--i', String(a + i));
+        grid.appendChild(d);
+      }
+    }
+    if (total === 0) {
+      wrap.appendChild(el('div', 'viz-cap', '现在一个都没有'));
+    } else {
+      wrap.appendChild(grid);
+    }
+    if (!o.compact) {
+      var capText = divCap(o, 'capObjects', '');
+      if (capText) wrap.appendChild(el('div', 'viz-cap', capText));
+    }
+    setup(wrap, o, { '--stagger': Math.min(45, 1200 / Math.max(1, total)) });
+    return wrap;
+  }
+
   function numberlineViz(o) {
+    if (o.kind === 'add' || o.kind === 'sub') return numberlineMove(o);
     var a = o.a, b = o.b, total = a * b;
     var W = Math.max(220, Math.min(760, o.width || 620));
     var H = 136, axisY = 98, padL = 24, padR = 24;
@@ -220,19 +339,22 @@
     array: arrayViz,
     groups: groupsViz,
     numberline: numberlineViz,
-    area: areaViz
+    area: areaViz,
+    objects: objectsViz
   };
 
   var LABEL = {
     array: '阵列',
     groups: '分组',
     numberline: '数轴',
-    area: '方格'
+    area: '方格',
+    objects: '实物',
+    all: '全部'
   };
 
   function allGrid(o) {
     var grid = el('div', 'viz-all');
-    var order = ['array', 'groups', 'numberline', 'area'];
+    var order = o.parts || ['array', 'groups', 'numberline', 'area'];
     // 与 .viz-all 的断点保持一致：宽屏是 2 列，窄屏是 1 列
     var twoCol = !!(window.matchMedia && window.matchMedia('(min-width: 640px)').matches);
     var boxW = o.width || 620;
@@ -266,6 +388,7 @@
     groups: groupsViz,
     numberline: numberlineViz,
     area: areaViz,
+    objects: objectsViz,
     motion: motion,
     label: LABEL,
 

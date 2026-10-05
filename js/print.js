@@ -16,29 +16,54 @@
     return h;
   }
 
-  function blankSheet() {
+  function meta() {
     var mod = MT.op.current();
-    var isDiv = (mod && mod.id === 'div');
-    var s = el('div', 'print-sheet');
-    var title = isDiv ? '空白除法算式整理表' : '空白口诀表';
-    var subtitle = isDiv ? '表内除法练习' : '九九乘法表练习';
-    s.appendChild(header(title, subtitle));
-    var t = el('div', 'print-table');
+    return (mod && mod.printMeta) || {
+      blankTitle: '空白口诀表',
+      subtitle: '九九乘法表练习',
+      answerTitle: '参考答案',
+      problemTitle: function (n) { return '算一算（共 ' + n + ' 题）'; }
+    };
+  }
+
+  function blankGrid() {
+    var mod = MT.op.current();
+    var isDiv = mod && mod.id === 'div';
     var grid = el('div', 'pt-grid');
-    var corner = isDiv ? '÷' : '×';
-    grid.appendChild(el('div', 'pt-cell pt-corner', corner));
+    grid.appendChild(el('div', 'pt-cell pt-corner', isDiv ? '÷' : '×'));
     for (var a = 1; a <= 9; a++) {
-      var colText = isDiv ? ('商' + a) : a;
-      grid.appendChild(el('div', 'pt-cell pt-head', colText));
+      grid.appendChild(el('div', 'pt-cell pt-head', isDiv ? ('商' + a) : a));
     }
     for (var b = 1; b <= 9; b++) {
-      var rowText = isDiv ? ('÷' + b) : b;
-      grid.appendChild(el('div', 'pt-cell pt-head', rowText));
-      for (var a2 = 1; a2 <= 9; a2++) {
-        grid.appendChild(el('div', 'pt-cell pt-blank'));
-      }
+      grid.appendChild(el('div', 'pt-cell pt-head', isDiv ? ('÷' + b) : b));
+      for (var a2 = 1; a2 <= 9; a2++) grid.appendChild(el('div', 'pt-cell pt-blank'));
     }
-    t.appendChild(grid);
+    return grid;
+  }
+
+  function blankSheet() {
+    var mod = MT.op.current();
+    var info = meta();
+    var s = el('div', 'print-sheet');
+    s.appendChild(header(info.blankTitle, info.subtitle));
+    if (mod && mod.blankRows) {
+      var rows = mod.blankRows();
+      var sheet = el('div', 'pt-decomp');
+      for (var i = 0; i < rows.length; i++) {
+        var row = el('div', 'pt-sum-row');
+        row.appendChild(el('div', 'pt-sum-label', rows[i].label));
+        var cells = el('div', 'pt-sum-cells');
+        for (var c = 0; c < rows[i].cells.length; c++) {
+          cells.appendChild(el('div', 'pt-sum-cell', rows[i].cells[c]));
+        }
+        row.appendChild(cells);
+        sheet.appendChild(row);
+      }
+      s.appendChild(sheet);
+      return s;
+    }
+    var t = el('div', 'print-table');
+    t.appendChild(blankGrid());
     s.appendChild(t);
     return s;
   }
@@ -64,20 +89,11 @@
 
   function problemSheet(keys, title, subtitle) {
     var mod = MT.op.current();
-    var isDiv = (mod && mod.id === 'div');
     var s = el('div', 'print-sheet');
     s.appendChild(header(title, subtitle));
     var grid = el('div', 'print-problems');
     for (var i = 0; i < keys.length; i++) {
-      var text = '';
-      if (isDiv) {
-        var d = MT.div.parse(keys[i]);
-        text = d.n + ' ÷ ' + d.divisor + ' = ______';
-      } else {
-        var f = MT.mul.parse(keys[i]);
-        text = f.a + ' × ' + f.b + ' = ______';
-      }
-      grid.appendChild(el('div', 'print-problem', text));
+      grid.appendChild(el('div', 'print-problem', mod.problemText(keys[i])));
     }
     s.appendChild(grid);
     return s;
@@ -85,20 +101,12 @@
 
   function answerSheet(keys, subtitle) {
     var mod = MT.op.current();
-    var isDiv = (mod && mod.id === 'div');
+    var info = meta();
     var s = el('div', 'print-sheet');
-    s.appendChild(header(isDiv ? '除法参考答案' : '乘法参考答案', subtitle));
+    s.appendChild(header(info.answerTitle, subtitle));
     var grid = el('div', 'print-problems print-answers');
     for (var i = 0; i < keys.length; i++) {
-      var text = '';
-      if (isDiv) {
-        var d = MT.div.parse(keys[i]);
-        text = d.n + ' ÷ ' + d.divisor + ' = ' + d.quot;
-      } else {
-        var f = MT.mul.parse(keys[i]);
-        text = f.a + ' × ' + f.b + ' = ' + (f.a * f.b);
-      }
-      grid.appendChild(el('div', 'print-problem', text));
+      grid.appendChild(el('div', 'print-problem', mod.answerText(keys[i])));
     }
     s.appendChild(grid);
     return s;
@@ -117,12 +125,11 @@
       var root = document.getElementById('print-root');
       if (!root) return;
       clear();
-      var mod = MT.op.current();
-      var isDiv = (mod && mod.id === 'div');
-      var subtitle = isDiv ? '表内除法练习' : '九九乘法表练习';
+      var info = meta();
+      var subtitle = info.subtitle;
       var keys = pickProblems(20);
       root.appendChild(blankSheet());
-      var title = (isDiv ? '除法算一算（共 ' : '乘法算一算（共 ') + keys.length + ' 题）';
+      var title = info.problemTitle(keys.length);
       root.appendChild(problemSheet(keys, title, subtitle));
       var st = MT.progress && MT.progress.settings;
       if (st && st.printAnswers === 'on') {

@@ -43,9 +43,13 @@
     window.scrollTo(0, 0);
   }
 
+  function knownOp(id) {
+    return !!(id && MT.op.get(id));
+  }
+
   function syncOp() {
     var st = MT.progress && MT.progress.settings;
-    var op = st && st.op === 'div' ? 'div' : 'mul';
+    var op = st && knownOp(st.op) ? st.op : 'mul';
     var box = document.getElementById('op-switch');
     if (box) {
       var kids = box.children;
@@ -63,24 +67,25 @@
     var tmSeg = document.querySelector('.seg[data-setting="tableMode"]');
     if (tmSeg) {
       var tmRow = tmSeg.closest ? tmSeg.closest('.set-row') : tmSeg.parentElement;
-      if (tmRow) tmRow.style.display = (op === 'div') ? 'none' : '';
+      if (tmRow) tmRow.style.display = (op === 'mul') ? '' : 'none';
     }
   }
 
   function setOp(op) {
     if (!MT.progress || !MT.progress.settings) return false;
-    if (op !== 'mul' && op !== 'div') return false;
+    if (!knownOp(op)) return false;
     if (MT.progress.settings.op === op) {
       syncOp();
       return false;
     }
+    MT.speech.stop();
     MT.progress.settings.op = op;
     MT.storage.save();
     syncOp();
     if (MT.explore) MT.explore.redraw();
     if (MT.table) {
-      MT.table.build();
       MT.table.close();
+      MT.table.build();
     }
     if (MT.quiz) {
       MT.quiz.stop();
@@ -221,10 +226,7 @@
         if (!t || !t.dataset || !t.dataset.op) return;
         MT.speech.warmup();
         MT.sound.play('click');
-        if (setOp(t.dataset.op) && t.dataset.op === 'div' && current === 'explore' && MT.explore && MT.explore.describe) {
-          var heard = MT.explore.describe();
-          MT.speech.play(heard.read, heard.scene || 'koujue');
-        }
+        setOp(t.dataset.op);
       });
     }
 

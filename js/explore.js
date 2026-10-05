@@ -13,6 +13,21 @@
     return settings().divStory === 'measure' ? 'measure' : 'share';
   }
 
+  function fitNow(changed, a, b) {
+    var mod = MT.op.current();
+    if (mod.fit) return mod.fit(changed, a, b);
+    return { a: MT.core.clamp(a, 1, 9), b: MT.core.clamp(b, 1, 9) };
+  }
+
+  function viewList() {
+    return MT.op.current().views || ['array', 'groups', 'numberline', 'area', 'all'];
+  }
+
+  function ensureView() {
+    var list = viewList();
+    if (list.indexOf(S.view) === -1) S.view = list[0];
+  }
+
   function view() {
     return MT.op.current().explore(S.a, S.b, story());
   }
@@ -25,13 +40,69 @@
     }
   }
 
+  function fillNums(target, span) {
+    var box = dom['nums-' + target];
+    box.innerHTML = '';
+    box.dataset.min = String(span.min);
+    for (var i = span.min; i <= span.max; i++) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'num';
+      btn.dataset.v = i;
+      btn.textContent = i;
+      btn.setAttribute('aria-pressed', 'false');
+      box.appendChild(btn);
+    }
+  }
+
+  function paintNums() {
+    ['a', 'b'].forEach(function (target) {
+      var mod = MT.op.current();
+      var span = mod.span ? mod.span() : { min: 1, max: 9 };
+      var box = dom['nums-' + target];
+      var expect = span.max - span.min + 1;
+      if (!box || box.children.length !== expect || box.dataset.min !== String(span.min)) {
+        fillNums(target, span);
+      }
+      box.classList.toggle('nums-wide', expect > 9);
+      for (var j = 0; j < box.children.length; j++) {
+        var n = parseInt(box.children[j].dataset.v, 10);
+        var on = n === S[target];
+        var ok = mod.allow ? mod.allow(target, n, S.a, S.b) : true;
+        box.children[j].classList.toggle('is-on', on);
+        box.children[j].classList.toggle('is-off', !ok);
+        box.children[j].disabled = !ok;
+        box.children[j].setAttribute('aria-pressed', on ? 'true' : 'false');
+      }
+      var slider = dom['slider-' + target];
+      if (slider) {
+        slider.min = span.min;
+        slider.max = span.max;
+        slider.value = S[target];
+      }
+    });
+  }
+
   function syncInputs() {
     dom['pv-a'].textContent = S.a;
     dom['pv-b'].textContent = S.b;
-    dom['slider-a'].value = S.a;
-    dom['slider-b'].value = S.b;
-    num('a', S.a);
-    num('b', S.b);
+    paintNums();
+  }
+
+  function paintViewButtons() {
+    ensureView();
+    var list = viewList();
+    var box = dom.viewswitch;
+    box.innerHTML = '';
+    for (var i = 0; i < list.length; i++) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'vs' + (list[i] === S.view ? ' is-on' : '');
+      b.dataset.view = list[i];
+      b.textContent = (MT.visuals.label && MT.visuals.label[list[i]]) || list[i];
+      b.setAttribute('aria-pressed', list[i] === S.view ? 'true' : 'false');
+      box.appendChild(b);
+    }
   }
 
   function sumline() {
@@ -61,8 +132,11 @@
     if (dom.labelB) dom.labelB.textContent = v.labelB;
     if (dom.storySeg) dom.storySeg.hidden = !v.showStory;
     if (dom.btnSwap) {
-      dom.btnSwap.textContent = v.swapLabel;
-      dom.btnSwap.title = v.swapTitle;
+      dom.btnSwap.hidden = !v.canSwap;
+      if (v.canSwap) {
+        dom.btnSwap.textContent = v.swapLabel;
+        dom.btnSwap.title = v.swapTitle;
+      }
     }
     if (dom.storySeg) {
       var kids = dom.storySeg.children;
@@ -72,8 +146,8 @@
         kids[i].setAttribute('aria-pressed', on ? 'true' : 'false');
       }
     }
-    var aWord = v.showStory ? '份数 ' : '行数 ';
-    var bWord = v.showStory ? '每份 ' : '每行 ';
+    var aWord = v.wordA || (v.showStory ? '份数 ' : '行数 ');
+    var bWord = v.wordB || (v.showStory ? '每份 ' : '每行 ');
     ['a', 'b'].forEach(function (target) {
       var box = dom['nums-' + target];
       if (!box) return;
@@ -88,10 +162,10 @@
     var plusA = document.querySelector('.mini[data-factor="a"][data-delta="1"]');
     var minusB = document.querySelector('.mini[data-factor="b"][data-delta="-1"]');
     var plusB = document.querySelector('.mini[data-factor="b"][data-delta="1"]');
-    if (minusA) minusA.setAttribute('aria-label', v.showStory ? '减少一份' : '减少一行');
-    if (plusA) plusA.setAttribute('aria-label', v.showStory ? '增加一份' : '增加一行');
-    if (minusB) minusB.setAttribute('aria-label', v.showStory ? '每份减少一个' : '减少一个');
-    if (plusB) plusB.setAttribute('aria-label', v.showStory ? '每份增加一个' : '增加一个');
+    if (minusA) minusA.setAttribute('aria-label', v.minusA || (v.showStory ? '减少一份' : '减少一行'));
+    if (plusA) plusA.setAttribute('aria-label', v.plusA || (v.showStory ? '增加一份' : '增加一行'));
+    if (minusB) minusB.setAttribute('aria-label', v.minusB || (v.showStory ? '每份减少一个' : '减少一个'));
+    if (plusB) plusB.setAttribute('aria-label', v.plusB || (v.showStory ? '每份增加一个' : '增加一个'));
   }
 
   // 拖动滑块时关掉逐个弹出的动画，避免动画永远播不完导致的抖动/掉帧
@@ -113,9 +187,10 @@
   }
 
   function setFactor(target, v, animate) {
-    v = MT.core.clamp(v, 1, 9);
-    if (S[target] === v) return;
-    S[target] = v;
+    var next = fitNow(target, target === 'a' ? v : S.a, target === 'b' ? v : S.b);
+    if (S.a === next.a && S.b === next.b) return;
+    S.a = next.a;
+    S.b = next.b;
     syncInputs();
     if (animate === false) renderSoon();
     else render(true);
@@ -123,6 +198,8 @@
   }
 
   function setView(v) {
+    var list = viewList();
+    if (list.indexOf(v) === -1) v = list[0];
     S.view = v;
     var st = MT.progress && MT.progress.settings;
     if (st) { st.lastView = v; MT.storage.save(); }
@@ -134,29 +211,14 @@
     render(true);
   }
 
-  function buildNums(target) {
+  function bindNums(target) {
     var box = dom['nums-' + target];
-    box.innerHTML = '';
-    for (var i = 1; i <= 9; i++) {
-      var btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'num';
-      btn.dataset.v = i;
-      btn.textContent = i;
-      btn.setAttribute('aria-pressed', 'false');
-      btn.setAttribute('aria-label', (target === 'a' ? '行数 ' : '每行 ') + i);
-      box.appendChild(btn);
-    }
     box.addEventListener('click', function (e) {
-      var t = e.target;
-      if (!t || !t.dataset || !t.dataset.v) return;
+      var t = e.target && e.target.closest ? e.target.closest('.num') : e.target;
+      if (!t || !t.dataset || t.dataset.v === undefined || t.disabled) return;
       MT.speech.warmup();
       MT.sound.play('click');
-      var v = parseInt(t.dataset.v, 10);
-      for (var j = 0; j < box.children.length; j++) {
-        box.children[j].setAttribute('aria-pressed', box.children[j].dataset.v === t.dataset.v ? 'true' : 'false');
-      }
-      setFactor(target, v);
+      setFactor(target, parseInt(t.dataset.v, 10));
     });
   }
 
@@ -191,8 +253,8 @@
       dom['slider-a'] = document.getElementById('slider-a');
       dom['slider-b'] = document.getElementById('slider-b');
 
-      buildNums('a');
-      buildNums('b');
+      bindNums('a');
+      bindNums('b');
       bindSteps();
 
       ['a', 'b'].forEach(function (target) {
@@ -277,17 +339,28 @@
       if (st && st.lastView) S.view = st.lastView;
 
       syncInputs();
+      paintViewButtons();
       setView(S.view);
     },
 
     // 供其它模块调用：切到探究台并展示某个算式
     show: function (a, b) {
-      S.a = a; S.b = b;
+      var next = fitNow('sync', a, b);
+      S.a = next.a;
+      S.b = next.b;
       syncInputs();
       render(true);
     },
 
-    redraw: function () { render(false); },
+    redraw: function () {
+      var next = fitNow('sync', S.a, S.b);
+      S.a = next.a;
+      S.b = next.b;
+      ensureView();
+      paintViewButtons();
+      syncInputs();
+      render(false);
+    },
 
     describe: function () {
       var v = view();

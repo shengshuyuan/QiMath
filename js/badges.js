@@ -6,14 +6,14 @@
       id: 'star_starter',
       icon: '🌟',
       title: '启程小星',
-      desc: '在探究台探索过乘法或除法',
+      desc: '在探究台探索过加法、减法、乘法或除法',
       hint: '在探究台调整一次数字即可解锁'
     },
     {
       id: 'bubble_popper',
       icon: '🎈',
       title: '气球大王',
-      desc: '在气球爆破中找齐所有因数朋友',
+      desc: '在气球爆破中找齐指定结果',
       hint: '在游乐场玩一轮气球爆破即可解锁'
     },
     {
@@ -41,8 +41,8 @@
       id: 'level_champion',
       icon: '👑',
       title: '通关金冠',
-      desc: '闯关成功解锁全部 9 个关卡',
-      hint: '通关全部 9 关'
+      desc: '闯关成功通过当前运算的最后一关',
+      hint: '通关当前运算的最后一关'
     },
     {
       id: 'mistake_slayer',
@@ -55,8 +55,8 @@
       id: 'swap_magician',
       icon: '🔄',
       title: '对调魔术师',
-      desc: '点击交换因数直观体悟交换律',
-      hint: '在探究台点击「交换因数 ⇄」'
+      desc: '交换加数或因数，看看结果有没有变',
+      hint: '在探究台点击交换'
     }
   ];
 

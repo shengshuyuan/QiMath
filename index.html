@@ -9,12 +9,12 @@
 <link rel="manifest" href="manifest.json">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<link rel="stylesheet" href="css/base.css?v=2.2.2">
-<link rel="stylesheet" href="css/layout.css?v=2.2.2">
-<link rel="stylesheet" href="css/visuals.css?v=2.2.2">
-<link rel="stylesheet" href="css/quiz.css?v=2.2.2">
-<link rel="stylesheet" href="css/games.css?v=2.2.2">
-<link rel="stylesheet" href="css/print.css?v=2.2.2">
+<link rel="stylesheet" href="css/base.css?v=2.3.0">
+<link rel="stylesheet" href="css/layout.css?v=2.3.0">
+<link rel="stylesheet" href="css/visuals.css?v=2.3.0">
+<link rel="stylesheet" href="css/quiz.css?v=2.3.0">
+<link rel="stylesheet" href="css/games.css?v=2.3.0">
+<link rel="stylesheet" href="css/print.css?v=2.3.0">
 </head>
 <body>
 
@@ -31,6 +31,8 @@
       <span class="brand-badge">⭐</span>
       <h1 class="app-title">QiMath</h1>
       <div class="seg op-switch" id="op-switch" role="group" aria-label="运算模式">
+        <button type="button" class="seg-btn" data-op="add" aria-pressed="false">➕ 加法</button>
+        <button type="button" class="seg-btn" data-op="sub" aria-pressed="false">➖ 减法</button>
         <button type="button" class="seg-btn is-on" data-op="mul" aria-pressed="true">✖️ 乘法</button>
         <button type="button" class="seg-btn" data-op="div" aria-pressed="false">➗ 除法</button>
       </div>
@@ -197,6 +199,10 @@
     </div>
     <div class="table-split">
       <div class="table-wrap" id="table-wrap">
+        <div class="sum-board" id="sum-board" hidden>
+          <div class="sum-totals" id="sum-totals" role="group" aria-label="总数"></div>
+          <div class="sum-eqs" id="sum-eqs"></div>
+        </div>
         <table class="mul-table" id="mul-table"></table>
       </div>
       <div class="sheet-backdrop" id="sheet-backdrop" hidden></div>
@@ -323,23 +329,25 @@
 
 <div id="print-root" aria-hidden="true"></div>
 
-<script src="js/core.js?v=2.2.2"></script>
-<script src="js/ops.js?v=2.2.2"></script>
-<script src="js/mul.js?v=2.2.2"></script>
-<script src="js/div.js?v=2.2.2"></script>
-<script src="js/storage.js?v=2.2.2"></script>
-<script src="js/voice-clips.js?v=2.2.2"></script>
-<script src="js/speech.js?v=2.2.2"></script>
-<script src="js/sound.js?v=2.2.2"></script>
-<script src="js/confetti.js?v=2.2.2"></script>
-<script src="js/badges.js?v=2.2.2"></script>
-<script src="js/visuals.js?v=2.2.2"></script>
-<script src="js/explore.js?v=2.2.2"></script>
-<script src="js/table.js?v=2.2.2"></script>
-<script src="js/quiz.js?v=2.2.2"></script>
-<script src="js/games.js?v=2.2.2"></script>
-<script src="js/print.js?v=2.2.2"></script>
-<script src="js/app.js?v=2.2.2"></script>
+<script src="js/core.js?v=2.3.0"></script>
+<script src="js/ops.js?v=2.3.0"></script>
+<script src="js/mul.js?v=2.3.0"></script>
+<script src="js/div.js?v=2.3.0"></script>
+<script src="js/add.js?v=2.3.0"></script>
+<script src="js/sub.js?v=2.3.0"></script>
+<script src="js/storage.js?v=2.3.0"></script>
+<script src="js/voice-clips.js?v=2.3.0"></script>
+<script src="js/speech.js?v=2.3.0"></script>
+<script src="js/sound.js?v=2.3.0"></script>
+<script src="js/confetti.js?v=2.3.0"></script>
+<script src="js/badges.js?v=2.3.0"></script>
+<script src="js/visuals.js?v=2.3.0"></script>
+<script src="js/explore.js?v=2.3.0"></script>
+<script src="js/table.js?v=2.3.0"></script>
+<script src="js/quiz.js?v=2.3.0"></script>
+<script src="js/games.js?v=2.3.0"></script>
+<script src="js/print.js?v=2.3.0"></script>
+<script src="js/app.js?v=2.3.0"></script>
 <script>
 (function () {
   var ok = window.MT && MT.core && MT.visuals && MT.app;

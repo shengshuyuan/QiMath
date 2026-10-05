@@ -3,16 +3,70 @@
 
   var cur = null;
   var vizType = 'array';
+  var sumTotal = 10;
   var dom = {};
   var lastCell = null;
+
+  function detailViews(mod) {
+    return (mod && mod.detailViews) || ['array', 'groups', 'numberline', 'area'];
+  }
+
+  function ensureViz(mod) {
+    var views = detailViews(mod);
+    if (views.indexOf(vizType) === -1) vizType = views[0];
+    return vizType;
+  }
 
   function isSheetMode() {
     return !!(window.matchMedia && window.matchMedia('(max-width: 639px)').matches);
   }
 
+  function buildSums() {
+    var mod = MT.op.current();
+    var totals = mod.totals();
+    if (totals.indexOf(sumTotal) === -1) sumTotal = totals[0];
+    dom.table.hidden = true;
+    dom.sumBoard.hidden = false;
+    var bar = dom.sumTotals;
+    bar.innerHTML = '';
+    bar.setAttribute('aria-label', mod.totalLabel || '总数');
+    for (var i = 0; i < totals.length; i++) {
+      var n = totals[i];
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'sum-total' + (n === sumTotal ? ' is-on' : '');
+      btn.dataset.total = n;
+      btn.textContent = n;
+      btn.setAttribute('aria-pressed', n === sumTotal ? 'true' : 'false');
+      btn.setAttribute('aria-label', (mod.totalLabel || '总数') + ' ' + n);
+      bar.appendChild(btn);
+    }
+    var eqs = dom.sumEqs;
+    eqs.innerHTML = '';
+    var list = mod.equations(sumTotal);
+    for (i = 0; i < list.length; i++) {
+      var spec = mod.cell(list[i].a, list[i].b);
+      var cell = document.createElement('button');
+      cell.type = 'button';
+      cell.className = 'cell';
+      cell.dataset.a = list[i].a;
+      cell.dataset.b = list[i].b;
+      cell.innerHTML = spec.html;
+      cell.setAttribute('aria-label', spec.aria);
+      eqs.appendChild(cell);
+    }
+    refresh();
+  }
+
   function build() {
     var t = dom.table;
     var mod = MT.op.current();
+    if (mod.layout === 'sums') {
+      buildSums();
+      return;
+    }
+    if (dom.sumBoard) dom.sumBoard.hidden = true;
+    t.hidden = false;
     t.innerHTML = '';
 
     var thead = document.createElement('thead');
@@ -74,7 +128,8 @@
 
   function refresh() {
     if (!dom.table) return;
-    var cells = dom.table.querySelectorAll('.cell');
+    var root = (dom.sumBoard && !dom.sumBoard.hidden) ? dom.sumBoard : dom.table;
+    var cells = root.querySelectorAll('.cell');
     for (var i = 0; i < cells.length; i++) {
       var c = cells[i];
       var a = parseInt(c.dataset.a, 10), b = parseInt(c.dataset.b, 10);
@@ -136,9 +191,17 @@
       body.appendChild(nameRow);
     }
 
+    if (info.method) {
+      var method = document.createElement('div');
+      method.className = 'detail-method';
+      method.textContent = info.method;
+      body.appendChild(method);
+    }
+
     var seg = document.createElement('div');
     seg.className = 'seg seg-viz';
-    var views = ['array', 'groups', 'numberline', 'area'];
+    var views = detailViews(mod);
+    ensureViz(mod);
     for (var vi = 0; vi < views.length; vi++) {
       var btn = document.createElement('button');
       btn.type = 'button';
@@ -205,6 +268,18 @@
       MT.bus.emit('progress:change', { key: k });
     });
     acts.appendChild(bAgain);
+
+    if (info.canSwap) {
+      var bSwap = document.createElement('button');
+      bSwap.type = 'button';
+      bSwap.className = 'btn';
+      bSwap.textContent = '交换加数 ⇄';
+      bSwap.addEventListener('click', function () {
+        MT.speech.stop();
+        open(b, a, lastCell);
+      });
+      acts.appendChild(bSwap);
+    }
 
     body.appendChild(acts);
 
@@ -277,6 +352,9 @@
   MT.table = {
     init: function () {
       dom.table = document.getElementById('mul-table');
+      dom.sumBoard = document.getElementById('sum-board');
+      dom.sumTotals = document.getElementById('sum-totals');
+      dom.sumEqs = document.getElementById('sum-eqs');
       dom.stat = document.getElementById('table-stat');
       dom.scrollHint = document.getElementById('table-scroll-hint');
       dom.wrap = document.getElementById('table-wrap') || document.querySelector('.table-wrap');
@@ -286,11 +364,24 @@
       dom.backdrop = document.getElementById('sheet-backdrop');
       dom.split = document.querySelector('.table-split');
 
-      dom.table.addEventListener('click', function (e) {
+      function onCellClick(e) {
         var t = e.target && e.target.closest ? e.target.closest('.cell') : null;
-        if (!t || !t.dataset || !t.dataset.a) return;
+        if (!t || !t.dataset || t.dataset.a === undefined || t.dataset.a === '') return;
         open(parseInt(t.dataset.a, 10), parseInt(t.dataset.b, 10), t);
-      });
+      }
+      dom.table.addEventListener('click', onCellClick);
+      if (dom.sumEqs) dom.sumEqs.addEventListener('click', onCellClick);
+      if (dom.sumTotals) {
+        dom.sumTotals.addEventListener('click', function (e) {
+          var t = e.target && e.target.closest ? e.target.closest('.sum-total') : null;
+          if (!t || t.dataset.total === undefined) return;
+          sumTotal = parseInt(t.dataset.total, 10);
+          MT.speech.stop();
+          MT.sound.play('click');
+          close();
+          buildSums();
+        });
+      }
 
       if (dom.wrap) {
         dom.wrap.addEventListener('scroll', updateScrollHint, { passive: true });
