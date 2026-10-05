@@ -38,6 +38,24 @@
     }
   }
 
+  function haptic(type) {
+    var st = MT.progress && MT.progress.settings;
+    if (st && st.hapticOn === 'off') return;
+    if (!navigator || !navigator.vibrate) return;
+    try {
+      if (type === 'tap') navigator.vibrate(10);
+      else if (type === 'ok') navigator.vibrate([20, 30, 20]);
+      else if (type === 'bad') navigator.vibrate([50, 40, 50]);
+    } catch (e) {}
+  }
+
+  function bubbleNeed(bState) {
+    var need = bState.targetTotal || 2;
+    if (need > 2) need = 2;
+    if (need < 1) need = 1;
+    return need;
+  }
+
   /* ==============================================================
      游戏 1：气球爆破（逆向因数找朋友）
      ============================================================== */
@@ -122,14 +140,15 @@
       bState.foundCount++;
       bState.score += 10;
       dom.bubbleFoundCount.textContent = bState.foundCount;
+      var done = bState.foundCount >= bubbleNeed(bState);
 
-      haptic('tap');
-      MT.sound.play('pop');
-      if (item.speak) MT.speech.play(item.speak, item.scene || 'ok');
+      try {
+        haptic('tap');
+        MT.sound.play('pop');
+        if (item.speak && MT.speech) MT.speech.play(item.speak, item.scene || 'ok');
+      } catch (e) {}
 
-      if (bState.foundCount >= bState.targetTotal) {
-        onBubbleRoundClear();
-      }
+      if (done) onBubbleRoundClear();
     } else {
       btn.classList.remove('is-wobble');
       void btn.offsetWidth;
