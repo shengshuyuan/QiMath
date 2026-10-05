@@ -249,7 +249,7 @@
         }
       }
       valid = MT.core.shuffle(valid);
-      var targetCount = Math.min(valid.length, valid.length >= 3 ? 3 : 2);
+      var targetCount = Math.min(2, valid.length);
       var pool = [];
       for (a = 1; a <= 9; a++) {
         for (b = 1; b <= 9; b++) {

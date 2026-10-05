@@ -295,7 +295,7 @@
       var m, s;
       for (m = target; m <= 20; m++) valid.push({ m: m, s: m - target });
       valid = MT.core.shuffle(valid);
-      var targetCount = Math.min(3, valid.length);
+      var targetCount = Math.min(2, valid.length);
       var pool = [];
       eachOrdered(function (mm, ss) {
         var diff = mm - ss;

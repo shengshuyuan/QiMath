@@ -305,7 +305,7 @@
       var a, b;
       for (a = 0; a <= target; a++) valid.push({ a: a, b: target - a });
       valid = MT.core.shuffle(valid);
-      var targetCount = Math.min(3, valid.length);
+      var targetCount = Math.min(2, valid.length);
       var pool = [];
       eachOrdered(function (x, y) {
         if (x + y !== target) pool.push({ a: x, b: y, diff: Math.abs(x + y - target) });

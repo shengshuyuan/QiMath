@@ -260,7 +260,7 @@
       var d, q;
       for (d = 1; d <= 9; d++) valid.push({ n: d * target, divisor: d, quot: target });
       valid = MT.core.shuffle(valid);
-      var targetCount = Math.min(valid.length, 3);
+      var targetCount = Math.min(2, valid.length);
       var pool = [];
       for (d = 1; d <= 9; d++) {
         for (q = 1; q <= 9; q++) {

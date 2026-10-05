@@ -158,7 +158,7 @@ function checkBubbles(mod, rounds) {
       }
     }
     assert.strictEqual(targets, pack.total);
-    assert.ok(targets >= 1 && pack.items.length <= 6 && pack.items.length >= targets);
+    assert.ok(targets >= 1 && targets <= 2 && pack.items.length <= 6 && pack.items.length >= targets);
   }
 }
 
