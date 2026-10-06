@@ -185,7 +185,6 @@
     }
     if (MT.badges) MT.badges.unlock('bubble_popper');
     if (isLast && MT.confetti) MT.confetti.burst();
-    if (!isLast) showBubbleFeedback('找齐啦，下一轮马上开始', true);
     dom.bubbleSummary.hidden = false;
     dom.bubbleSummary.innerHTML =
       '<div class="summary-title">' + (isLast ? '🎉 气球大挑战全部通关！' : '🎈 找齐啦！太棒了！') + '</div>' +
@@ -211,13 +210,6 @@
           startBubbleRound(clearedIdx + 1);
         }
       });
-    }
-    if (!isLast) {
-      S.timer = setTimeout(function () {
-        S.timer = null;
-        if (bState.roundIdx !== clearedIdx || bState.currentOp !== MT.op.current().id) return;
-        startBubbleRound(clearedIdx + 1);
-      }, 1100);
     }
   }
 

@@ -360,6 +360,11 @@
   color: var(--ok-text);
 }
 
+.game-feedback[hidden],
+.game-summary-card[hidden] {
+  display: none !important;
+}
+
 .game-summary-card {
   background: var(--card);
   border: 1px solid var(--line);

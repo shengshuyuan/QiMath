@@ -46,10 +46,10 @@ var origin = 'https://qimath.example';
 stored[origin + '/js/add.js'] = { url: origin + '/js/add.js', body: 'add' };
 stored[origin + '/'] = { url: origin + '/', body: 'home' };
 
-g.matchCached({ url: origin + '/js/add.js?v=2.3.3' }).then(function (hit) {
+g.matchCached({ url: origin + '/js/add.js?v=2.3.4' }).then(function (hit) {
   assert.ok(hit, '带版本的脚本应回退到预缓存');
   assert.strictEqual(hit.body, 'add');
-  return g.matchCached({ url: origin + '/js/missing.js?v=2.3.3' });
+  return g.matchCached({ url: origin + '/js/missing.js?v=2.3.4' });
 }).then(function (miss) {
   assert.strictEqual(miss, null);
   return g.matchCached({ url: origin + '/js/add.js' });
