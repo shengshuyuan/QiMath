@@ -2,6 +2,11 @@
   'use strict';
 
   var readNumber = MT.core.readNumber;
+
+  // 加减法里的 10 读「十」。乘法口诀仍用 core 的「一十」。
+  function readPlain(n) {
+    return n === 10 ? '十' : readNumber(n);
+  }
   var NAMES = ['', '5 以内', '10 以内基础', '凑成 10', '20 以内不进位', '20 以内进位', '综合巩固'];
 
   function key(a, b) { return a + '+' + b; }
@@ -19,7 +24,7 @@
   }
 
   function spoken(a, b) {
-    return readNumber(a) + '加' + readNumber(b) + '等于' + readNumber(a + b);
+    return readPlain(a) + '加' + readPlain(b) + '等于' + readPlain(a + b);
   }
 
   function bandOf(a, b) {
@@ -86,6 +91,7 @@
     var sum = a + b;
     var base = a >= b ? a : b;
     var other = sum - base;
+    if (a === 0 || b === 0) return '加零还是原数。';
     if (sum < 10) return '两个数合起来不到十，直接数一数就行。';
     if (sum === 10) return a + '＋' + b + '刚好凑成十。';
     if (base >= 10) return base + ' 里已经有一个十，再添上 ' + other + '，就是 ' + sum + '。';
@@ -291,7 +297,7 @@
       var rows = [];
       for (var s = 0; s <= 20; s++) {
         var cells = [];
-        for (var a = 0; a <= s; a++) cells.push(a + '＋' + (s - a) + '＝____');
+        for (var a = 0; a <= s; a++) cells.push(a + '＋____＝' + s);
         rows.push({ label: '和 ' + s, cells: cells });
       }
       return rows;

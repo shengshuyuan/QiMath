@@ -1,4 +1,4 @@
-var CACHE_NAME = 'mt99-cache-v21';
+var CACHE_NAME = 'mt99-cache-v22';
 var ASSETS = [
   './',
   './index.html',
@@ -55,6 +55,22 @@ self.addEventListener('activate', function (e) {
   );
 });
 
+function bareUrl(url) {
+  var q = url.indexOf('?');
+  return q === -1 ? url : url.slice(0, q);
+}
+
+// 页面请求带 ?v=，安装时预缓存的是不带参数的地址。断网且没有历史请求缓存时，回退到预缓存。
+function matchCached(request) {
+  return caches.match(request).then(function (hit) {
+    if (hit) return hit;
+    var url = request.url || String(request);
+    var bare = bareUrl(url);
+    if (bare === url) return hit;
+    return caches.match(bare);
+  });
+}
+
 self.addEventListener('fetch', function (e) {
   if (e.request.method !== 'GET') return;
   var url = e.request.url;
@@ -78,7 +94,7 @@ self.addEventListener('fetch', function (e) {
         }
         return res;
       }).catch(function () {
-        return caches.match(e.request);
+        return matchCached(e.request);
       })
     );
     return;

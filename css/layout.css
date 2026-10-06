@@ -620,6 +620,18 @@
 
 .sum-board { margin-bottom: 8px; }
 
+.sum-scroll-hint {
+  display: inline-flex;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: var(--brand-d);
+  background: var(--brand-l);
+  padding: 3px 10px;
+  border-radius: var(--r-full);
+  font-weight: 500;
+}
+
 .sum-totals {
   display: flex;
   gap: 6px;

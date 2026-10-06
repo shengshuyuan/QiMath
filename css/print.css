@@ -82,7 +82,12 @@
 
   .print-answers .print-problem { font-size: 12pt; }
 
-  .pt-decomp { display: flex; flex-direction: column; gap: 2.5mm; }
+  table.pt-decomp {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  table.pt-decomp thead { display: table-header-group; }
+  table.pt-decomp td { padding: 0 0 2.5mm; }
   .pt-sum-row {
     display: flex;
     gap: 2mm;

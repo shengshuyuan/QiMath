@@ -31,6 +31,12 @@ def read_number(p):
     return CN[tens] + "十" + (CN[ones] if ones else "")
 
 
+def read_plain(p):
+    if p == 10:
+        return "十"
+    return read_number(p)
+
+
 def read_product(p):
     return ("得" + CN[p]) if p < 10 else read_number(p)
 
@@ -77,10 +83,10 @@ def phrases():
     # 6. 20 以内加法、减法完整算式。先加后减，两种顺序都保留。
     for a in range(0, 21):
         for b in range(0, 21 - a):
-            lines.append(read_number(a) + "加" + read_number(b) + "等于" + read_number(a + b))
+            lines.append(read_plain(a) + "加" + read_plain(b) + "等于" + read_plain(a + b))
     for m in range(0, 21):
         for s in range(0, m + 1):
-            lines.append(read_number(m) + "减" + read_number(s) + "等于" + read_number(m - s))
+            lines.append(read_plain(m) + "减" + read_plain(s) + "等于" + read_plain(m - s))
 
     seen = set()
     out = []

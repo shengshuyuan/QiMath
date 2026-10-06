@@ -140,9 +140,35 @@
     }
     if (dom.stat) dom.stat.textContent = MT.op.current().stat(MT.progress);
     updateScrollHint();
+    revealSelectedSum();
+  }
+
+  function updateSumHint() {
+    var bar = dom.sumTotals;
+    var hint = dom.sumHint;
+    if (!hint) return;
+    if (!bar || !dom.sumBoard || dom.sumBoard.hidden) {
+      hint.hidden = true;
+      return;
+    }
+    var canScroll = bar.scrollWidth > bar.clientWidth + 6;
+    hint.hidden = !canScroll;
+  }
+
+  function revealSelectedSum() {
+    var bar = dom.sumTotals;
+    if (!bar || !dom.sumBoard || dom.sumBoard.hidden || !bar.clientWidth) return;
+    var on = bar.querySelector('.sum-total.is-on');
+    if (!on) return;
+    var left = on.offsetLeft;
+    var right = left + on.offsetWidth;
+    var viewRight = bar.scrollLeft + bar.clientWidth;
+    if (left < bar.scrollLeft) bar.scrollLeft = left;
+    else if (right > viewRight) bar.scrollLeft = right - bar.clientWidth;
   }
 
   function updateScrollHint() {
+    updateSumHint();
     if (!dom.scrollHint || !dom.wrap) return;
     var canScroll = dom.wrap.scrollWidth > dom.wrap.clientWidth + 6;
     if (!canScroll) {
@@ -336,6 +362,37 @@
     }
   }
 
+  function focusable(root) {
+    var nodes = root.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    var out = [];
+    for (var i = 0; i < nodes.length; i++) {
+      var el = nodes[i];
+      if (el.disabled || el.hidden) continue;
+      if (el.getAttribute('aria-hidden') === 'true') continue;
+      out.push(el);
+    }
+    return out;
+  }
+
+  function trapTab(e) {
+    if (!isSheetMode() || !dom.detail || dom.detail.hidden) return;
+    var nodes = focusable(dom.detail);
+    if (!nodes.length) return;
+    var first = nodes[0];
+    var last = nodes[nodes.length - 1];
+    var active = document.activeElement;
+    var inside = dom.detail.contains(active);
+    if (e.shiftKey) {
+      if (!inside || active === first) {
+        e.preventDefault();
+        last.focus();
+      }
+    } else if (!inside || active === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  }
+
   function close() {
     if (!cur && dom.detail.hidden) return;
     cur = null;
@@ -357,6 +414,7 @@
       dom.sumEqs = document.getElementById('sum-eqs');
       dom.stat = document.getElementById('table-stat');
       dom.scrollHint = document.getElementById('table-scroll-hint');
+      dom.sumHint = document.getElementById('sum-scroll-hint');
       dom.wrap = document.getElementById('table-wrap') || document.querySelector('.table-wrap');
       dom.detail = document.getElementById('table-detail');
       dom.detailBody = document.getElementById('detail-body');
@@ -386,13 +444,22 @@
       if (dom.wrap) {
         dom.wrap.addEventListener('scroll', updateScrollHint, { passive: true });
       }
+      if (dom.sumTotals) {
+        dom.sumTotals.addEventListener('scroll', updateSumHint, { passive: true });
+      }
       window.addEventListener('resize', updateScrollHint);
 
       dom.detailClose.addEventListener('click', close);
       if (dom.backdrop) dom.backdrop.addEventListener('click', close);
 
       document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape' && !dom.detail.hidden) close();
+        if (!dom.detail || dom.detail.hidden) return;
+        if (e.key === 'Escape') {
+          e.preventDefault();
+          close();
+          return;
+        }
+        if (e.key === 'Tab') trapTab(e);
       });
 
       MT.bus.on('progress:change', function () {

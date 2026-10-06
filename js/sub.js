@@ -2,6 +2,10 @@
   'use strict';
 
   var readNumber = MT.core.readNumber;
+
+  function readPlain(n) {
+    return n === 10 ? '十' : readNumber(n);
+  }
   var NAMES = ['', '5 以内', '10 以内基础', '十减几', '20 以内不退位', '20 以内退位', '综合巩固'];
 
   function key(m, s) { return m + '-' + s; }
@@ -14,7 +18,7 @@
   }
 
   function spoken(m, s) {
-    return readNumber(m) + '减' + readNumber(s) + '等于' + readNumber(m - s);
+    return readPlain(m) + '减' + readPlain(s) + '等于' + readPlain(m - s);
   }
 
   function bandOf(m, s) {

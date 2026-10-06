@@ -48,8 +48,19 @@
     s.appendChild(header(info.blankTitle, info.subtitle));
     if (mod && mod.blankRows) {
       var rows = mod.blankRows();
-      var sheet = el('div', 'pt-decomp');
+      var table = document.createElement('table');
+      table.className = 'pt-decomp';
+      var thead = document.createElement('thead');
+      var headRow = document.createElement('tr');
+      var headCell = document.createElement('td');
+      headCell.appendChild(header(info.blankTitle, info.subtitle));
+      headRow.appendChild(headCell);
+      thead.appendChild(headRow);
+      table.appendChild(thead);
+      var body = document.createElement('tbody');
       for (var i = 0; i < rows.length; i++) {
+        var tr = document.createElement('tr');
+        var td = document.createElement('td');
         var row = el('div', 'pt-sum-row');
         row.appendChild(el('div', 'pt-sum-label', rows[i].label));
         var cells = el('div', 'pt-sum-cells');
@@ -57,9 +68,12 @@
           cells.appendChild(el('div', 'pt-sum-cell', rows[i].cells[c]));
         }
         row.appendChild(cells);
-        sheet.appendChild(row);
+        td.appendChild(row);
+        tr.appendChild(td);
+        body.appendChild(tr);
       }
-      s.appendChild(sheet);
+      table.appendChild(body);
+      s.appendChild(table);
       return s;
     }
     var t = el('div', 'print-table');
