@@ -9,12 +9,12 @@
 <link rel="manifest" href="manifest.json">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<link rel="stylesheet" href="css/base.css?v=2.3.4">
-<link rel="stylesheet" href="css/layout.css?v=2.3.4">
-<link rel="stylesheet" href="css/visuals.css?v=2.3.4">
-<link rel="stylesheet" href="css/quiz.css?v=2.3.4">
-<link rel="stylesheet" href="css/games.css?v=2.3.4">
-<link rel="stylesheet" href="css/print.css?v=2.3.4">
+<link rel="stylesheet" href="css/base.css?v=2.3.5">
+<link rel="stylesheet" href="css/layout.css?v=2.3.5">
+<link rel="stylesheet" href="css/visuals.css?v=2.3.5">
+<link rel="stylesheet" href="css/quiz.css?v=2.3.5">
+<link rel="stylesheet" href="css/games.css?v=2.3.5">
+<link rel="stylesheet" href="css/print.css?v=2.3.5">
 </head>
 <body>
 
@@ -133,6 +133,32 @@
       <button type="button" class="seg-btn is-on" data-story="share" aria-pressed="true">平均分</button>
       <button type="button" class="seg-btn" data-story="measure" aria-pressed="false">几个一份</button>
     </div>
+    <div class="sumline" id="sumline"></div>
+    <div class="stage" id="stage"></div>
+    <div class="explore-actions">
+      <button type="button" class="btn btn-main" id="btn-say">读一遍</button>
+      <button type="button" class="btn" id="btn-replay">再看一次</button>
+      <button type="button" class="btn" id="btn-swap" title="交换行与列 (乘法交换律)">交换因数 ⇄</button>
+    </div>
+
+    <div class="viewswitch" id="view-switch">
+      <button type="button" class="vs is-on" data-view="array">阵列</button>
+      <button type="button" class="vs" data-view="groups">分组</button>
+      <button type="button" class="vs" data-view="numberline">数轴</button>
+      <button type="button" class="vs" data-view="area">方格</button>
+      <button type="button" class="vs" data-view="all">全部</button>
+    </div>
+
+    <div class="skin-bar">
+      <span class="skin-bar-label">实物皮肤:</span>
+      <div class="skin-options" id="skin-options" role="group" aria-label="实物具象皮肤">
+        <button type="button" class="skin-opt is-on" data-skin="dot" aria-pressed="true">🟣 糖果珠</button>
+        <button type="button" class="skin-opt" data-skin="apple" aria-pressed="false">🍎 红苹果</button>
+        <button type="button" class="skin-opt" data-skin="star" aria-pressed="false">⭐ 闪闪星</button>
+        <button type="button" class="skin-opt" data-skin="cookie" aria-pressed="false">🍪 巧克饼</button>
+      </div>
+    </div>
+
     <div class="pickers">
       <div class="picker">
         <div class="picker-title">
@@ -162,33 +188,6 @@
           <input type="range" class="slider" id="slider-b" min="1" max="9" step="1" value="4" aria-label="每行个数">
         </div>
       </div>
-    </div>
-
-    <div class="viewswitch" id="view-switch">
-      <button type="button" class="vs is-on" data-view="array">阵列</button>
-      <button type="button" class="vs" data-view="groups">分组</button>
-      <button type="button" class="vs" data-view="numberline">数轴</button>
-      <button type="button" class="vs" data-view="area">方格</button>
-      <button type="button" class="vs" data-view="all">全部</button>
-    </div>
-
-    <div class="skin-bar">
-      <span class="skin-bar-label">实物皮肤:</span>
-      <div class="skin-options" id="skin-options" role="group" aria-label="实物具象皮肤">
-        <button type="button" class="skin-opt is-on" data-skin="dot" aria-pressed="true">🟣 糖果珠</button>
-        <button type="button" class="skin-opt" data-skin="apple" aria-pressed="false">🍎 红苹果</button>
-        <button type="button" class="skin-opt" data-skin="star" aria-pressed="false">⭐ 闪闪星</button>
-        <button type="button" class="skin-opt" data-skin="cookie" aria-pressed="false">🍪 巧克饼</button>
-      </div>
-    </div>
-
-    <div class="stage" id="stage"></div>
-    <div class="sumline" id="sumline"></div>
-
-    <div class="explore-actions">
-      <button type="button" class="btn btn-main" id="btn-say">读一遍</button>
-      <button type="button" class="btn" id="btn-replay">再看一次</button>
-      <button type="button" class="btn" id="btn-swap" title="交换行与列 (乘法交换律)">交换因数 ⇄</button>
     </div>
   </section>
 
@@ -330,25 +329,25 @@
 
 <div id="print-root" aria-hidden="true"></div>
 
-<script src="js/core.js?v=2.3.4"></script>
-<script src="js/ops.js?v=2.3.4"></script>
-<script src="js/mul.js?v=2.3.4"></script>
-<script src="js/div.js?v=2.3.4"></script>
-<script src="js/add.js?v=2.3.4"></script>
-<script src="js/sub.js?v=2.3.4"></script>
-<script src="js/storage.js?v=2.3.4"></script>
-<script src="js/voice-clips.js?v=2.3.4"></script>
-<script src="js/speech.js?v=2.3.4"></script>
-<script src="js/sound.js?v=2.3.4"></script>
-<script src="js/confetti.js?v=2.3.4"></script>
-<script src="js/badges.js?v=2.3.4"></script>
-<script src="js/visuals.js?v=2.3.4"></script>
-<script src="js/explore.js?v=2.3.4"></script>
-<script src="js/table.js?v=2.3.4"></script>
-<script src="js/quiz.js?v=2.3.4"></script>
-<script src="js/games.js?v=2.3.4"></script>
-<script src="js/print.js?v=2.3.4"></script>
-<script src="js/app.js?v=2.3.4"></script>
+<script src="js/core.js?v=2.3.5"></script>
+<script src="js/ops.js?v=2.3.5"></script>
+<script src="js/mul.js?v=2.3.5"></script>
+<script src="js/div.js?v=2.3.5"></script>
+<script src="js/add.js?v=2.3.5"></script>
+<script src="js/sub.js?v=2.3.5"></script>
+<script src="js/storage.js?v=2.3.5"></script>
+<script src="js/voice-clips.js?v=2.3.5"></script>
+<script src="js/speech.js?v=2.3.5"></script>
+<script src="js/sound.js?v=2.3.5"></script>
+<script src="js/confetti.js?v=2.3.5"></script>
+<script src="js/badges.js?v=2.3.5"></script>
+<script src="js/visuals.js?v=2.3.5"></script>
+<script src="js/explore.js?v=2.3.5"></script>
+<script src="js/table.js?v=2.3.5"></script>
+<script src="js/quiz.js?v=2.3.5"></script>
+<script src="js/games.js?v=2.3.5"></script>
+<script src="js/print.js?v=2.3.5"></script>
+<script src="js/app.js?v=2.3.5"></script>
 <script>
 (function () {
   var ok = window.MT && MT.core && MT.visuals && MT.app;

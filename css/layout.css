@@ -47,7 +47,7 @@
 }
 
 .op-switch .seg-btn {
-  min-height: 34px;
+  min-height: 40px;
   padding: 0 10px;
   font-size: 13px;
   font-weight: 600;
@@ -301,7 +301,7 @@
 .nums.nums-wide .num:nth-child(6) {
   grid-column: auto;
   aspect-ratio: auto;
-  min-height: 40px;
+  min-height: 44px;
   font-size: 16px;
 }
 
@@ -398,18 +398,22 @@
   border-radius: var(--r-lg);
   box-shadow: var(--shadow);
   padding: 16px 12px;
-  min-height: min(45vh, 380px);
+  min-height: min(42vh, 420px);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .sumline {
-  margin-top: 12px;
+  margin: 0 0 12px;
   display: flex;
   flex-direction: column;
   gap: 6px;
   align-items: center;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: 12px 14px 10px;
 }
 
 .sum-row {
@@ -430,7 +434,7 @@
 .tk-quot { color: var(--ok-text); font-weight: 700; }
 
 .sum-desc {
-  font-size: 14px;
+  font-size: 16px;
   color: var(--ink-2);
   display: flex;
   align-items: center;
@@ -451,7 +455,7 @@
 }
 
 .sum-think {
-  font-size: 14px;
+  font-size: 16px;
   color: var(--brand-d);
   background: rgba(139, 92, 246, 0.08);
   border: 1px dashed rgba(139, 92, 246, 0.3);
@@ -482,6 +486,36 @@
 .explore-actions .btn {
   flex: 1 1 auto;
   min-width: 80px;
+}
+
+@media (min-width: 960px) {
+  #panel-explore {
+    display: grid;
+    grid-template-columns: minmax(320px, 440px) minmax(0, 1fr);
+    grid-template-areas:
+      "story story"
+      "sum stage"
+      "views stage"
+      "skin stage"
+      "actions stage"
+      "picks stage";
+    column-gap: 16px;
+    row-gap: 10px;
+    align-items: start;
+  }
+  #panel-explore .div-story { grid-area: story; }
+  #panel-explore .sumline { grid-area: sum; margin-bottom: 0; }
+  #panel-explore .stage {
+    grid-area: stage;
+    min-height: 520px;
+    height: 100%;
+  }
+  #panel-explore .viewswitch { grid-area: views; margin: 0; flex-wrap: wrap; overflow: visible; }
+  #panel-explore .viewswitch .vs { flex: 1 1 calc(33% - 6px); }
+  #panel-explore .skin-bar { grid-area: skin; margin: 0; }
+  #panel-explore .skin-options { flex-wrap: wrap; }
+  #panel-explore .explore-actions { grid-area: actions; margin-top: 0; }
+  #panel-explore .pickers { grid-area: picks; }
 }
 
 /* ---------- table ---------- */
