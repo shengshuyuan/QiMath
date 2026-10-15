@@ -74,8 +74,742 @@
 .topic-result p { color: var(--ink-2); margin-top: 12px; }
 .length-diagram { width: 100%; max-width: 42rem; margin: 16px auto; }
 .length-diagram svg, .topic-lesson svg, .topic-question svg { display: block; width: 100%; height: auto; max-height: 300px; }
+
+/* ================================================================
+   认识人民币课程样式与专属游戏组件
+   ================================================================ */
+
+/* ---------- 练习页游戏入口模块 ---------- */
+.topic-game-entries {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px dashed var(--line-2);
+}
+.topic-game-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+  margin-top: 12px;
+}
+.topic-game-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-md);
+  background: var(--field);
+  transition: transform .12s, box-shadow .12s, border-color .12s;
+}
+.topic-game-item:hover {
+  border-color: var(--brand);
+  box-shadow: var(--shadow);
+  transform: translateY(-2px);
+}
+.topic-game-item b {
+  display: block;
+  font-size: 16px;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+.topic-game-item small {
+  display: block;
+  font-size: 12px;
+  color: var(--ink-2);
+  line-height: 1.4;
+}
+.topic-game-item .btn {
+  flex-shrink: 0;
+}
+
+/* ---------- 钱币图形与托盘 ---------- */
+.money-svg {
+  display: inline-block;
+  vertical-align: middle;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, .08));
+  transition: transform .12s;
+}
+.money-svg:hover {
+  transform: scale(1.03);
+}
+.money-bill {
+  border-radius: 4px;
+}
+.money-coin {
+  border-radius: 50%;
+}
+
+.money-tray {
+  margin: 16px auto;
+  padding: 16px;
+  background: var(--field);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  text-align: center;
+}
+.money-tray-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-2);
+  margin-bottom: 12px;
+}
+.money-tray-items {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+.money-tray-item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.money-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 14px;
+  background: var(--field);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  margin: 12px auto;
+  max-width: 380px;
+}
+.money-card-visual {
+  margin: 8px 0 12px;
+}
+.money-card-info {
+  text-align: center;
+  font-size: 14px;
+}
+.money-tag {
+  display: inline-block;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: var(--r-sm);
+  background: var(--brand-l);
+  color: var(--brand-d);
+  margin-bottom: 4px;
+}
+
+/* ---------- 比较钱数图形 ---------- */
+.money-compare-diagram {
+  margin: 16px 0;
+}
+.compare-side {
+  padding: 14px;
+  background: var(--field);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  margin-bottom: 12px;
+}
+.compare-side-tag {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--brand-d);
+  margin-bottom: 8px;
+}
+.compare-vs {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 14px;
+  color: var(--accent);
+  margin: 8px 0;
+}
+.compare-amount-cards {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin: 18px 0;
+}
+.compare-amount-box {
+  padding: 14px 20px;
+  border: 1.5px solid var(--line-2);
+  border-radius: var(--r-md);
+  background: var(--field);
+  text-align: center;
+  min-width: 120px;
+}
+.compare-amount-box .box-tag {
+  font-size: 11px;
+  color: var(--ink-2);
+  margin-bottom: 4px;
+}
+.compare-amount-box b {
+  font-size: 20px;
+  color: var(--ink);
+}
+.compare-amount-mid {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--accent);
+}
+
+/* ---------- 商品与标价标签 ---------- */
+.price-tag-card {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 28px;
+  background: #FFFBEB;
+  border: 2px dashed #F59E0B;
+  border-radius: var(--r-md);
+  box-shadow: 0 4px 10px rgba(245, 158, 11, .15);
+  margin: 12px auto;
+  position: relative;
+}
+.price-tag-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #92400E;
+  margin-bottom: 4px;
+}
+.price-tag-amount {
+  font-family: var(--font-num);
+  font-size: 32px;
+  font-weight: 800;
+  color: #B45309;
+}
+.shopping-cart-card {
+  padding: 16px;
+  background: var(--field);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  margin: 14px 0;
+}
+.cart-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+}
+.cart-plus {
+  text-align: center;
+  font-size: 20px;
+  font-weight: bold;
+  color: var(--brand);
+}
+.goods-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: var(--brand-l);
+  color: var(--brand-d);
+  border-radius: var(--r-sm);
+  font-size: 13px;
+  font-weight: 600;
+}
+.paid-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: var(--ok-l);
+  color: var(--ok-text);
+  border-radius: var(--r-sm);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* ---------- 游戏通用布局与关卡条 ---------- */
+.money-game-board {
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--card);
+  padding: 20px 24px 28px;
+  box-shadow: var(--shadow);
+  max-width: 760px;
+  margin: 0 auto;
+}
+.money-game-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line);
+}
+.game-btn-back {
+  font-size: 13px;
+  padding: 6px 12px;
+}
+.game-top-title {
+  text-align: center;
+}
+.game-top-title b {
+  display: block;
+  font-size: 17px;
+  color: var(--ink);
+}
+.game-top-title small {
+  display: block;
+  font-size: 12px;
+  color: var(--ink-2);
+}
+.game-stars-track {
+  display: flex;
+  gap: 4px;
+}
+.game-star {
+  font-size: 18px;
+  color: var(--line-2);
+  transition: transform .15s ease-out;
+}
+.game-star.is-won {
+  color: #F59E0B;
+  filter: drop-shadow(0 1px 2px rgba(245, 158, 11, .4));
+}
+.game-star.is-done {
+  color: var(--ink-3);
+}
+.game-star.is-current {
+  transform: scale(1.25);
+}
+
+/* 关卡目标卡片 */
+.game-mission-card {
+  padding: 16px 20px;
+  border-radius: var(--r-md);
+  background: var(--brand-l);
+  border: 1.5px solid var(--brand);
+  text-align: center;
+  margin-bottom: 18px;
+}
+.mission-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--brand-d);
+  margin-bottom: 6px;
+}
+.mission-target {
+  font-size: 18px;
+  color: var(--ink);
+}
+.target-amount {
+  font-size: 26px;
+  font-family: var(--font-num);
+  color: var(--brand-d);
+}
+.mission-tip {
+  font-size: 13px;
+  color: var(--brand-d);
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed rgba(109, 63, 217, .25);
+  font-weight: 500;
+}
+
+/* 付款区 / 托盘区 */
+.game-stage-area {
+  padding: 16px;
+  border: 2px dashed var(--line-2);
+  border-radius: var(--r-md);
+  background: var(--field);
+  margin-bottom: 16px;
+  min-height: 120px;
+}
+.game-tray-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+  font-size: 14px;
+  color: var(--ink-2);
+}
+.current-total {
+  font-family: var(--font-num);
+  font-size: 18px;
+  color: var(--ink);
+  transition: color .15s;
+}
+.current-total.is-exact {
+  color: var(--ok);
+  font-weight: 800;
+}
+.current-total.is-over {
+  color: var(--bad);
+  font-weight: 800;
+}
+.game-tray-btns {
+  display: flex;
+  gap: 6px;
+}
+.game-tray-slots {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 64px;
+}
+.tray-empty-hint {
+  font-size: 14px;
+  color: var(--ink-3);
+  margin: 16px auto;
+}
+.game-tray-coin {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 4px;
+  transition: transform .12s, filter .12s;
+}
+.game-tray-coin:hover {
+  transform: translateY(-3px) scale(1.05);
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, .15));
+}
+
+/* 反馈条 */
+.game-feedback-bar {
+  padding: 10px 14px;
+  border-radius: var(--r-md);
+  font-size: 14px;
+  margin-bottom: 16px;
+  text-align: center;
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.game-feedback-bar.is-good {
+  background: var(--ok-l);
+  color: var(--ok-text);
+  border: 1px solid var(--ok);
+}
+.game-feedback-bar.is-warn {
+  background: var(--warn-l);
+  color: #92400E;
+  border: 1px solid var(--warn);
+}
+
+/* 底部钱币池与按钮 */
+.game-denom-pool {
+  background: var(--field);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  padding: 14px;
+  margin-bottom: 16px;
+}
+.pool-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-2);
+  margin-bottom: 10px;
+}
+.pool-grid {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+.pool-denom-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 8px 10px;
+  border: 1.5px solid var(--line-2);
+  border-radius: var(--r-md);
+  background: var(--card);
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, .04);
+  transition: transform .1s, border-color .1s, box-shadow .1s;
+}
+.pool-denom-btn:hover {
+  border-color: var(--brand);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+.pool-denom-btn:active {
+  transform: translateY(1px);
+}
+.denom-btn-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.game-bottom-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* 成功通关横幅 */
+.game-passed-banner {
+  padding: 16px 20px;
+  border-radius: var(--r-md);
+  background: var(--ok-l);
+  border: 1.5px solid var(--ok);
+  text-align: center;
+  margin-bottom: 16px;
+  animation: fadein .2s ease-out;
+}
+.passed-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--ok-text);
+  margin-bottom: 6px;
+}
+.game-passed-banner p {
+  font-size: 14px;
+  color: var(--ok-text);
+  margin-bottom: 14px;
+}
+
+/* ---------- 小小收银员特色样式 ---------- */
+.cashier-counter-card {
+  padding: 16px;
+  background: #FEF3C7;
+  border: 1.5px solid #F59E0B;
+  border-radius: var(--r-md);
+  margin-bottom: 16px;
+}
+.counter-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #92400E;
+  margin-bottom: 8px;
+}
+.counter-goods-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.counter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: #FFFBEB;
+  border: 1px solid #FDE68A;
+  border-radius: var(--r-sm);
+  font-size: 14px;
+  color: #78350F;
+}
+.chip-price {
+  font-family: var(--font-num);
+  font-weight: 700;
+  color: #B45309;
+}
+.counter-total {
+  font-size: 16px;
+  font-weight: 700;
+  color: #78350F;
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px dashed rgba(180, 83, 9, .25);
+}
+.counter-total b {
+  font-size: 20px;
+  color: #B45309;
+}
+.counter-payment-box {
+  margin-top: 12px;
+  padding: 10px 14px;
+  background: #FFFFFF;
+  border-radius: var(--r-sm);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.counter-paid-amount {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--brand-d);
+}
+
+.cashier-action-desk {
+  margin-bottom: 16px;
+}
+.quick-decisions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+.cashier-quick-btn {
+  font-size: 15px;
+  font-weight: 600;
+  padding: 10px 18px;
+  border: 1.5px solid var(--brand);
+}
+
+.cashier-audit-details {
+  background: #FFFFFF;
+  padding: 12px 16px;
+  border-radius: var(--r-sm);
+  font-size: 14px;
+  color: var(--ok-text);
+  margin: 12px auto;
+  max-width: 480px;
+  text-align: left;
+  line-height: 1.6;
+}
+.cashier-audit-details code {
+  font-family: var(--font-num);
+  font-weight: 700;
+  background: var(--ok-l);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* ---------- 游戏结束结算面板 ---------- */
+.game-summary-board {
+  text-align: center;
+}
+.summary-stars-row {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin: 20px 0 12px;
+}
+.big-star {
+  font-size: 36px;
+  transition: transform .2s var(--ease);
+}
+.big-star.is-won {
+  color: #F59E0B;
+  transform: scale(1.15);
+  filter: drop-shadow(0 2px 6px rgba(245, 158, 11, .5));
+}
+.big-star.is-missed {
+  color: var(--line-2);
+  opacity: .5;
+}
+.summary-stars-copy {
+  font-size: 15px;
+  color: var(--ink-2);
+  margin-bottom: 20px;
+}
+.summary-review-box {
+  background: var(--field);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  padding: 16px;
+  text-align: left;
+  margin: 20px 0;
+  font-size: 14px;
+  line-height: 1.7;
+}
+.summary-review-box b {
+  color: var(--brand-d);
+}
+.summary-review-box ul {
+  padding-left: 20px;
+  margin-top: 8px;
+}
+
+.pool-denom-btn svg.money-bill {
+  width: clamp(64px, 18vw, 96px);
+  height: auto;
+}
+.pool-denom-btn svg.money-coin {
+  width: clamp(38px, 11vw, 52px);
+  height: auto;
+}
+.game-tray-coin svg.money-bill {
+  width: clamp(64px, 18vw, 88px);
+  height: auto;
+}
+.game-tray-coin svg.money-coin {
+  width: clamp(36px, 11vw, 48px);
+  height: auto;
+}
+
 @media (max-width: 720px) {
   .topic-card { padding: 18px; }
+  .money-game-board { padding: 16px 14px 22px; }
+  .pool-grid { gap: 8px; }
+}
+@media (max-width: 600px) {
+  .money-game-top {
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: space-between;
+  }
+  .game-btn-back {
+    padding: 4px 10px;
+    font-size: 12px;
+  }
+  .game-top-title {
+    order: 3;
+    width: 100%;
+    margin-top: 4px;
+    text-align: center;
+  }
+  .game-stars-track {
+    gap: 2px;
+  }
+  .game-star {
+    font-size: 15px;
+  }
+  .game-mission-card {
+    padding: 12px 14px;
+  }
+  .target-amount {
+    font-size: 22px;
+  }
+  .game-stage-area {
+    padding: 10px;
+  }
+  .game-tray-head {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .game-tray-btns {
+    margin-left: auto;
+  }
+  .game-tray-slots {
+    gap: 6px;
+  }
+  .pool-grid {
+    gap: 6px;
+  }
+  .pool-denom-btn {
+    padding: 5px 6px;
+  }
+  .denom-btn-name {
+    font-size: 11px;
+  }
+  .money-game-board {
+    padding: 14px 10px 18px;
+  }
+  .quick-decisions {
+    flex-direction: column;
+    width: 100%;
+  }
+  .cashier-quick-btn {
+    width: 100%;
+    text-align: center;
+  }
+  .counter-payment-box {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+}
+@media (max-width: 480px) {
+  .topic-game-row { grid-template-columns: 1fr; }
+  .compare-amount-cards { flex-direction: column; gap: 8px; }
+  .compare-amount-box { width: 100%; }
 }
 @media (max-width: 420px) {
   .topic-card { padding: 16px; }

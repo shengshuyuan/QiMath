@@ -2,7 +2,7 @@
   'use strict';
 
   // 知识主题共用学习/练习流程；基础运算仍由 MT.op 与原有页面负责。
-  var model = null, skill = null, mode = 'learn', session = null, demoStep = 0;
+  var model = null, skill = null, mode = 'learn', session = null, demoStep = 0, currentSubGame = null;
   var panel, work;
 
   function esc(value) {
@@ -52,9 +52,9 @@
     });
     var label = panel.querySelector('#topic-current-skill');
     if (label) label.textContent = skill.title;
-    panel.classList.toggle('is-practicing', !!(session && !session.done));
+    panel.classList.toggle('is-practicing', !!((session && !session.done) || currentSubGame));
     panel.classList.toggle('is-wrong', mode === 'wrong');
-    if (MT.bus) MT.bus.emit('topic:navigate', { mode: mode, skill: skill.id });
+    if (MT.bus) MT.bus.emit('topic:navigate', { mode: mode, skill: skill.id, game: currentSubGame });
   }
 
   function pickerForScreen() {
@@ -71,11 +71,33 @@
     syncNavigation();
   }
 
+  function launchGame(gameId) {
+    if (!MT.moneyGames) return;
+    currentSubGame = gameId;
+    panel.classList.toggle('is-practicing', true);
+    if (MT.bus) MT.bus.emit('topic:navigate', { mode: mode, skill: skill.id, game: gameId });
+    if (gameId === 'combo') {
+      MT.moneyGames.startCombo(work, function () {
+        currentSubGame = null;
+        renderPracticeIntro();
+      });
+    } else if (gameId === 'cashier') {
+      MT.moneyGames.startCashier(work, function () {
+        currentSubGame = null;
+        renderPracticeIntro();
+      });
+    }
+  }
+
   function renderPracticeIntro() {
-    var ranged = model.id === 'mixed' && skill.id !== 'muldiv';
+    currentSubGame = null;
+    var ranged = (model.id === 'mixed' && skill.id !== 'muldiv') || model.id === 'money';
     work.innerHTML = '<article class="topic-card"><p class="topic-eyebrow">每轮 6 题 · 按自己的节奏完成</p><h3 tabindex="-1">' + esc(skill.title) + '练习</h3>' +
-      (ranged ? '<fieldset class="practice-range"><legend>这次练习的范围</legend><div class="seg"><button type="button" class="seg-btn" data-topic-range="20">20 以内 · 起步</button><button type="button" class="seg-btn" data-topic-range="100">100 以内 · 进阶</button></div></fieldset>' : '<p class="topic-note">' + (model.id === 'mixed' ? '表内乘除，所有步骤都是整数结果。' : '看清题目里的单位，再开始作答。') + '</p>') +
-      '<p class="topic-note">' + (model.id === 'mixed' ? '先判断运算顺序，再一步一步计算。' : '可以用屏幕数字键盘，也可以直接输入答案。') + '需要帮助时，可以查看方法提示。</p><div class="topic-actions">' + button('start', '开始 6 题练习 →', 'btn-main') + '</div></article>';
+      (ranged ? '<fieldset class="practice-range"><legend>这次练习的范围</legend><div class="seg"><button type="button" class="seg-btn" data-topic-range="20">' + (model.id === 'money' ? '20 元以内 · 基础' : '20 以内 · 起步') + '</button><button type="button" class="seg-btn" data-topic-range="100">' + (model.id === 'money' ? '100 元以内 · 进阶' : '100 以内 · 进阶') + '</button></div></fieldset>' : '<p class="topic-note">' + (model.id === 'mixed' ? '表内乘除，所有步骤都是整数结果。' : '看清题目里的单位，再开始作答。') + '</p>') +
+      '<p class="topic-note">' + (model.id === 'mixed' ? '先判断运算顺序，再一步一步计算。' : model.id === 'money' ? '看清钱币的面值与单位（元、角、分）。' : '可以用屏幕数字键盘，也可以直接输入答案。') + '需要帮助时，可以查看方法提示。</p>' +
+      '<div class="topic-actions">' + button('start', '开始 6 题练习 →', 'btn-main') + '</div>' +
+      (model.id === 'money' ? '<div class="topic-game-entries"><p class="topic-eyebrow">趣味游戏挑战 · 玩中学应用</p><div class="topic-game-row"><div class="topic-game-item"><div><b>🎮 凑钱小能手</b><small>用不同面额凑出目标金额，练习换算与付款</small></div><button type="button" class="btn btn-soft" data-topic-action="play-game" data-game="combo">去挑战 →</button></div><div class="topic-game-item"><div><b>🛒 小小收银员</b><small>计算商品总价，判断钱够不够与找零计算</small></div><button type="button" class="btn btn-soft" data-topic-action="play-game" data-game="cashier">去挑战 →</button></div></div></div>' : '') +
+      '</article>';
     syncNavigation();
   }
 
@@ -351,13 +373,15 @@
         input.focus({ preventScroll: true });
         if (input.setSelectionRange) input.setSelectionRange(cursorStart, cursorStart);
       }
+      if (action === 'play-game') launchGame(btn.dataset.game);
       if (action === 'review-all') start(reviewItems().slice(0, 10));
       if (action === 'review-one') start(reviewItems().filter(function (item) { return item.q.id === btn.dataset.question; }));
     }
   }
 
   function printHeader(title) {
-    return '<div class="print-head"><div class="print-title">' + esc(model.title + ' · ' + title) + '</div><div class="print-meta">' + esc(skill.title) + (model.id === 'mixed' ? skill.id === 'muldiv' ? ' · 表内乘除' : ' · ' + bag().range + ' 以内' : '') + '　姓名 __________　日期 __________</div></div>';
+    var rangeText = model.id === 'mixed' ? (skill.id === 'muldiv' ? ' · 表内乘除' : ' · ' + bag().range + ' 以内') : model.id === 'money' ? ' · ' + bag().range + ' 元以内' : '';
+    return '<div class="print-head"><div class="print-title">' + esc(model.title + ' · ' + title) + '</div><div class="print-meta">' + esc(skill.title) + rangeText + '　姓名 __________　日期 __________</div></div>';
   }
 
   MT.topics = {
@@ -373,25 +397,36 @@
     },
     enter: function (id, options) {
       options = options || {};
-      model = id === 'mixed' ? MT.mixed : MT.length;
+      model = id === 'mixed' ? MT.mixed : id === 'money' ? MT.money : MT.length;
       skill = skillById(options.skill) || skillById(bag().lastSkill) || model.skills[0];
       bag().lastSkill = skill.id;
       mode = ['learn', 'practice', 'wrong'].indexOf(options.mode) !== -1 ? options.mode : 'learn';
-      session = null; demoStep = 0;
+      session = null; demoStep = 0; currentSubGame = null;
       renderShell();
-      if (mode === 'practice') renderPracticeIntro();
+      if (mode === 'practice') {
+        if (options.game && id === 'money' && MT.moneyGames) {
+          launchGame(options.game);
+        } else {
+          renderPracticeIntro();
+        }
+      }
       else if (mode === 'wrong') renderWrong();
       else renderLearn();
       save();
     },
-    leave: function () { session = null; model = null; },
+    leave: function () {
+      if (MT.moneyGames && MT.moneyGames.getActiveGame()) {
+        MT.moneyGames.exit();
+      }
+      session = null; model = null; currentSubGame = null;
+    },
     changeMode: changeMode,
     refresh: function () { if (model) this.enter(model.id); },
-    isActive: function () { return !!(session && !session.done); },
+    isActive: function () { return !!((session && !session.done) || currentSubGame); },
     buildPrint: function (root) {
       if (!model) return false;
       var items = [];
-      var count = model.id === 'length' && skill.id === 'ruler' ? 4 : 8;
+      var count = (model.id === 'length' && skill.id === 'ruler') || (model.id === 'money') ? 6 : 8;
       for (var i = 0; i < count; i++) {
         var item = makeItem(skill.id, bag().range, randomSeed());
         // 打印为独立练习，不影响屏幕上的答题状态。

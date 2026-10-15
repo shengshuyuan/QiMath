@@ -30,6 +30,7 @@ var panel = {
   querySelector: function () { return null; },
   contains: function () { return true; }
 };
+var docHandlers = {};
 var g = {
   console: console,
   Math: math,
@@ -41,7 +42,7 @@ var g = {
     removeItem: function (key) { delete store[key]; }
   },
   document: {
-    addEventListener: function () {},
+    addEventListener: function (evt, fn) { (docHandlers[evt] || (docHandlers[evt] = [])).push(fn); },
     getElementById: function (id) {
       return id === 'panel-topic' ? panel : id === 'topic-work' ? work : id === 'topic-answer' ? input : node;
     }
@@ -53,7 +54,7 @@ var context = vm.createContext(g);
 function load(file) {
   vm.runInContext(fs.readFileSync(path.join(__dirname, '..', 'js', file), 'utf8'), context, { filename: file });
 }
-['core.js', 'ops.js', 'mul.js', 'div.js', 'add.js', 'sub.js', 'mixed.js', 'storage.js', 'topics.js'].forEach(load);
+['core.js', 'ops.js', 'mul.js', 'div.js', 'add.js', 'sub.js', 'mixed.js', 'length.js', 'money.js', 'money-games.js', 'storage.js', 'topics.js'].forEach(load);
 var MT = g.MT;
 MT.speech = { stop: function () {}, play: function () {}, warmup: function () {} };
 MT.sound = { play: function () {} };
@@ -98,13 +99,16 @@ assert.equal(progress.stats.firstSeenAt, 1);
 
 MT.progress = MT.storage.defaults();
 MT.topics.init();
+if (MT.moneyGames && MT.moneyGames.init) MT.moneyGames.init();
 MT.topics.enter('mixed');
 var q = MT.mixed.generate('addsub', 20, 1);
 function bag() { return MT.progress.topics.mixed; }
 function stats() { return bag().skills.addsub; }
 function click(dataset) {
-  var button = { dataset: dataset };
-  handlers.click({ target: { closest: function () { return button; } } });
+  var button = { dataset: dataset, closest: function () { return button; } };
+  var event = { target: button };
+  if (handlers.click) handlers.click(event);
+  (docHandlers.click || []).forEach(function (fn) { fn(event); });
 }
 function action(name, extra) {
   var dataset = { topicAction: name };
@@ -226,4 +230,28 @@ assert.equal(ends[0].rendered, true);
 click({ topicMode: 'learn' });
 assert.equal(ends.length, 1, '没有活动练习时不应重复通知结束');
 
-console.log('check-topics: ok (legacy data, persistence, scoring, clean streak, practice exit)');
+// 验证认识人民币课程接入与练习状态流转
+MT.topics.enter('money', { skill: 'convert', mode: 'practice' });
+assert.ok(work.html.includes('元角分换算练习'));
+assert.ok(work.html.includes('20 元以内 · 基础'));
+assert.ok(work.html.includes('100 元以内 · 进阶'));
+assert.ok(work.html.includes('凑钱小能手'));
+assert.ok(work.html.includes('小小收银员'));
+
+// 验证人民币游戏子页面启动与退出
+action('play-game', { game: 'combo' });
+assert.equal(MT.moneyGames.getActiveGame(), 'combo');
+assert.ok(work.html.includes('凑钱小能手'));
+assert.equal(MT.topics.isActive(), true);
+
+click({ gameAction: 'quit' });
+assert.equal(MT.moneyGames.getActiveGame(), null);
+assert.ok(work.html.includes('元角分换算练习'));
+
+// 验证人民币打印纸生成
+var printRoot = { innerHTML: '' };
+assert.equal(MT.topics.buildPrint(printRoot), true);
+assert.ok(printRoot.innerHTML.includes('认识人民币 · 练习纸'));
+assert.ok(printRoot.innerHTML.includes('元角分换算'));
+
+console.log('check-topics: ok (legacy data, persistence, scoring, clean streak, practice exit, money curriculum)');

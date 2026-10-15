@@ -8,7 +8,7 @@ var vm = require('node:vm');
 var context = { MT: { progress: { topics: {} } } };
 context.window = context;
 vm.createContext(context);
-['mixed.js', 'length.js', 'navigation.js'].forEach(function (name) {
+['mixed.js', 'length.js', 'money.js', 'navigation.js'].forEach(function (name) {
   vm.runInContext(fs.readFileSync(path.join(__dirname, '..', 'js', name), 'utf8'), context, { filename: name });
 });
 var nav = context.MT.navigation;
@@ -41,4 +41,7 @@ assert.equal(nav.normalize({ course: 'mixed', skill: 'invalid', mode: 'invalid' 
 assert.equal(nav.normalize({ course: 'mixed', mode: 'invalid' }).mode, 'learn');
 assert.equal(nav.parse('#/course/mul/games/learn').view, 'explore');
 assert.equal(nav.parse('#/course/add/table/wrong').view, 'quiz');
+assert.equal(nav.parse('#/course/money/shopping/practice/cashier').game, 'cashier');
+assert.equal(nav.parse('#/course/money/convert/practice/combo').game, 'combo');
+assert.equal(nav.hash({ course: 'money', skill: 'shopping', mode: 'practice', game: 'cashier' }), '#/course/money/shopping/practice/cashier');
 console.log('check-navigation: ok (' + checked + ' route combinations, invalid links, saved knowledge point)');

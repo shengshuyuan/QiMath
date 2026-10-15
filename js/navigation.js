@@ -8,11 +8,12 @@
     { id: 'mul', topic: 'basic', title: '乘法', domain: '数与运算', mark: '×', description: '用分组与阵列理解九九乘法' },
     { id: 'div', topic: 'basic', title: '除法', domain: '数与运算', mark: '÷', description: '平均分与包含，练习表内除法' },
     { id: 'mixed', topic: 'mixed', title: '混合运算', domain: '数与运算', mark: '( )', description: '从左往右、先乘除后加减与小括号' },
-    { id: 'length', topic: 'length', title: '米和厘米', domain: '量与测量', mark: 'm / cm', description: '认识长度单位、读尺、比较与换算' }
+    { id: 'length', topic: 'length', title: '米和厘米', domain: '量与测量', mark: 'm / cm', description: '认识长度单位、读尺、比较与换算' },
+    { id: 'money', topic: 'money', title: '认识人民币', domain: '量与测量', mark: '¥', description: '认识钱币、元角分换算、计算与购物应用' }
   ];
 
   function course(id) { return courses.filter(function (c) { return c.id === id; })[0] || null; }
-  function model(id) { return id === 'mixed' ? MT.mixed : id === 'length' ? MT.length : null; }
+  function model(id) { return id === 'mixed' ? MT.mixed : id === 'length' ? MT.length : id === 'money' ? MT.money : null; }
 
   function normalize(route) {
     var c = course(route && route.course);
@@ -28,6 +29,9 @@
       var saved = MT.progress && MT.progress.topics[c.id];
       var last = saved && saved.lastSkill;
       result.skill = skills.indexOf(route.skill) !== -1 ? route.skill : skills.indexOf(last) !== -1 ? last : skills[0];
+      if (c.id === 'money' && mode === 'practice' && ['combo', 'cashier'].indexOf(route.game) !== -1) {
+        result.game = route.game;
+      }
     }
     return result;
   }
@@ -37,12 +41,19 @@
     if (parts[0] !== 'course') return { page: 'catalog' };
     var c = course(parts[1]);
     if (!c) return { page: 'catalog' };
-    return normalize({ course: c.id, mode: parts[3], view: c.topic === 'basic' ? parts[2] : '', skill: c.topic === 'basic' ? '' : parts[2] });
+    return normalize({
+      course: c.id,
+      mode: parts[3],
+      view: c.topic === 'basic' ? parts[2] : '',
+      skill: c.topic === 'basic' ? '' : parts[2],
+      game: parts[4] || ''
+    });
   }
 
   function hash(route) {
     var r = normalize(route);
     if (r.page === 'catalog') return '#/catalog';
+    if (r.game) return '#/course/' + r.course + '/' + (r.skill || r.view) + '/' + r.mode + '/' + r.game;
     return '#/course/' + r.course + '/' + (r.skill || r.view) + '/' + r.mode;
   }
 

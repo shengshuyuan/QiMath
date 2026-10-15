@@ -54,7 +54,7 @@
 
   function renderCatalog() {
     ['number', 'measure'].forEach(function (group) {
-      var courses = MT.navigation.courses.filter(function (c) { return (c.topic === 'length') === (group === 'measure'); });
+      var courses = MT.navigation.courses.filter(function (c) { return (c.domain === '量与测量') === (group === 'measure'); });
       document.getElementById(group + '-courses').innerHTML = courses.map(function (c) {
         return '<button type="button" class="course-card" data-course="' + c.id + '"><span class="course-mark" aria-hidden="true">' + c.mark + '</span><span class="course-card-copy"><b>' + c.title + '</b><small>' + c.description + '</small></span><span class="course-arrow" aria-hidden="true">→</span></button>';
       }).join('');
@@ -64,7 +64,7 @@
     resume.hidden = last.page !== 'course';
     if (!resume.hidden) {
       var c = MT.navigation.course(last.course);
-      var m = c.topic === 'mixed' ? MT.mixed : c.topic === 'length' ? MT.length : null;
+      var m = c.topic === 'mixed' ? MT.mixed : c.topic === 'length' ? MT.length : c.topic === 'money' ? MT.money : null;
       var skill = m && m.skills.filter(function (s) { return s.id === last.skill; })[0];
       resume.textContent = '继续学习 · ' + c.title + (skill ? ' · ' + skill.title : '') + ' →';
     }
@@ -137,7 +137,7 @@
         if (route.mode !== 'wrong') basicViews[route.mode] = route.view;
       } else {
         document.getElementById('panel-topic').hidden = false;
-        MT.topics.enter(c.id, { skill: route.skill, mode: route.mode });
+        MT.topics.enter(c.id, { skill: route.skill, mode: route.mode, game: route.game });
       }
     }
     applyingRoute = false;
@@ -339,7 +339,7 @@
     });
     MT.bus.on('topic:navigate', function (state) {
       if (applyingRoute || route.page !== 'course' || currentTopic === 'basic') return;
-      route = MT.navigation.normalize({ course: route.course, mode: state.mode, skill: state.skill });
+      route = MT.navigation.normalize({ course: route.course, mode: state.mode, skill: state.skill, game: state.game });
       syncCourseModes(route.mode);
       rememberRoute(route);
     });
