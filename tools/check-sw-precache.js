@@ -42,6 +42,14 @@ g.self = g;
 vm.createContext(g);
 vm.runInContext(fs.readFileSync(path.join(__dirname, '..', 'sw.js'), 'utf8'), g, { filename: 'sw.js' });
 
+var root = path.join(__dirname, '..');
+var html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+var codeAssets = html.matchAll(/(?:src|href)="((?:js|css)\/[^"?]+)(?:\?[^\"]*)?"/g);
+for (var item of codeAssets) {
+  assert.ok(g.ASSETS.indexOf('./' + item[1]) !== -1, '页面代码必须预缓存：' + item[1]);
+  assert.ok(fs.existsSync(path.join(root, item[1])), '预缓存文件必须存在：' + item[1]);
+}
+
 var origin = 'https://qimath.example';
 stored[origin + '/js/add.js'] = { url: origin + '/js/add.js', body: 'add' };
 stored[origin + '/'] = { url: origin + '/', body: 'home' };

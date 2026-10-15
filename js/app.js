@@ -2,6 +2,7 @@
   'use strict';
 
   var current = 'explore';
+  var currentTopic = 'basic';
 
   function showFatal(msg) {
     var box = document.getElementById('boot-error');
@@ -45,6 +46,39 @@
 
   function knownOp(id) {
     return !!(id && MT.op.get(id));
+  }
+
+  function setTopic(id) {
+    if (['basic', 'mixed', 'length'].indexOf(id) === -1) id = 'basic';
+    MT.speech.stop();
+    MT.quiz.stop();
+    if (MT.games) MT.games.pause();
+    MT.table.close();
+    MT.topics.leave();
+    currentTopic = id;
+    MT.progress.settings.topic = id;
+    MT.storage.save();
+    var basic = id === 'basic';
+    document.body.classList.toggle('topic-basic', basic);
+    document.getElementById('op-switch').hidden = !basic;
+    document.getElementById('basic-tabs').hidden = !basic;
+    document.getElementById('btn-badges').hidden = !basic;
+    document.getElementById('panel-topic').hidden = basic;
+    document.querySelectorAll('[data-basic-setting]').forEach(function (row) { row.hidden = !basic; });
+    document.querySelectorAll('[data-topic]').forEach(function (btn) {
+      var on = btn.dataset.topic === id;
+      btn.classList.toggle('is-on', on);
+      btn.setAttribute('aria-pressed', String(on));
+    });
+    closeSettings();
+    syncOp();
+    if (basic) showTab(current);
+    else {
+      ['explore', 'table', 'quiz', 'games'].forEach(function (name) { document.getElementById('panel-' + name).hidden = true; });
+      MT.topics.enter(id);
+      if (MT.bus) MT.bus.emit('tab:change', { topic: id });
+      window.scrollTo(0, 0);
+    }
   }
 
   function syncOp() {
@@ -177,6 +211,7 @@
       MT.quiz.refresh();
       if (MT.games) MT.games.resetAll();
       MT.explore.redraw();
+      setTopic('basic');
       closeSettings();
     });
   }
@@ -240,6 +275,13 @@
         });
       })(tabs[i]);
     }
+    document.getElementById('topic-nav').addEventListener('click', function (e) {
+      var btn = e.target.closest('[data-topic]');
+      if (btn && btn.dataset.topic !== currentTopic) {
+        MT.sound.play('click');
+        setTopic(btn.dataset.topic);
+      }
+    });
   }
 
   function notes() {
@@ -256,8 +298,8 @@
   function onResize() {
     if (rt) clearTimeout(rt);
     rt = setTimeout(function () {
-      if (current === 'explore') MT.explore.redraw();
-      if (current === 'table') MT.table.redraw();
+      if (currentTopic === 'basic' && current === 'explore') MT.explore.redraw();
+      if (currentTopic === 'basic' && current === 'table') MT.table.redraw();
     }, 200);
   }
 
@@ -269,6 +311,7 @@
       function shouldDeferReload() {
         if (MT.quiz && MT.quiz.isActive && MT.quiz.isActive()) return true;
         if (MT.games && MT.games.isActive && MT.games.isActive()) return true;
+        if (MT.topics && MT.topics.isActive()) return true;
         return false;
       }
 
@@ -293,6 +336,9 @@
         MT.bus.on('game:end', function () {
           if (pendingReload) performReload();
         });
+        MT.bus.on('topic:end', function () {
+          if (pendingReload) performReload();
+        });
         MT.bus.on('tab:change', function () {
           if (pendingReload) performReload();
         });
@@ -315,12 +361,13 @@
       MT.quiz.init();
       if (MT.games) MT.games.init();
       if (MT.badges) MT.badges.init();
+      MT.topics.init();
 
       bindHeader();
       bindSettings();
       notes();
       applySettings();
-      showTab('explore');
+      setTopic(MT.progress.settings.topic);
       registerSW();
 
       window.addEventListener('resize', onResize);

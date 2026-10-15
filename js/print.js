@@ -139,15 +139,18 @@
       var root = document.getElementById('print-root');
       if (!root) return;
       clear();
-      var info = meta();
-      var subtitle = info.subtitle;
-      var keys = pickProblems(20);
-      root.appendChild(blankSheet());
-      var title = info.problemTitle(keys.length);
-      root.appendChild(problemSheet(keys, title, subtitle));
-      var st = MT.progress && MT.progress.settings;
-      if (st && st.printAnswers === 'on') {
-        root.appendChild(answerSheet(keys, subtitle));
+      var topicPrinted = MT.progress.settings.topic !== 'basic' && MT.topics && MT.topics.buildPrint(root);
+      if (!topicPrinted) {
+        var info = meta();
+        var subtitle = info.subtitle;
+        var keys = pickProblems(20);
+        root.appendChild(blankSheet());
+        var title = info.problemTitle(keys.length);
+        root.appendChild(problemSheet(keys, title, subtitle));
+        var st = MT.progress && MT.progress.settings;
+        if (st && st.printAnswers === 'on') {
+          root.appendChild(answerSheet(keys, subtitle));
+        }
       }
 
       try { window.print(); } catch (e) {}

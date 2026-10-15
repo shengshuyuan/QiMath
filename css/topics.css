@@ -1,0 +1,108 @@
+.topic-nav { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-bottom: 20px; }
+.topic-link { display: flex; gap: 10px; align-items: center; text-align: left; padding: 13px 16px; border: 1.5px solid var(--line-2); border-radius: var(--r-lg); background: var(--card); min-height: 76px; color: var(--ink); }
+.topic-link > span:first-child { font-size: 26px; }
+.topic-link b { display: block; font-size: 16px; }
+.topic-link small { display: block; font-size: 12px; color: var(--ink-2); margin-top: 2px; }
+.topic-link.is-on { border-color: var(--brand); background: var(--brand-l); box-shadow: 0 3px 0 var(--line-2); }
+.topic-link.is-on b { color: var(--brand-d); }
+.topic-head { display: flex; justify-content: space-between; gap: 12px; margin: 8px 0 18px; }
+.topic-head h2 { font-size: clamp(25px, 4vw, 32px); margin: 2px 0 6px; }
+.topic-head p:not(.topic-eyebrow), .topic-card-head p, .topic-muted { color: var(--ink-2); font-size: 14px; }
+.topic-eyebrow { color: var(--brand-d); font-size: 12px; font-weight: 600; letter-spacing: .08em; }
+.topic-range { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 18px; font-size: 14px; }
+.topic-range .seg-btn { min-height: 44px; }
+.topic-layout { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 18px; align-items: start; }
+.topic-skills { display: grid; gap: 9px; }
+.topic-mobile-hint { display: none; }
+.topic-skill { display: flex; gap: 10px; align-items: center; min-height: 70px; border: 1px solid var(--line-2); border-radius: var(--r-md); padding: 12px; text-align: left; background: var(--card); }
+.topic-skill b { display: block; font-size: 14px; }
+.topic-skill small { display: block; color: var(--ink-2); font-size: 11px; margin-top: 3px; }
+.topic-skill-num { display: grid; place-items: center; flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; color: var(--brand-d); background: var(--muted); font-family: var(--font-num); }
+.topic-skill.is-on { border-color: var(--brand); background: var(--brand-l); }
+.topic-skill.is-on .topic-skill-num { color: white; background: var(--brand-d); }
+.topic-content { min-width: 0; }
+.topic-modes { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+.topic-modes .btn { min-height: 44px; flex: 1 1 auto; }
+.topic-modes .is-on { color: var(--brand-d); border-color: var(--brand); background: var(--brand-l); }
+.topic-card { border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--card); padding: 24px; box-shadow: var(--shadow); scroll-margin-top: 70px; }
+.topic-card h3 { font-size: 21px; margin-bottom: 6px; line-height: 1.5; }
+.topic-card h3, .topic-card .btn, #topic-answer { scroll-margin-top: 110px; scroll-margin-bottom: 20px; }
+.topic-card-head { display: flex; justify-content: space-between; gap: 16px; align-items: start; margin-bottom: 22px; }
+.topic-card-head .btn { flex-shrink: 0; }
+.topic-lesson { font-size: 16px; line-height: 1.85; }
+.topic-lesson h4 { margin: 20px 0 8px; font-size: 17px; }
+.topic-lesson p + p { margin-top: 10px; }
+.topic-lesson ul, .topic-lesson ol { padding-left: 23px; }
+.topic-rule { padding: 12px 16px; background: var(--brand-l); color: var(--brand-d); border-radius: var(--r-md); margin: 14px 0; font-weight: 600; }
+.topic-note { font-size: 13px; color: var(--ink-2); margin-top: 12px; }
+.topic-example { padding: 14px; margin: 14px 0; background: var(--field); border: 1px solid var(--line); border-radius: var(--r-md); }
+.topic-demo { border-top: 1px solid var(--line); padding-top: 20px; margin-top: 22px; }
+.topic-expression { font-family: var(--font-num); font-size: clamp(25px, 4.5vw, 38px); font-weight: 700; letter-spacing: .03em; text-align: center; margin: 20px 0; line-height: 1.5; overflow-wrap: anywhere; }
+.topic-demo-steps { display: grid; gap: 9px; font-size: 18px; margin-bottom: 16px; }
+.topic-step-label { display: inline-block; color: var(--ink-2); font-size: 12px; margin-right: 12px; }
+.topic-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
+.topic-actions .btn { min-height: 44px; }
+.topic-round-meta { display: flex; justify-content: space-between; gap: 10px; color: var(--ink-2); font-size: 13px; }
+.topic-progress { width: 100%; height: 7px; accent-color: var(--brand); margin: 10px 0 20px; }
+.topic-prompt { text-align: center; padding: 12px 0; font-size: 17px; }
+.topic-choices { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 24px 0 8px; }
+.topic-choices .btn { min-height: 60px; height: auto; padding: 10px; font-size: 19px; overflow-wrap: anywhere; }
+.topic-answer-form { margin: 20px auto 8px; max-width: 440px; }
+.topic-answer-form label { display: block; font-size: 13px; color: var(--ink-2); margin-bottom: 6px; }
+.topic-answer-row { display: flex; align-items: center; gap: 8px; }
+#topic-answer { width: 100%; min-width: 60px; min-height: 52px; border: 2px solid var(--line-2); border-radius: var(--r-md); background: var(--field); font-family: var(--font-num); font-size: 28px; padding: 4px 10px; color: var(--ink); text-align: center; }
+.topic-unit, .topic-answer-row .btn { flex-shrink: 0; }
+.topic-keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; max-width: 330px; margin: 16px auto; }
+.topic-keypad .btn { min-height: 46px; font-size: 19px; }
+.topic-keypad .btn[data-key="清空"], .topic-keypad .btn[data-key="退格"] { font-size: 14px; }
+.topic-feedback { min-height: 32px; color: var(--bad-text); margin: 12px 0 0; font-size: 15px; }
+.topic-feedback.is-good { color: var(--ok-text); }
+.topic-solution { background: var(--ok-l); border-radius: var(--r-md); padding: 14px 16px; color: var(--ok-text); margin: 10px 0; }
+.topic-solution p + p { margin-top: 7px; }
+.topic-empty { text-align: center; padding: 28px 0; }
+.topic-empty > span { font-size: 38px; }
+.topic-empty p { margin: 12px 0 22px; color: var(--ink-2); }
+.topic-wrong-list { display: grid; gap: 10px; margin-top: 18px; }
+.topic-wrong-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px; border: 1px solid var(--line); border-radius: var(--r-md); }
+.topic-wrong-row b { font-size: 16px; }
+.topic-wrong-row small { display: block; color: var(--ink-2); font-size: 12px; margin-top: 5px; }
+.topic-wrong-row .btn { flex-shrink: 0; }
+.topic-result p { color: var(--ink-2); margin-top: 12px; }
+.length-diagram { width: 100%; max-width: 42rem; margin: 16px auto; }
+.length-diagram svg, .topic-lesson svg, .topic-question svg { display: block; width: 100%; height: auto; max-height: 300px; }
+body:not(.topic-basic) .brand-badge { animation: none; }
+/* 不创建 body 滚动容器，保证长课程中页头仍可停留在顶部。 */
+body:not(.topic-basic) { overflow-x: clip; }
+@media (max-width: 720px) {
+  body:not(.topic-basic) .header-brand { flex: 0 1 auto; }
+  body:not(.topic-basic) .header-top { flex-wrap: nowrap; }
+  .topic-layout { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+  .topic-mobile-hint { display: block; margin: 0 0 6px; color: var(--ink-2); font-size: 11px; }
+  .topic-skills { display: flex; overflow-x: auto; gap: 8px; padding: 2px 2px 7px; scroll-snap-type: x proximity; }
+  .topic-skill { min-height: 62px; padding: 10px; flex: 0 0 166px; scroll-snap-align: start; }
+  .topic-card { padding: 18px; }
+  .topic-link { flex-direction: column; align-items: start; gap: 3px; padding: 10px; min-height: 88px; }
+  .topic-link > span:first-child { font-size: 21px; }
+  .topic-link b { font-size: 14px; }
+  .topic-link small { font-size: 11px; }
+  .topic-nav { gap: 7px; margin-bottom: 18px; }
+}
+@media (max-width: 420px) {
+  .topic-card { padding: 16px; }
+  .topic-card-head { flex-direction: column; gap: 10px; }
+  .topic-skill b { font-size: 13px; }
+  .topic-skill-num { width: 24px; height: 24px; }
+  .topic-skill { gap: 7px; padding: 8px; }
+  .topic-modes { gap: 6px; }
+  .topic-modes .btn { font-size: 13px; padding: 0 9px; }
+  .topic-answer-row .btn { padding: 0 10px; font-size: 14px; }
+  .topic-head h2 { font-size: 26px; }
+}
+@media print {
+  .topic-print-question { break-inside: avoid; padding: 12px 0; border-bottom: 1px solid #bbb; color: #111; }
+  .topic-print-question > p { margin: 4px 0; font-size: 15px; }
+  .topic-print-question svg { display: block; width: 100%; max-width: 500px; height: auto; max-height: 110px; }
+  .topic-print-question .length-diagram { margin: 5px 0; }
+  .topic-print-question .topic-note { font-size: 10px; margin-top: 2px; }
+  .topic-print-space { padding: 12px 0; }
+}

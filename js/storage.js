@@ -57,6 +57,7 @@
       subNeedsPractice: {},
       subWrong: {},
       subLevels: defaultLevels(6),
+      topics: {},
       badges: [],
       settings: {
         speechOn: true,
@@ -71,6 +72,7 @@
         objectSkin: 'dot',
         hapticOn: 'on',
         op: 'mul',
+        topic: 'basic',
         divStory: 'share'
       },
       stats: { totalCorrect: 0, totalWrong: 0, firstSeenAt: Date.now(), lastSeenAt: Date.now() }
@@ -142,6 +144,39 @@
     if (data.subWrong) d.subWrong = data.subWrong;
     if (data.subMastered) d.subMastered = data.subMastered;
     if (data.subNeedsPractice) d.subNeedsPractice = data.subNeedsPractice;
+    if (data.topics && typeof data.topics === 'object' && !Array.isArray(data.topics)) {
+      ['mixed', 'length'].forEach(function (id) {
+        var src = data.topics[id];
+        if (!src || typeof src !== 'object') return;
+        var dest = { skills: {}, wrong: {}, range: src.range === 100 ? 100 : 20, lastSkill: '' };
+        if (typeof src.lastSkill === 'string') dest.lastSkill = src.lastSkill;
+        if (src.skills && typeof src.skills === 'object') {
+          Object.keys(src.skills).forEach(function (key) {
+            if (!/^[a-z]+$/.test(key)) return;
+            var s = src.skills[key];
+            if (!s || typeof s !== 'object') return;
+            dest.skills[key] = {
+              completed: Math.max(0, Math.floor(Number(s.completed) || 0)),
+              clean: Math.max(0, Math.floor(Number(s.clean) || 0))
+            };
+          });
+        }
+        if (src.wrong && typeof src.wrong === 'object') {
+          Object.keys(src.wrong).forEach(function (key) {
+            var w = src.wrong[key];
+            if (!w || !/^[a-z]+$/.test(w.skill) || !Number.isFinite(w.seed) || !Number.isInteger(w.seed)) return;
+            // 仅保存重建题目所需的数据，不信任本地记录中的 HTML。
+            dest.wrong[key] = {
+              skill: w.skill, seed: w.seed >>> 0, range: w.range === 100 ? 100 : 20,
+              wrongCount: Math.max(1, Math.floor(Number(w.wrongCount) || 1)),
+              cleanStreak: w.cleanStreak === 1 ? 1 : 0,
+              errorKind: typeof w.errorKind === 'string' ? w.errorKind : 'answer'
+            };
+          });
+        }
+        d.topics[id] = dest;
+      });
+    }
     if (Array.isArray(data.badges)) {
       d.badges = data.badges;
     }
