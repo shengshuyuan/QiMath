@@ -23,6 +23,7 @@ Object.defineProperty(work, 'innerHTML', {
   set: function (html) { this.html = html; input.value = ''; }
 });
 var panel = {
+  classList: { toggle: function () {} },
   innerHTML: '',
   addEventListener: function (event, handler) { handlers[event] = handler; },
   querySelectorAll: function () { return []; },
@@ -214,7 +215,7 @@ assert.equal(bag().wrong[q.id], undefined, '移出错题本的状态应保存');
 bag().range = 20;
 var ends = [];
 MT.bus.on('topic:end', function () {
-  ends.push({ active: MT.topics.isActive(), rendered: work.html.includes('现在自己试一试') });
+  ends.push({ active: MT.topics.isActive(), rendered: work.html.includes('开始 6 题练习') });
 });
 practice();
 action('quit');

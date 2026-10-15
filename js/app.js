@@ -2,7 +2,11 @@
   'use strict';
 
   var current = 'explore';
-  var currentTopic = 'basic';
+  var currentTopic = 'catalog';
+  var route = { page: 'catalog' };
+  var applyingRoute = false;
+  var handledHash = '';
+  var basicViews = { learn: 'explore', practice: 'quiz' };
 
   function showFatal(msg) {
     var box = document.getElementById('boot-error');
@@ -34,7 +38,7 @@
     for (var j = 0; j < tabs.length; j++) {
       var on = tabs[j].dataset.tab === name;
       tabs[j].classList.toggle('is-on', on);
-      tabs[j].setAttribute('aria-selected', on ? 'true' : 'false');
+      tabs[j].setAttribute('aria-pressed', on ? 'true' : 'false');
     }
     closeSettings();
     if (name === 'explore') MT.explore.redraw();
@@ -48,55 +52,115 @@
     return !!(id && MT.op.get(id));
   }
 
-  function setTopic(id) {
-    if (['basic', 'mixed', 'length'].indexOf(id) === -1) id = 'basic';
-    MT.speech.stop();
-    MT.quiz.stop();
-    if (MT.games) MT.games.pause();
-    MT.table.close();
-    MT.topics.leave();
-    currentTopic = id;
-    MT.progress.settings.topic = id;
-    MT.storage.save();
-    var basic = id === 'basic';
-    document.body.classList.toggle('topic-basic', basic);
-    document.getElementById('op-switch').hidden = !basic;
-    document.getElementById('basic-tabs').hidden = !basic;
-    document.getElementById('btn-badges').hidden = !basic;
-    document.getElementById('panel-topic').hidden = basic;
-    document.querySelectorAll('[data-basic-setting]').forEach(function (row) { row.hidden = !basic; });
-    document.querySelectorAll('[data-topic]').forEach(function (btn) {
-      var on = btn.dataset.topic === id;
+  function renderCatalog() {
+    ['number', 'measure'].forEach(function (group) {
+      var courses = MT.navigation.courses.filter(function (c) { return (c.topic === 'length') === (group === 'measure'); });
+      document.getElementById(group + '-courses').innerHTML = courses.map(function (c) {
+        return '<button type="button" class="course-card" data-course="' + c.id + '"><span class="course-mark" aria-hidden="true">' + c.mark + '</span><span class="course-card-copy"><b>' + c.title + '</b><small>' + c.description + '</small></span><span class="course-arrow" aria-hidden="true">→</span></button>';
+      }).join('');
+    });
+    var last = MT.navigation.parse(MT.progress.settings.lastLocation);
+    var resume = document.getElementById('btn-continue');
+    resume.hidden = last.page !== 'course';
+    if (!resume.hidden) {
+      var c = MT.navigation.course(last.course);
+      var m = c.topic === 'mixed' ? MT.mixed : c.topic === 'length' ? MT.length : null;
+      var skill = m && m.skills.filter(function (s) { return s.id === last.skill; })[0];
+      resume.textContent = '继续学习 · ' + c.title + (skill ? ' · ' + skill.title : '') + ' →';
+    }
+  }
+
+  function syncCourseModes(mode) {
+    document.querySelectorAll('[data-course-mode]').forEach(function (btn) {
+      var on = btn.dataset.courseMode === mode;
       btn.classList.toggle('is-on', on);
       btn.setAttribute('aria-pressed', String(on));
     });
-    closeSettings();
-    syncOp();
-    if (basic) showTab(current);
-    else {
-      ['explore', 'table', 'quiz', 'games'].forEach(function (name) { document.getElementById('panel-' + name).hidden = true; });
-      MT.topics.enter(id);
-      if (MT.bus) MT.bus.emit('tab:change', { topic: id });
-      window.scrollTo(0, 0);
+    document.getElementById('basic-tabs').hidden = currentTopic !== 'basic' || mode === 'wrong';
+    document.querySelectorAll('[data-tab]').forEach(function (btn) {
+      btn.hidden = mode === 'learn' ? ['explore', 'table'].indexOf(btn.dataset.tab) === -1 : ['quiz', 'games'].indexOf(btn.dataset.tab) === -1;
+    });
+    document.getElementById('btn-quiz-reset').hidden = mode !== 'practice';
+  }
+
+  function rememberRoute(r, replace) {
+    var hash = MT.navigation.hash(r);
+    if (location.hash !== hash) {
+      // 不刷新页面，让浏览器的返回/前进能恢复课程、知识点与学习方式。
+      window.history[replace ? 'replaceState' : 'pushState'](null, '', hash);
     }
+    handledHash = hash;
+    if (r.page === 'course') {
+      MT.progress.settings.lastLocation = hash;
+      MT.storage.save();
+    }
+  }
+
+  function openRoute(next, replace) {
+    var previous = route;
+    route = MT.navigation.normalize(next);
+    rememberRoute(route, replace);
+    applyingRoute = true;
+    MT.speech.stop();
+    MT.quiz.stop();
+    MT.quiz.closeDialogs();
+    if (MT.badges) MT.badges.close();
+    if (MT.games) MT.games.pause();
+    MT.table.close();
+    MT.topics.leave();
+    closeSettings();
+    ['explore', 'table', 'quiz', 'games', 'topic'].forEach(function (name) { document.getElementById('panel-' + name).hidden = true; });
+    var catalog = route.page === 'catalog';
+    currentTopic = catalog ? 'catalog' : MT.navigation.course(route.course).topic;
+    document.body.classList.toggle('topic-basic', currentTopic === 'basic');
+    document.body.classList.toggle('in-catalog', catalog);
+    document.body.classList.remove('is-practicing');
+    document.getElementById('catalog-page').hidden = !catalog;
+    document.getElementById('course-heading').hidden = catalog;
+    document.getElementById('btn-directory').setAttribute('aria-current', catalog ? 'page' : 'false');
+    document.getElementById('btn-print').hidden = catalog;
+    document.getElementById('btn-badges').hidden = currentTopic !== 'basic';
+    document.querySelectorAll('[data-basic-setting]').forEach(function (row) { row.hidden = currentTopic !== 'basic'; });
+    if (catalog) renderCatalog();
+    else {
+      var c = MT.navigation.course(route.course);
+      MT.progress.settings.topic = c.topic;
+      document.getElementById('course-domain').textContent = c.domain;
+      document.getElementById('breadcrumb-course').textContent = c.title;
+      document.getElementById('course-title').textContent = c.title;
+      syncCourseModes(route.mode);
+      if (c.topic === 'basic') {
+        setOp(c.id);
+        syncOp();
+        showTab(route.view);
+        if (route.view === 'quiz') MT.quiz.setMode(route.mode === 'wrong' ? 'wrong' : 'levels');
+        if (route.mode !== 'wrong') basicViews[route.mode] = route.view;
+      } else {
+        document.getElementById('panel-topic').hidden = false;
+        MT.topics.enter(c.id, { skill: route.skill, mode: route.mode });
+      }
+    }
+    applyingRoute = false;
+    if (MT.bus) MT.bus.emit('tab:change', { page: route.page, course: route.course });
+    window.scrollTo(0, 0);
+    if (catalog || previous.course !== route.course) {
+      document.getElementById(catalog ? 'catalog-title' : 'course-title').focus({ preventScroll: true });
+    }
+  }
+
+  function changeCourseMode(mode) {
+    if (route.page !== 'course' || route.mode === mode) return;
+    if (currentTopic === 'basic') openRoute({ course: route.course, mode: mode, view: basicViews[mode] });
+    else MT.topics.changeMode(mode);
   }
 
   function syncOp() {
     var st = MT.progress && MT.progress.settings;
     var op = st && knownOp(st.op) ? st.op : 'mul';
-    var box = document.getElementById('op-switch');
-    if (box) {
-      var kids = box.children;
-      for (var i = 0; i < kids.length; i++) {
-        var on = kids[i].dataset.op === op;
-        kids[i].classList.toggle('is-on', on);
-        kids[i].setAttribute('aria-pressed', on ? 'true' : 'false');
-      }
-    }
     document.body.classList.toggle('op-div', op === 'div');
     var tabTable = document.querySelector('.tab[data-tab="table"]');
     if (tabTable) {
-      tabTable.textContent = (MT.op.current() && MT.op.current().tableTab) || '📋 口诀表';
+      tabTable.textContent = ((MT.op.current() && MT.op.current().tableTab) || '口诀表').replace('📋 ', '');
     }
     var tmSeg = document.querySelector('.seg[data-setting="tableMode"]');
     if (tmSeg) {
@@ -211,7 +275,7 @@
       MT.quiz.refresh();
       if (MT.games) MT.games.resetAll();
       MT.explore.redraw();
-      setTopic('basic');
+      openRoute({ page: 'catalog' });
       closeSettings();
     });
   }
@@ -254,34 +318,36 @@
       if (e.key === 'Escape') closeSettings();
     });
 
-    var opSwitch = document.getElementById('op-switch');
-    if (opSwitch) {
-      opSwitch.addEventListener('click', function (e) {
-        var t = e.target;
-        if (!t || !t.dataset || !t.dataset.op) return;
-        MT.speech.warmup();
-        MT.sound.play('click');
-        setOp(t.dataset.op);
-      });
-    }
-
-    var tabs = document.querySelectorAll('.tab');
-    for (var i = 0; i < tabs.length; i++) {
-      (function (btn) {
-        btn.addEventListener('click', function () {
-          MT.speech.warmup();
-          MT.sound.play('click');
-          showTab(btn.dataset.tab);
-        });
-      })(tabs[i]);
-    }
-    document.getElementById('topic-nav').addEventListener('click', function (e) {
-      var btn = e.target.closest('[data-topic]');
-      if (btn && btn.dataset.topic !== currentTopic) {
-        MT.sound.play('click');
-        setTopic(btn.dataset.topic);
-      }
+    document.getElementById('btn-directory').addEventListener('click', function () { openRoute({ page: 'catalog' }); });
+    document.getElementById('catalog-page').addEventListener('click', function (e) {
+      var btn = e.target.closest('[data-course]');
+      if (btn) openRoute({ course: btn.dataset.course, mode: 'learn' });
     });
+    document.getElementById('btn-continue').addEventListener('click', function () {
+      openRoute(MT.navigation.parse(MT.progress.settings.lastLocation));
+    });
+    document.getElementById('course-modes').addEventListener('click', function (e) {
+      var btn = e.target.closest('[data-course-mode]');
+      if (btn) changeCourseMode(btn.dataset.courseMode);
+    });
+    document.querySelectorAll('[data-tab]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        if (current === btn.dataset.tab) return;
+        MT.sound.play('click');
+        openRoute({ course: route.course, mode: route.mode, view: btn.dataset.tab });
+      });
+    });
+    MT.bus.on('topic:navigate', function (state) {
+      if (applyingRoute || route.page !== 'course' || currentTopic === 'basic') return;
+      route = MT.navigation.normalize({ course: route.course, mode: state.mode, skill: state.skill });
+      syncCourseModes(route.mode);
+      rememberRoute(route);
+    });
+    function onHistory() {
+      if (location.hash !== handledHash) openRoute(MT.navigation.parse(location.hash), true);
+    }
+    window.addEventListener('popstate', onHistory);
+    window.addEventListener('hashchange', onHistory);
   }
 
   function notes() {
@@ -367,7 +433,7 @@
       bindSettings();
       notes();
       applySettings();
-      setTopic(MT.progress.settings.topic);
+      openRoute(MT.navigation.parse(location.hash), true);
       registerSW();
 
       window.addEventListener('resize', onResize);

@@ -1,4 +1,4 @@
-var CACHE_NAME = 'mt99-cache-v25';
+var CACHE_NAME = 'mt99-cache-v26';
 var ASSETS = [
   './',
   './index.html',
@@ -11,6 +11,7 @@ var ASSETS = [
   './css/games.css',
   './css/print.css',
   './css/topics.css',
+  './css/navigation.css',
   './js/core.js',
   './js/ops.js',
   './js/mul.js',
@@ -32,6 +33,7 @@ var ASSETS = [
   './js/mixed.js',
   './js/length.js',
   './js/topics.js',
+  './js/navigation.js',
   './js/app.js'
 ];
 

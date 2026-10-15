@@ -558,7 +558,7 @@
     S.wrongMode = false;
     S.round = planRound(n, MT.progress);
     if (dom.wrongBox) dom.wrongBox.hidden = true;
-    if (dom.levelsBox) dom.levelsBox.hidden = false;
+    if (dom.levelsBox) dom.levelsBox.hidden = true;
     resetRound();
     showQuestion();
   }
@@ -792,6 +792,13 @@
 
       buildKeypad();
 
+      document.getElementById('btn-quiz-exit').addEventListener('click', function () {
+        MT.speech.stop();
+        MT.quiz.stop();
+        MT.quiz.refresh();
+        MT.bus.emit('quiz:end', {});
+      });
+
       if (dom.btnHelp) {
         dom.btnHelp.addEventListener('click', function () {
           MT.sound.play('click');
@@ -877,6 +884,12 @@
       S.active = false;
       if (dom.quizPlay) dom.quizPlay.hidden = true;
       if (dom.quizResult) dom.quizResult.hidden = true;
+    },
+
+    setMode: setMode,
+
+    closeDialogs: function () {
+      if (dom.resetModal) dom.resetModal.hidden = true;
     },
 
     isActive: function () {

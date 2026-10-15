@@ -73,6 +73,7 @@
         hapticOn: 'on',
         op: 'mul',
         topic: 'basic',
+        lastLocation: '',
         divStory: 'share'
       },
       stats: { totalCorrect: 0, totalWrong: 0, firstSeenAt: Date.now(), lastSeenAt: Date.now() }

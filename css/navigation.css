@@ -1,0 +1,72 @@
+/* 全站只有一套课程入口和学习方式，课程内的工具保持次要层级。 */
+body { overflow-x: clip; }
+.header-top { max-width: 1080px; margin: 0 auto; min-height: 62px; padding: 8px 16px; flex-wrap: nowrap; }
+.header-brand { flex: 0 1 auto; flex-wrap: nowrap; gap: 12px; }
+.brand-badge { animation: none; }
+.directory-link { border: 0; background: transparent; color: var(--ink-2); font-size: 14px; min-height: 44px; padding: 0 8px; border-radius: 8px; white-space: nowrap; }
+.directory-link:hover, .directory-link[aria-current="page"] { background: var(--brand-l); color: var(--brand-d); }
+.app-main { padding-top: 24px; padding-bottom: 40px; }
+.catalog-intro { margin: 14px 0 28px; }
+.catalog-intro h2 { margin: 8px 0 10px; font-size: clamp(27px, 4vw, 36px); line-height: 1.35; }
+.catalog-intro > p:last-child { color: var(--ink-2); font-size: 15px; }
+.continue-course { display: block; width: 100%; min-height: 54px; margin-bottom: 28px; padding: 14px 18px; text-align: left; color: var(--brand-d); background: var(--brand-l); border: 1px solid var(--line-2); border-radius: var(--r-md); font-weight: 600; }
+.catalog-group { margin-top: 28px; }
+.catalog-group-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 14px; }
+.catalog-group-head h3 { font-size: 18px; }
+.catalog-group-head span { color: var(--ink-2); font-size: 13px; }
+.course-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.course-card { display: flex; align-items: center; gap: 14px; text-align: left; min-width: 0; min-height: 126px; padding: 20px; background: var(--card); border: 1px solid var(--line-2); border-radius: var(--r-lg); transition: border-color .15s, background .15s; }
+.course-card:hover { border-color: var(--brand); background: var(--field); }
+.course-mark { display: grid; place-items: center; flex-shrink: 0; width: 44px; height: 48px; color: var(--brand-d); font-size: 32px; font-family: var(--font-num); }
+.course-card[data-course="mixed"] .course-mark { font-size: 24px; }
+.course-card[data-course="length"] .course-mark { font-size: 12px; white-space: nowrap; }
+.course-card-copy { min-width: 0; }
+.course-card b { display: block; font-size: 19px; margin-bottom: 6px; }
+.course-card small { display: block; color: var(--ink-2); font-size: 13px; line-height: 1.65; }
+.course-arrow { color: var(--ink-3); margin-left: auto; }
+.course-breadcrumb { display: flex; gap: 8px; color: var(--ink-2); font-size: 12px; line-height: 1.5; margin-bottom: 6px; }
+#course-title { font-size: 28px; line-height: 1.4; margin-bottom: 18px; }
+#course-title:focus, #catalog-title:focus { outline: none; }
+.course-modes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; max-width: 440px; padding: 4px; background: var(--muted); border: 1px solid var(--line); border-radius: var(--r-md); margin-bottom: 20px; }
+.course-modes button { min-height: 42px; padding: 7px 12px; border: 1px solid transparent; border-radius: 9px; background: transparent; color: var(--ink-2); font-size: 15px; font-weight: 600; }
+.course-modes button.is-on { background: var(--card); border-color: var(--line); color: var(--brand-d); box-shadow: 0 1px 3px rgba(40, 24, 70, .05); }
+.basic-tools { display: flex; flex-wrap: wrap; gap: 8px; margin: -4px 0 16px; }
+.basic-tools .tab { min-height: 44px; padding: 8px 16px; font-size: 14px; border-radius: 10px; box-shadow: none; background: transparent; border-color: var(--line); transform: none; }
+.basic-tools .tab.is-on { border-color: var(--line-2); color: var(--brand-d); background: var(--brand-l); box-shadow: none; }
+.quiz-toolbar { justify-content: flex-end; }
+#quiz-mode { display: none; }
+.quiz-exit { display: block; margin: 18px auto 0; min-height: 44px; }
+@media (max-width: 900px) {
+  .course-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 720px) {
+  .header-top { min-height: 58px; padding: 6px 14px; gap: 6px; }
+  .header-brand { gap: 6px; }
+  .brand-badge { display: none; }
+  .app-title { font-size: 18px; }
+  .directory-link { font-size: 13px; padding: 0 6px; }
+  .header-actions { gap: 5px; }
+  .act-btn { min-height: 38px; padding: 0 8px; }
+  .app-main { padding: 18px 16px 32px; }
+  .catalog-intro { margin: 6px 0 24px; }
+  .catalog-intro > p:last-child { font-size: 14px; }
+  .catalog-group { margin-top: 24px; }
+  .catalog-group-head { gap: 8px; }
+  .catalog-group-head span { font-size: 12px; }
+  .course-grid { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .course-card { min-height: 98px; padding: 16px; }
+  .course-card b { font-size: 18px; margin-bottom: 3px; }
+  #course-title { font-size: 25px; margin-bottom: 12px; }
+  .course-modes { max-width: none; margin-bottom: 14px; }
+  .course-modes button { min-height: 42px; font-size: 14px; }
+  .basic-tools { margin: 0 0 14px; }
+  .basic-tools .tab { flex: 1 1 auto; }
+}
+@media (max-width: 360px) {
+  .header-top { padding-right: 10px; padding-left: 10px; }
+  .header-brand { gap: 2px; }
+  .app-title { font-size: 16px; }
+  .header-actions { gap: 3px; }
+  .act-btn { padding: 0 6px; }
+  .catalog-group-head { align-items: start; flex-direction: column; gap: 4px; }
+}

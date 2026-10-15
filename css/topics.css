@@ -1,29 +1,33 @@
-.topic-nav { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-bottom: 20px; }
-.topic-link { display: flex; gap: 10px; align-items: center; text-align: left; padding: 13px 16px; border: 1.5px solid var(--line-2); border-radius: var(--r-lg); background: var(--card); min-height: 76px; color: var(--ink); }
-.topic-link > span:first-child { font-size: 26px; }
-.topic-link b { display: block; font-size: 16px; }
-.topic-link small { display: block; font-size: 12px; color: var(--ink-2); margin-top: 2px; }
-.topic-link.is-on { border-color: var(--brand); background: var(--brand-l); box-shadow: 0 3px 0 var(--line-2); }
-.topic-link.is-on b { color: var(--brand-d); }
-.topic-head { display: flex; justify-content: space-between; gap: 12px; margin: 8px 0 18px; }
-.topic-head h2 { font-size: clamp(25px, 4vw, 32px); margin: 2px 0 6px; }
-.topic-head p:not(.topic-eyebrow), .topic-card-head p, .topic-muted { color: var(--ink-2); font-size: 14px; }
-.topic-eyebrow { color: var(--brand-d); font-size: 12px; font-weight: 600; letter-spacing: .08em; }
-.topic-range { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 18px; font-size: 14px; }
-.topic-range .seg-btn { min-height: 44px; }
-.topic-layout { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 18px; align-items: start; }
-.topic-skills { display: grid; gap: 9px; }
-.topic-mobile-hint { display: none; }
-.topic-skill { display: flex; gap: 10px; align-items: center; min-height: 70px; border: 1px solid var(--line-2); border-radius: var(--r-md); padding: 12px; text-align: left; background: var(--card); }
-.topic-skill b { display: block; font-size: 14px; }
-.topic-skill small { display: block; color: var(--ink-2); font-size: 11px; margin-top: 3px; }
-.topic-skill-num { display: grid; place-items: center; flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; color: var(--brand-d); background: var(--muted); font-family: var(--font-num); }
-.topic-skill.is-on { border-color: var(--brand); background: var(--brand-l); }
-.topic-skill.is-on .topic-skill-num { color: white; background: var(--brand-d); }
+.topic-eyebrow { color: var(--brand-d); font-size: 12px; font-weight: 600; letter-spacing: .05em; }
+.topic-muted, .topic-card-head p { color: var(--ink-2); font-size: 14px; }
+.topic-layout { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 24px; align-items: start; }
 .topic-content { min-width: 0; }
-.topic-modes { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
-.topic-modes .btn { min-height: 44px; flex: 1 1 auto; }
-.topic-modes .is-on { color: var(--brand-d); border-color: var(--brand); background: var(--brand-l); }
+.topic-skill-picker { min-width: 0; }
+.topic-skill-picker summary { display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 4px 2px 12px; cursor: pointer; color: var(--ink-2); font-size: 13px; list-style: none; }
+.topic-skill-picker summary::-webkit-details-marker { display: none; }
+.topic-skill-picker summary b { display: none; }
+.picker-indicator { margin-left: auto; }
+.topic-skills { display: grid; gap: 6px; }
+.topic-skill { display: flex; gap: 10px; align-items: center; min-height: 66px; border: 1px solid transparent; border-radius: var(--r-md); padding: 11px; text-align: left; background: transparent; }
+.topic-skill b { display: block; font-size: 14px; }
+.topic-skill small { display: block; color: var(--ink-2); font-size: 11px; margin-top: 4px; }
+.topic-skill-num { display: grid; place-items: center; flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%; color: var(--ink-2); background: var(--muted); font-family: var(--font-num); }
+.topic-skill.is-on { border-color: var(--line-2); background: var(--brand-l); }
+.topic-skill.is-on .topic-skill-num { color: white; background: var(--brand-d); }
+.is-practicing .topic-layout, .is-wrong .topic-layout { grid-template-columns: minmax(0, 1fr); max-width: 760px; margin: 0 auto; }
+.is-practicing .topic-skill-picker, .is-wrong .topic-skill-picker { display: none; }
+.practice-range { border: 0; padding: 0; margin: 24px 0 18px; }
+.practice-range legend { font-size: 13px; color: var(--ink-2); margin-bottom: 10px; }
+.practice-range .seg-btn { min-height: 44px; }
+@media (max-width: 720px) {
+  .topic-layout { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .topic-skill-picker { border: 1px solid var(--line); background: var(--card); border-radius: var(--r-md); }
+  .topic-skill-picker summary { padding: 10px 12px; flex-wrap: wrap; }
+  .topic-skill-picker summary > span:first-child { font-size: 12px; }
+  .topic-skill-picker summary b { display: block; color: var(--ink); font-size: 14px; }
+  .topic-skills { padding: 0 6px 6px; }
+  .topic-skill { min-height: 56px; }
+}
 .topic-card { border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--card); padding: 24px; box-shadow: var(--shadow); scroll-margin-top: 70px; }
 .topic-card h3 { font-size: 21px; margin-bottom: 6px; line-height: 1.5; }
 .topic-card h3, .topic-card .btn, #topic-answer { scroll-margin-top: 110px; scroll-margin-bottom: 20px; }
@@ -70,33 +74,13 @@
 .topic-result p { color: var(--ink-2); margin-top: 12px; }
 .length-diagram { width: 100%; max-width: 42rem; margin: 16px auto; }
 .length-diagram svg, .topic-lesson svg, .topic-question svg { display: block; width: 100%; height: auto; max-height: 300px; }
-body:not(.topic-basic) .brand-badge { animation: none; }
-/* 不创建 body 滚动容器，保证长课程中页头仍可停留在顶部。 */
-body:not(.topic-basic) { overflow-x: clip; }
 @media (max-width: 720px) {
-  body:not(.topic-basic) .header-brand { flex: 0 1 auto; }
-  body:not(.topic-basic) .header-top { flex-wrap: nowrap; }
-  .topic-layout { grid-template-columns: minmax(0, 1fr); gap: 14px; }
-  .topic-mobile-hint { display: block; margin: 0 0 6px; color: var(--ink-2); font-size: 11px; }
-  .topic-skills { display: flex; overflow-x: auto; gap: 8px; padding: 2px 2px 7px; scroll-snap-type: x proximity; }
-  .topic-skill { min-height: 62px; padding: 10px; flex: 0 0 166px; scroll-snap-align: start; }
   .topic-card { padding: 18px; }
-  .topic-link { flex-direction: column; align-items: start; gap: 3px; padding: 10px; min-height: 88px; }
-  .topic-link > span:first-child { font-size: 21px; }
-  .topic-link b { font-size: 14px; }
-  .topic-link small { font-size: 11px; }
-  .topic-nav { gap: 7px; margin-bottom: 18px; }
 }
 @media (max-width: 420px) {
   .topic-card { padding: 16px; }
   .topic-card-head { flex-direction: column; gap: 10px; }
-  .topic-skill b { font-size: 13px; }
-  .topic-skill-num { width: 24px; height: 24px; }
-  .topic-skill { gap: 7px; padding: 8px; }
-  .topic-modes { gap: 6px; }
-  .topic-modes .btn { font-size: 13px; padding: 0 9px; }
   .topic-answer-row .btn { padding: 0 10px; font-size: 14px; }
-  .topic-head h2 { font-size: 26px; }
 }
 @media print {
   .topic-print-question { break-inside: avoid; padding: 12px 0; border-bottom: 1px solid #bbb; color: #111; }

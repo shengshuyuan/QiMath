@@ -45,34 +45,38 @@
       var s = b.skills[btn.dataset.skill];
       btn.querySelector('small').textContent = s ? '独立答对 ' + s.clean + ' 题' : '还没开始练习';
     });
-    panel.querySelectorAll('[data-topic-mode]').forEach(function (btn) {
-      var on = btn.dataset.topicMode === mode;
-      btn.classList.toggle('is-on', on);
-      btn.setAttribute('aria-pressed', String(on));
-      if (btn.dataset.topicMode === 'wrong') btn.textContent = '错题本 · ' + Object.keys(b.wrong).length;
-    });
     panel.querySelectorAll('[data-topic-range]').forEach(function (btn) {
       var on = Number(btn.dataset.topicRange) === b.range;
       btn.classList.toggle('is-on', on);
       btn.setAttribute('aria-pressed', String(on));
     });
+    var label = panel.querySelector('#topic-current-skill');
+    if (label) label.textContent = skill.title;
+    panel.classList.toggle('is-practicing', !!(session && !session.done));
+    panel.classList.toggle('is-wrong', mode === 'wrong');
+    if (MT.bus) MT.bus.emit('topic:navigate', { mode: mode, skill: skill.id });
+  }
+
+  function pickerForScreen() {
+    var picker = panel.querySelector('.topic-skill-picker');
+    if (picker) picker.open = !window.matchMedia || window.matchMedia('(min-width: 721px)').matches;
   }
 
   function renderShell() {
-    panel.innerHTML = '<div class="topic-head"><div><p class="topic-eyebrow">' + (model.id === 'mixed' ? '数与运算' : '量与测量') + '</p>' +
-      '<h2>' + esc(model.title) + '</h2><p>' + esc(model.subtitle) + '</p></div></div>' +
-      (model.id === 'mixed' ? '<div class="topic-range"><span>练习范围</span><div class="seg" role="group" aria-label="练习范围">' +
-        '<button type="button" class="seg-btn" data-topic-range="20">20 以内 · 起步</button><button type="button" class="seg-btn" data-topic-range="100">100 以内 · 进阶</button></div></div>' : '') +
-      '<p class="topic-mobile-hint">左右滑动，选择知识点 →</p><div class="topic-layout"><div class="topic-skills" role="group" aria-label="知识点">' + model.skills.map(function (s, index) {
-        return '<button type="button" class="topic-skill" data-skill="' + esc(s.id) + '"><span class="topic-skill-num">' + (index + 1) + '</span><span><b>' + esc(s.title) + '</b><small></small></span></button>';
-      }).join('') + '</div><div class="topic-content"><div class="topic-modes" role="group" aria-label="学习方式">' +
-      '<button type="button" class="btn" data-topic-mode="learn">学方法</button><button type="button" class="btn" data-topic-mode="practice">做练习</button><button type="button" class="btn" data-topic-mode="wrong">错题本</button>' +
-      '</div><div id="topic-work"></div></div></div>';
+    panel.innerHTML = '<div class="topic-layout"><details class="topic-skill-picker"><summary><span>知识点目录</span><b id="topic-current-skill"></b><span class="picker-indicator" aria-hidden="true">⌄</span></summary><div class="topic-skills" role="group" aria-label="知识点">' + model.skills.map(function (s, index) {
+      return '<button type="button" class="topic-skill" data-skill="' + esc(s.id) + '"><span class="topic-skill-num">' + (index + 1) + '</span><span><b>' + esc(s.title) + '</b><small></small></span></button>';
+    }).join('') + '</div></details><div class="topic-content"><div id="topic-work"></div></div></div>';
     work = document.getElementById('topic-work');
+    pickerForScreen();
     syncNavigation();
-    var activeSkill = panel.querySelector('.topic-skill.is-on');
-    var skillList = panel.querySelector('.topic-skills');
-    if (activeSkill && skillList) skillList.scrollLeft = activeSkill.offsetLeft - skillList.offsetLeft;
+  }
+
+  function renderPracticeIntro() {
+    var ranged = model.id === 'mixed' && skill.id !== 'muldiv';
+    work.innerHTML = '<article class="topic-card"><p class="topic-eyebrow">每轮 6 题 · 按自己的节奏完成</p><h3 tabindex="-1">' + esc(skill.title) + '练习</h3>' +
+      (ranged ? '<fieldset class="practice-range"><legend>这次练习的范围</legend><div class="seg"><button type="button" class="seg-btn" data-topic-range="20">20 以内 · 起步</button><button type="button" class="seg-btn" data-topic-range="100">100 以内 · 进阶</button></div></fieldset>' : '<p class="topic-note">' + (model.id === 'mixed' ? '表内乘除，所有步骤都是整数结果。' : '看清题目里的单位，再开始作答。') + '</p>') +
+      '<p class="topic-note">' + (model.id === 'mixed' ? '先判断运算顺序，再一步一步计算。' : '可以用屏幕数字键盘，也可以直接输入答案。') + '需要帮助时，可以查看方法提示。</p><div class="topic-actions">' + button('start', '开始 6 题练习 →', 'btn-main') + '</div></article>';
+    syncNavigation();
   }
 
   function renderLearn() {
@@ -106,7 +110,7 @@
 
   function start(items) {
     MT.speech.stop();
-    mode = 'practice';
+    mode = items ? 'wrong' : 'practice';
     var questions = items;
     if (!questions) {
       questions = [];
@@ -262,6 +266,7 @@
 
   function renderResult() {
     session.done = true;
+    syncNavigation();
     work.innerHTML = '<article class="topic-card topic-result"><p class="topic-eyebrow">本轮练习结束</p><h3 tabindex="-1">独立完成 ' + session.clean + ' / ' + session.questions.length + ' 题</h3><p>共完成 ' + session.correct + ' 题。看过提示或答错的题，会留在错题本中帮你复习。</p><p>同一道错题连续两次独立答对，就会移出错题本。</p><div class="topic-actions">' + button('start', '再练 6 题', 'btn-main') + button('show-wrong', '去错题本', 'btn-soft') + button('learn', '回顾方法', 'btn-soft') + '</div></article>';
     if (MT.bus) MT.bus.emit('topic:end');
     focus();
@@ -282,8 +287,11 @@
     MT.speech.stop();
     session = null;
     mode = next;
-    if (mode === 'practice') start();
-    else { syncNavigation(); if (mode === 'wrong') renderWrong(); else renderLearn(); focus(); }
+    if (mode === 'practice') renderPracticeIntro();
+    else { syncNavigation(); if (mode === 'wrong') renderWrong(); else renderLearn(); }
+    var heading = work.querySelector('h3');
+    if (heading) heading.focus({ preventScroll: true });
+    if (window.scrollTo) window.scrollTo(0, 0);
     if (wasActive && MT.bus) MT.bus.emit('topic:end');
   }
 
@@ -296,16 +304,19 @@
       bag().lastSkill = skill.id;
       demoStep = 0;
       save();
-      changeMode('learn');
+      changeMode(mode);
+      var picker = panel.querySelector('.topic-skill-picker');
+      if (picker && window.matchMedia && !window.matchMedia('(min-width: 721px)').matches) picker.open = false;
     } else if (btn.dataset.topicMode) changeMode(btn.dataset.topicMode);
     else if (btn.dataset.topicRange) {
       bag().range = Number(btn.dataset.topicRange);
       save();
-      changeMode('learn');
+      changeMode('practice');
     } else {
       var action = btn.dataset.topicAction;
       if (action === 'start') start();
-      if (action === 'learn' || action === 'quit') changeMode('learn');
+      if (action === 'learn') changeMode('learn');
+      if (action === 'quit') changeMode(mode === 'wrong' ? 'wrong' : 'practice');
       if (action === 'show-wrong') changeMode('wrong');
       if (action === 'demo-next') { demoStep++; renderLearn(); focus(demoStep < skill.example.steps.length ? '[data-topic-action="demo-next"]' : '[data-topic-action="start"]'); }
       if (action === 'read-lesson') say(skill.title + '。' + skill.description + '。' + work.querySelector('.topic-lesson').textContent);
@@ -346,7 +357,7 @@
   }
 
   function printHeader(title) {
-    return '<div class="print-head"><div class="print-title">' + esc(model.title + ' · ' + title) + '</div><div class="print-meta">' + esc(skill.title) + (model.id === 'mixed' ? ' · ' + bag().range + ' 以内' : '') + '　姓名 __________　日期 __________</div></div>';
+    return '<div class="print-head"><div class="print-title">' + esc(model.title + ' · ' + title) + '</div><div class="print-meta">' + esc(skill.title) + (model.id === 'mixed' ? skill.id === 'muldiv' ? ' · 表内乘除' : ' · ' + bag().range + ' 以内' : '') + '　姓名 __________　日期 __________</div></div>';
   }
 
   MT.topics = {
@@ -354,15 +365,27 @@
       panel = document.getElementById('panel-topic');
       panel.addEventListener('click', onClick);
       panel.addEventListener('submit', function (e) { if (e.target.id === 'topic-answer-form') { e.preventDefault(); submit(); } });
+      if (window.matchMedia) {
+        var media = window.matchMedia('(min-width: 721px)');
+        if (media.addEventListener) media.addEventListener('change', function () { if (model) pickerForScreen(); });
+      }
       panel.addEventListener('input', function (e) { if (e.target.id === 'topic-answer') e.target.value = e.target.value.replace(/[^0-9]/g, '').slice(0, 3); });
     },
-    enter: function (id) {
+    enter: function (id, options) {
+      options = options || {};
       model = id === 'mixed' ? MT.mixed : MT.length;
-      skill = skillById(bag().lastSkill) || model.skills[0];
-      mode = 'learn'; session = null; demoStep = 0;
-      renderShell(); renderLearn();
+      skill = skillById(options.skill) || skillById(bag().lastSkill) || model.skills[0];
+      bag().lastSkill = skill.id;
+      mode = ['learn', 'practice', 'wrong'].indexOf(options.mode) !== -1 ? options.mode : 'learn';
+      session = null; demoStep = 0;
+      renderShell();
+      if (mode === 'practice') renderPracticeIntro();
+      else if (mode === 'wrong') renderWrong();
+      else renderLearn();
+      save();
     },
     leave: function () { session = null; model = null; },
+    changeMode: changeMode,
     refresh: function () { if (model) this.enter(model.id); },
     isActive: function () { return !!(session && !session.done); },
     buildPrint: function (root) {

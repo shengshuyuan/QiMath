@@ -9,13 +9,14 @@
 <link rel="manifest" href="manifest.json">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<link rel="stylesheet" href="css/base.css?v=2.4.0">
-<link rel="stylesheet" href="css/layout.css?v=2.4.0">
-<link rel="stylesheet" href="css/visuals.css?v=2.4.0">
-<link rel="stylesheet" href="css/quiz.css?v=2.4.0">
-<link rel="stylesheet" href="css/games.css?v=2.4.0">
-<link rel="stylesheet" href="css/print.css?v=2.4.0">
-<link rel="stylesheet" href="css/topics.css?v=2.4.0">
+<link rel="stylesheet" href="css/base.css?v=2.5.0">
+<link rel="stylesheet" href="css/layout.css?v=2.5.0">
+<link rel="stylesheet" href="css/visuals.css?v=2.5.0">
+<link rel="stylesheet" href="css/quiz.css?v=2.5.0">
+<link rel="stylesheet" href="css/games.css?v=2.5.0">
+<link rel="stylesheet" href="css/print.css?v=2.5.0">
+<link rel="stylesheet" href="css/topics.css?v=2.5.0">
+<link rel="stylesheet" href="css/navigation.css?v=2.5.0">
 </head>
 <body>
 
@@ -31,12 +32,7 @@
     <div class="header-brand">
       <span class="brand-badge">⭐</span>
       <h1 class="app-title">QiMath</h1>
-      <div class="seg op-switch" id="op-switch" role="group" aria-label="运算模式">
-        <button type="button" class="seg-btn" data-op="add" aria-pressed="false">➕ 加法</button>
-        <button type="button" class="seg-btn" data-op="sub" aria-pressed="false">➖ 减法</button>
-        <button type="button" class="seg-btn is-on" data-op="mul" aria-pressed="true">✖️ 乘法</button>
-        <button type="button" class="seg-btn" data-op="div" aria-pressed="false">➗ 除法</button>
-      </div>
+      <button type="button" class="directory-link" id="btn-directory">知识目录</button>
     </div>
     <div class="header-actions">
       <button type="button" class="btn btn-soft act-btn" id="btn-badges" title="荣誉勋章馆" aria-label="荣誉勋章">
@@ -53,12 +49,7 @@
       </button>
     </div>
   </div>
-  <nav class="tabbar" id="basic-tabs" role="tablist" aria-label="基础运算学习方式">
-    <button type="button" class="tab is-on" data-tab="explore" role="tab" aria-selected="true" aria-controls="panel-explore">🔍 探究台</button>
-    <button type="button" class="tab" data-tab="table" role="tab" aria-selected="false" aria-controls="panel-table">📋 口诀表</button>
-    <button type="button" class="tab" data-tab="quiz" role="tab" aria-selected="false" aria-controls="panel-quiz">🏆 闯关</button>
-    <button type="button" class="tab" data-tab="games" role="tab" aria-selected="false" aria-controls="panel-games">🎈 游乐场</button>
-  </nav>
+
 </header>
 
 <div class="settings" id="settings" hidden>
@@ -129,13 +120,24 @@
 </div>
 
 <main class="app-main">
-  <nav class="topic-nav" id="topic-nav" aria-label="数学知识主题">
-    <button type="button" class="topic-link is-on" data-topic="basic" aria-pressed="true"><span aria-hidden="true">🧮</span><span><b>基础运算</b><small>加减乘除，看图学口诀</small></span></button>
-    <button type="button" class="topic-link" data-topic="mixed" aria-pressed="false"><span aria-hidden="true">🪄</span><span><b>混合运算</b><small>先后有序，一步步计算</small></span></button>
-    <button type="button" class="topic-link" data-topic="length" aria-pressed="false"><span aria-hidden="true">📏</span><span><b>米和厘米</b><small>认识长度，读尺与换算</small></span></button>
-  </nav>
+  <section id="catalog-page" aria-labelledby="catalog-title">
+    <div class="catalog-intro"><p class="topic-eyebrow">一步一步，学会数学</p><h2 id="catalog-title" tabindex="-1">今天想学什么？</h2><p>选一门课程，看懂方法，再自己试一试。</p></div>
+    <button type="button" class="continue-course" id="btn-continue" hidden></button>
+    <section class="catalog-group" aria-labelledby="number-domain"><div class="catalog-group-head"><h3 id="number-domain">数与运算</h3><span>理解数量与运算方法</span></div><div class="course-grid" id="number-courses"></div></section>
+    <section class="catalog-group" aria-labelledby="measure-domain"><div class="catalog-group-head"><h3 id="measure-domain">量与测量</h3><span>认识生活中的大小与长短</span></div><div class="course-grid" id="measure-courses"></div></section>
+  </section>
+  <section id="course-heading" aria-labelledby="course-title" hidden>
+    <nav class="course-breadcrumb" aria-label="当前位置"><span id="course-domain"></span><span aria-hidden="true"> / </span><span id="breadcrumb-course" aria-current="page"></span></nav>
+    <h2 id="course-title" tabindex="-1"></h2>
+    <div class="course-modes" id="course-modes" role="group" aria-label="学习方式">
+      <button type="button" data-course-mode="learn" aria-pressed="true">学一学</button><button type="button" data-course-mode="practice" aria-pressed="false">练一练</button><button type="button" data-course-mode="wrong" aria-pressed="false">错题</button>
+    </div>
+    <div class="basic-tools" id="basic-tabs" role="group" aria-label="当前学习方式" hidden>
+      <button type="button" class="tab" data-tab="explore" aria-pressed="true">看图探究</button><button type="button" class="tab" data-tab="table" aria-pressed="false">口诀表</button><button type="button" class="tab" data-tab="quiz" aria-pressed="false">闯关练习</button><button type="button" class="tab" data-tab="games" aria-pressed="false">趣味游戏</button>
+    </div>
+  </section>
   <section class="panel" id="panel-topic" aria-label="知识学习与练习" hidden></section>
-  <section class="panel" id="panel-explore" role="tabpanel" aria-label="图示探究台">
+  <section class="panel" id="panel-explore" role="region" aria-label="图示探究台">
     <div class="seg div-story" id="div-story" role="group" aria-label="除法看法" hidden>
       <button type="button" class="seg-btn is-on" data-story="share" aria-pressed="true">平均分</button>
       <button type="button" class="seg-btn" data-story="measure" aria-pressed="false">几个一份</button>
@@ -198,7 +200,7 @@
     </div>
   </section>
 
-  <section class="panel" id="panel-table" role="tabpanel" aria-label="口诀表" hidden>
+  <section class="panel" id="panel-table" role="region" aria-label="口诀表" hidden>
     <div class="table-top">
       <div class="stat" id="table-stat">已掌握 0 / 45</div>
       <div class="table-scroll-hint" id="table-scroll-hint" hidden aria-hidden="true">👈 左右滑动查看完整表格 👉</div>
@@ -220,9 +222,9 @@
     </div>
   </section>
 
-  <section class="panel" id="panel-quiz" role="tabpanel" aria-label="闯关练习" hidden>
+  <section class="panel" id="panel-quiz" role="region" aria-label="闯关练习" hidden>
     <div class="quiz-toolbar">
-      <div class="seg seg-mode" id="quiz-mode">
+      <div class="seg seg-mode" id="quiz-mode" hidden>
         <button type="button" class="seg-btn is-on" data-mode="levels">闯关</button>
         <button type="button" class="seg-btn" data-mode="wrong">错题本</button>
       </div>
@@ -259,12 +261,13 @@
         <div class="q-actions" id="q-actions"></div>
       </div>
       <div class="keypad" id="keypad"></div>
+      <button type="button" class="btn quiz-exit" id="btn-quiz-exit">结束本轮</button>
     </div>
 
     <div class="quiz-result" id="quiz-result" hidden></div>
   </section>
 
-  <section class="panel" id="panel-games" role="tabpanel" aria-label="趣味游乐场" hidden>
+  <section class="panel" id="panel-games" role="region" aria-label="趣味游乐场" hidden>
     <div class="games-top">
       <div class="seg seg-mode" id="game-submode">
         <button type="button" class="seg-btn is-on" data-game="bubbles">🎈 气球爆破</button>
@@ -336,28 +339,29 @@
 
 <div id="print-root" aria-hidden="true"></div>
 
-<script src="js/core.js?v=2.4.0"></script>
-<script src="js/ops.js?v=2.4.0"></script>
-<script src="js/mul.js?v=2.4.0"></script>
-<script src="js/div.js?v=2.4.0"></script>
-<script src="js/add.js?v=2.4.0"></script>
-<script src="js/sub.js?v=2.4.0"></script>
-<script src="js/storage.js?v=2.4.0"></script>
-<script src="js/voice-clips.js?v=2.4.0"></script>
-<script src="js/speech.js?v=2.4.0"></script>
-<script src="js/sound.js?v=2.4.0"></script>
-<script src="js/confetti.js?v=2.4.0"></script>
-<script src="js/badges.js?v=2.4.0"></script>
-<script src="js/visuals.js?v=2.4.0"></script>
-<script src="js/explore.js?v=2.4.0"></script>
-<script src="js/table.js?v=2.4.0"></script>
-<script src="js/quiz.js?v=2.4.0"></script>
-<script src="js/games.js?v=2.4.0"></script>
-<script src="js/print.js?v=2.4.0"></script>
-<script src="js/mixed.js?v=2.4.0"></script>
-<script src="js/length.js?v=2.4.0"></script>
-<script src="js/topics.js?v=2.4.0"></script>
-<script src="js/app.js?v=2.4.0"></script>
+<script src="js/core.js?v=2.5.0"></script>
+<script src="js/ops.js?v=2.5.0"></script>
+<script src="js/mul.js?v=2.5.0"></script>
+<script src="js/div.js?v=2.5.0"></script>
+<script src="js/add.js?v=2.5.0"></script>
+<script src="js/sub.js?v=2.5.0"></script>
+<script src="js/storage.js?v=2.5.0"></script>
+<script src="js/voice-clips.js?v=2.5.0"></script>
+<script src="js/speech.js?v=2.5.0"></script>
+<script src="js/sound.js?v=2.5.0"></script>
+<script src="js/confetti.js?v=2.5.0"></script>
+<script src="js/badges.js?v=2.5.0"></script>
+<script src="js/visuals.js?v=2.5.0"></script>
+<script src="js/explore.js?v=2.5.0"></script>
+<script src="js/table.js?v=2.5.0"></script>
+<script src="js/quiz.js?v=2.5.0"></script>
+<script src="js/games.js?v=2.5.0"></script>
+<script src="js/print.js?v=2.5.0"></script>
+<script src="js/mixed.js?v=2.5.0"></script>
+<script src="js/length.js?v=2.5.0"></script>
+<script src="js/topics.js?v=2.5.0"></script>
+<script src="js/navigation.js?v=2.5.0"></script>
+<script src="js/app.js?v=2.5.0"></script>
 <script>
 (function () {
   var ok = window.MT && MT.core && MT.visuals && MT.app;
