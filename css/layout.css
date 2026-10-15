@@ -149,11 +149,10 @@
 
 .settings {
   position: fixed;
-  top: 0;
-  right: 0;
+  top: calc(56px + env(safe-area-inset-top));
+  right: 12px;
   z-index: 40;
-  padding: 12px;
-  padding-top: calc(12px + env(safe-area-inset-top));
+  padding: 0;
 }
 
 .settings-inner {
@@ -161,11 +160,12 @@
   border: 1px solid var(--line);
   border-radius: var(--r-lg);
   box-shadow: 0 10px 30px rgba(91, 63, 150, .16);
-  padding: 14px;
-  min-width: 260px;
+  padding: 14px 16px;
+  min-width: 270px;
   max-width: min(92vw, 340px);
-  max-height: 80vh;
+  max-height: calc(100vh - 72px - env(safe-area-inset-top));
   overflow-y: auto;
+  overscroll-behavior: contain;
   animation: fadein .18s ease-out both;
 }
 
@@ -491,19 +491,19 @@
 @media (min-width: 960px) {
   #panel-explore {
     display: grid;
-    grid-template-columns: minmax(320px, 440px) minmax(0, 1fr);
+    grid-template-columns: minmax(340px, 440px) minmax(0, 1fr);
     grid-template-areas:
-      "story story"
+      "story stage"
       "sum stage"
       "views stage"
       "skin stage"
       "actions stage"
       "picks stage";
-    column-gap: 16px;
-    row-gap: 10px;
+    column-gap: 20px;
+    row-gap: 12px;
     align-items: start;
   }
-  #panel-explore .div-story { grid-area: story; }
+  #panel-explore .div-story { grid-area: story; margin-bottom: 0; }
   #panel-explore .sumline { grid-area: sum; margin-bottom: 0; }
   #panel-explore .stage {
     grid-area: stage;
@@ -515,7 +515,20 @@
   #panel-explore .skin-bar { grid-area: skin; margin: 0; }
   #panel-explore .skin-options { flex-wrap: wrap; }
   #panel-explore .explore-actions { grid-area: actions; margin-top: 0; }
-  #panel-explore .pickers { grid-area: picks; }
+  #panel-explore .pickers {
+    grid-area: picks;
+    grid-template-columns: 1fr;
+  }
+  #panel-explore .nums {
+    gap: 5px;
+  }
+  #panel-explore .nums .num {
+    min-height: 42px;
+    font-size: clamp(16px, 1.4vw, 19px);
+  }
+  #panel-explore .nums.nums-wide .num {
+    font-size: 15px;
+  }
 }
 
 /* ---------- table ---------- */

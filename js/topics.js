@@ -30,7 +30,7 @@
     var node = work.querySelector(selector || 'h3');
     if (node) {
       var target = !selector && node.closest ? node.closest('.topic-card') || node : node;
-      if (target.scrollIntoView) target.scrollIntoView({ block: selector ? 'nearest' : 'start' });
+      if (target.scrollIntoView) target.scrollIntoView({ block: 'nearest' });
       node.focus({ preventScroll: true });
     }
   }

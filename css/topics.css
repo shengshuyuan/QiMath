@@ -28,7 +28,7 @@
   .topic-skills { padding: 0 6px 6px; }
   .topic-skill { min-height: 56px; }
 }
-.topic-card { border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--card); padding: 24px; box-shadow: var(--shadow); scroll-margin-top: 70px; }
+.topic-card { border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--card); padding: 24px; box-shadow: var(--shadow); scroll-margin-top: 84px; }
 .topic-card h3 { font-size: 21px; margin-bottom: 6px; line-height: 1.5; }
 .topic-card h3, .topic-card .btn, #topic-answer { scroll-margin-top: 110px; scroll-margin-bottom: 20px; }
 .topic-card-head { display: flex; justify-content: space-between; gap: 16px; align-items: start; margin-bottom: 22px; }

@@ -119,7 +119,7 @@
     document.getElementById('course-heading').hidden = catalog;
     document.getElementById('btn-directory').setAttribute('aria-current', catalog ? 'page' : 'false');
     document.getElementById('btn-print').hidden = catalog;
-    document.getElementById('btn-badges').hidden = currentTopic !== 'basic';
+    document.getElementById('btn-badges').hidden = false;
     document.querySelectorAll('[data-basic-setting]').forEach(function (row) { row.hidden = currentTopic !== 'basic'; });
     if (catalog) renderCatalog();
     else {
