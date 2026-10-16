@@ -350,29 +350,32 @@
       var f = (seed % 4 === 0 && range > 20) ? next(1, 9) : 0;
       var totalCents = partsToCents(y, j, f);
       var correctStr = formatCN(totalCents, true);
+      var parts = centsToParts(totalCents);
 
-      // 选几个钱币拼出视觉图
+      // 选几个钱币拼出视觉图（用临时变量拆分，避免改写原始金额）
       var trayItems = [];
       var remainingYuan = y;
+      var remainingJiao = j;
+      var remainingFen = f;
       if (remainingYuan >= 50) { trayItems.push('y50'); remainingYuan -= 50; }
       if (remainingYuan >= 20) { trayItems.push('y20'); remainingYuan -= 20; }
       if (remainingYuan >= 10) { trayItems.push('y10'); remainingYuan -= 10; }
       if (remainingYuan >= 5)  { trayItems.push('y5');  remainingYuan -= 5; }
       while (remainingYuan > 0) { trayItems.push('y1_c'); remainingYuan--; }
-      if (j >= 5) { trayItems.push('j5_c'); j -= 5; }
-      while (j > 0) { trayItems.push('j1_c'); j--; }
-      if (f >= 5) { trayItems.push('f5_c'); f -= 5; }
-      while (f > 0) { trayItems.push('f1_c'); f--; }
+      if (remainingJiao >= 5) { trayItems.push('j5_c'); remainingJiao -= 5; }
+      while (remainingJiao > 0) { trayItems.push('j1_c'); remainingJiao--; }
+      if (remainingFen >= 5) { trayItems.push('f5_c'); remainingFen -= 5; }
+      while (remainingFen > 0) { trayItems.push('f1_c'); remainingFen--; }
 
       q.prompt = '看图，一共有多少钱？';
       q.visualHTML = renderTrayHTML(trayItems, '钱币组合');
       q.hint = '先数有几元，再数有几角，最后数有几分。';
-      q.explanation = '整元部分有 ' + y + '元，角部分有 ' + (centsToParts(totalCents).jiao) + '角' + (f > 0 ? '，分部分有 ' + f + '分' : '') + '，合起来是 ' + correctStr + '。';
+      q.explanation = '整元部分有 ' + parts.yuan + '元，角部分有 ' + parts.jiao + '角' + (parts.fen > 0 ? '，分部分有 ' + parts.fen + '分' : '') + '，合起来是 ' + correctStr + '。';
 
-      var dist1 = formatCN(partsToCents(y + 1, centsToParts(totalCents).jiao, f));
-      var dist2 = formatCN(partsToCents(y, Math.max(0, centsToParts(totalCents).jiao - 1), f));
-      var dist3 = (y * 10 + centsToParts(totalCents).jiao) + '元';
-      var choices = buildChoices(correctStr, [dist1, dist2, dist3, (y + 2) + '元', (y + 1) + '元'], 3);
+      var dist1 = formatCN(partsToCents(parts.yuan + 1, parts.jiao, parts.fen));
+      var dist2 = formatCN(partsToCents(parts.yuan, Math.max(0, parts.jiao - 1), parts.fen));
+      var dist3 = (parts.yuan * 10 + parts.jiao) + '元';
+      var choices = buildChoices(correctStr, [dist1, dist2, dist3, (parts.yuan + 2) + '元', (parts.yuan + 1) + '元'], 3);
       q.data = { type: 'readwrite_count', cents: totalCents, answer: correctStr };
       return choose(q, choices, correctStr, next);
     } else if (mode === 1) {
@@ -569,28 +572,30 @@
       q.data = { type: 'calc_same_unit', a: a, b: b, op: isPlus ? '+' : '-', answer: ans, unit: unit };
       return q;
     } else if (mode === 1) {
-      // 元角不进退位加减
+      // 元角不进退位加减（加减各半；加时角之和 < 10，减时角够减）
+      // mode===1 时 seed%2 恒为 1，不能再用外层 isPlus，否则加法永不出现。
+      var noCarryPlus = Math.floor(seed / 4) % 2 === 0;
       var y1 = next(1, range <= 20 ? 8 : 30);
       var j1 = next(1, 8);
       var y2 = next(1, range <= 20 ? 5 : 20);
-      var j2 = next(1, 8);
-      if (!isPlus) {
+      var j2 = noCarryPlus ? next(1, 9 - j1) : next(1, 8);
+      if (!noCarryPlus) {
         if (y1 < y2) { var ty = y1; y1 = y2; y2 = ty; }
         if (j1 < j2) { var tj = j1; j1 = j2; j2 = tj; }
       }
-      var ansY = isPlus ? (y1 + y2) : (y1 - y2);
-      var ansJ = isPlus ? (j1 + j2) : (j1 - j2);
+      var ansY = noCarryPlus ? (y1 + y2) : (y1 - y2);
+      var ansJ = noCarryPlus ? (j1 + j2) : (j1 - j2);
       var ansCents = partsToCents(ansY, ansJ, 0);
       var correctStr = formatCN(ansCents);
 
-      var expr = y1 + '元' + j1 + '角 ' + (isPlus ? '＋ ' : '－ ') + y2 + '元' + j2 + '角';
+      var expr = y1 + '元' + j1 + '角 ' + (noCarryPlus ? '＋ ' : '－ ') + y2 + '元' + j2 + '角';
       q.prompt = expr + ' ＝ 几元几角？';
-      q.hint = '元和元相' + (isPlus ? '加' : '减') + '，角和角相' + (isPlus ? '加' : '减') + '。';
-      q.explanation = '元部分：' + y1 + (isPlus ? '＋' : '－') + y2 + '＝' + ansY + '元；角部分：' + j1 + (isPlus ? '＋' : '－') + j2 + '＝' + ansJ + '角。合起来是 ' + correctStr + '。';
+      q.hint = '元和元相' + (noCarryPlus ? '加' : '减') + '，角和角相' + (noCarryPlus ? '加' : '减') + '。这道题不用进位或退位。';
+      q.explanation = '元部分：' + y1 + (noCarryPlus ? '＋' : '－') + y2 + '＝' + ansY + '元；角部分：' + j1 + (noCarryPlus ? '＋' : '－') + j2 + '＝' + ansJ + '角。合起来是 ' + correctStr + '。';
       var dist1 = (ansY + 1) + '元' + ansJ + '角';
       var dist2 = ansY + '元' + Math.max(0, ansJ - 1) + '角';
       var choices = buildChoices(correctStr, [dist1, dist2, (ansY + 2) + '元', (ansY + 1) + '元'], 3);
-      q.data = { type: 'calc_no_carry', expr: expr, answer: correctStr };
+      q.data = { type: 'calc_no_carry', expr: expr, answer: correctStr, op: noCarryPlus ? '+' : '-' };
       return choose(q, choices, correctStr, next);
     } else if (mode === 2) {
       // 进位加法（满10角进1元）：例如 8角 ＋ 5角 ＝ 1元3角，或 1元7角 ＋ 5角 ＝ 2元2角

@@ -3,8 +3,8 @@
 ## Source of truth
 - Status: Active
 - Last refreshed: 2026-10-15
-- Primary product surfaces: QiMath 基础运算、混合运算、米和厘米。
-- Evidence reviewed: `index.html`、`css/base.css`、`css/layout.css`、`js/ops.js`、`js/app.js`、`js/storage.js`、`js/quiz.js`、`js/print.js`；本轮用户确认的三个范围问题。此前没有独立设计文档。
+- Primary product surfaces: QiMath 基础运算、混合运算、米和厘米、认识人民币。
+- Evidence reviewed: `index.html`、`css/base.css`、`css/layout.css`、`js/ops.js`、`js/app.js`、`js/storage.js`、`js/quiz.js`、`js/print.js`、`js/money.js`；本轮用户确认的三个范围问题。此前没有独立设计文档。
 
 ## Brand
 - Personality: 友好、清楚、鼓励孩子尝试，用图和步骤解释数学。
@@ -22,7 +22,7 @@
 - Key contexts of use: 触屏手机、平板、电脑；静态页面和安装后的离线页面。
 
 ## Information architecture
-- Primary navigation: 独立知识目录，按“数与运算 / 量与测量”分组；加法、减法、乘法、除法、混合运算、米和厘米是同一粒度的课程入口。
+- Primary navigation: 独立知识目录，按“数与运算 / 量与测量”分组；加法、减法、乘法、除法、混合运算、米和厘米、认识人民币是同一粒度的课程入口。
 - Core routes/screens: 知识目录 → 课程。所有课程使用同一组“学一学 / 练一练 / 错题”。基础运算的探究与口诀是学习工具，闯关与游戏是练习工具；知识点目录在桌面为侧栏，在手机默认折叠。练习范围只出现在对应练习准备页；答题中收起知识点目录。
 - Content hierarchy: 知识分类 → 课程 → 知识点 → 学习或练习 → 反馈与复习。页头只保留品牌、知识目录和辅助操作，不再放子级课程切换。
 - Navigation state: URL hash 保存课程、知识点、学习方式及基础工具，支持直接打开、刷新、浏览器返回和前进。首次打开显示目录，可继续上次位置；练习刷新回到准备页，不恢复半道题、不重复计分。
@@ -77,7 +77,7 @@
 - Framework/styling system: 原生 HTML/CSS/JS，IIFE + MT 命名空间，无新依赖。
 - Design-token constraints: 复用现有 CSS 变量，不另建主题系统。
 - Performance constraints: 小型结构化题目，无 eval；错题只存知识点、范围和 seed，重建显示。
-- Compatibility constraints: 保留 `mt99.progress.v1` 和原四则字段；新增 topics 字段；旧记录加载时补默认值。
+- Compatibility constraints: 保留 `mt99.progress.v1` 和原四则字段；新增 topics 字段（须覆盖 `mixed` / `length` / `money`，人民币另含 `games`）；旧记录加载时补默认值。
 - Test/screenshot expectations: 出题边界与确定性检查、旧数据兼容、真实页面学习/答题/错题/刷新、响应式截图、离线与打印内容检查。
 
 ## Open questions

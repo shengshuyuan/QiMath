@@ -31,6 +31,38 @@ assert.strictEqual(money.formatPrice(205), '2.05元');
 
 assert.throws(function () { money.generate('unknown', 20, 0); }, /Unknown money skill/);
 
+// 不进退位加减应同时覆盖加法与减法，且加法角之和始终 < 10
+var noCarryPlus = 0;
+var noCarryMinus = 0;
+var i;
+for (i = 0; i < 4000; i++) {
+  var cq = money.generate('calc', 100, i);
+  if (!cq.data || cq.data.type !== 'calc_no_carry') continue;
+  var nums = cq.data.expr.match(/\d+/g).map(Number);
+  assert.equal(nums.length, 4, '不进退位题应含四个数字');
+  if (cq.data.op === '+') {
+    noCarryPlus++;
+    assert.ok(nums[1] + nums[3] < 10, '不进位加法角之和应小于 10: ' + cq.data.expr);
+  } else {
+    noCarryMinus++;
+    assert.ok(nums[1] >= nums[3], '不退位减法角应够减: ' + cq.data.expr);
+  }
+}
+assert.ok(noCarryPlus > 0, '不进退位题应包含加法');
+assert.ok(noCarryMinus > 0, '不进退位题应包含减法');
+
+// 含“分”的数钱题，讲解里必须说出分部分（不能因拆分托盘时改写原金额而漏掉）
+var fenExplained = 0;
+for (i = 0; i < 2000; i++) {
+  var rq = money.generate('readwrite', 100, i);
+  if (!rq.data || rq.data.type !== 'readwrite_count') continue;
+  var fen = rq.data.cents % 10;
+  if (!fen) continue;
+  assert.ok(rq.explanation.indexOf('分部分有 ' + fen + '分') !== -1, '应说明分部分: ' + rq.explanation);
+  fenExplained++;
+}
+assert.ok(fenExplained > 0, '进阶范围应出现含分的数钱题');
+
 var seen = {
   recognizeCard: 0,
   recognizeTarget: 0,

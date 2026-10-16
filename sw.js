@@ -1,4 +1,4 @@
-var CACHE_NAME = 'mt99-cache-v30';
+var CACHE_NAME = 'mt99-cache-v31';
 var ASSETS = [
   './',
   './index.html',

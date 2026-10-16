@@ -146,7 +146,8 @@
     if (data.subMastered) d.subMastered = data.subMastered;
     if (data.subNeedsPractice) d.subNeedsPractice = data.subNeedsPractice;
     if (data.topics && typeof data.topics === 'object' && !Array.isArray(data.topics)) {
-      ['mixed', 'length'].forEach(function (id) {
+      // 认识人民币与混合运算、米厘米同级，刷新后必须能恢复进度与错题。
+      ['mixed', 'length', 'money'].forEach(function (id) {
         var src = data.topics[id];
         if (!src || typeof src !== 'object') return;
         var dest = { skills: {}, wrong: {}, range: src.range === 100 ? 100 : 20, lastSkill: '' };
@@ -172,6 +173,19 @@
               wrongCount: Math.max(1, Math.floor(Number(w.wrongCount) || 1)),
               cleanStreak: w.cleanStreak === 1 ? 1 : 0,
               errorKind: typeof w.errorKind === 'string' ? w.errorKind : 'answer'
+            };
+          });
+        }
+        // 人民币趣味游戏的历史星级与轮次，需与课程进度一同恢复。
+        if (id === 'money' && src.games && typeof src.games === 'object') {
+          dest.games = {};
+          Object.keys(src.games).forEach(function (key) {
+            if (!/^[a-z]+$/.test(key)) return;
+            var g = src.games[key];
+            if (!g || typeof g !== 'object') return;
+            dest.games[key] = {
+              rounds: Math.max(0, Math.floor(Number(g.rounds) || 0)),
+              bestStars: Math.max(0, Math.floor(Number(g.bestStars) || 0))
             };
           });
         }

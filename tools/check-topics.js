@@ -254,4 +254,22 @@ assert.equal(MT.topics.buildPrint(printRoot), true);
 assert.ok(printRoot.innerHTML.includes('认识人民币 · 练习纸'));
 assert.ok(printRoot.innerHTML.includes('元角分换算'));
 
+// 认识人民币进度、错题与游戏记录刷新后必须能恢复（曾漏接 storage 白名单）
+MT.progress.topics.money = {
+  skills: { convert: { completed: 4, clean: 2 }, shopping: { completed: 1, clean: 1 } },
+  wrong: { 'money:convert:7': { skill: 'convert', seed: 7, range: 20, wrongCount: 2, cleanStreak: 1, errorKind: 'answer' } },
+  range: 100,
+  lastSkill: 'shopping',
+  games: { combo: { rounds: 3, bestStars: 4 }, cashier: { rounds: 1, bestStars: 2 } }
+};
+MT.storage.flush();
+MT.progress = MT.storage.load();
+assert.ok(MT.progress.topics.money, 'money 主题进度应被加载');
+assert.equal(MT.progress.topics.money.range, 100);
+assert.equal(MT.progress.topics.money.lastSkill, 'shopping');
+assert.equal(MT.progress.topics.money.skills.convert.clean, 2);
+assert.equal(MT.progress.topics.money.wrong['money:convert:7'].seed, 7);
+assert.equal(MT.progress.topics.money.games.combo.bestStars, 4);
+assert.equal(MT.progress.topics.money.games.cashier.rounds, 1);
+
 console.log('check-topics: ok (legacy data, persistence, scoring, clean streak, practice exit, money curriculum)');
