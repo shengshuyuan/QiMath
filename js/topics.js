@@ -307,6 +307,8 @@
   function changeMode(next) {
     var wasActive = MT.topics.isActive();
     MT.speech.stop();
+    if (MT.moneyGames && MT.moneyGames.getActiveGame()) MT.moneyGames.exit();
+    currentSubGame = null;
     session = null;
     mode = next;
     if (mode === 'practice') renderPracticeIntro();

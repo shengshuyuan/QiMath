@@ -133,11 +133,21 @@
       '</div>';
   }
 
+  function choiceKey(value) {
+    var parts = value.replace(/(?:纸币|硬币)$/, '').match(/^(?:(\d+(?:\.\d{1,2})?)元)?零?(?:(\d+)角)?零?(?:(\d+)分)?$/);
+    if (!parts || (!parts[1] && !parts[2] && !parts[3])) return value;
+    return Math.round(Number(parts[1] || 0) * 100) + Number(parts[2] || 0) * 10 + Number(parts[3] || 0);
+  }
+
   function buildChoices(correct, candidates, targetCount) {
     var list = [correct];
+    var keys = [choiceKey(correct)];
     for (var i = 0; i < candidates.length && list.length < (targetCount || 3); i++) {
       var c = candidates[i];
-      if (c && list.indexOf(c) === -1) list.push(c);
+      if (c && keys.indexOf(choiceKey(c)) === -1) {
+        list.push(c);
+        keys.push(choiceKey(c));
+      }
     }
     return list;
   }
@@ -295,7 +305,7 @@
     } else if (mode === 1) {
       // 找出表示指定面值的钱币（如找出1元）
       var targetNum = [1, 5, 10, 20, 50, 100][next(0, 5)];
-      var targetUnit = targetNum <= 5 ? (seed % 2 === 0 ? '元' : '角') : '元';
+      var targetUnit = targetNum <= 5 ? (Math.floor(seed / 4) % 2 === 0 ? '元' : '角') : '元';
       var targetText = targetNum + targetUnit;
       var matches = DENOMINATIONS.filter(function (x) { return x.shortName.indexOf(targetText) !== -1; });
       var target = matches.length ? matches[next(0, matches.length - 1)] : DENOM_BY_ID['y1_c'];
@@ -382,7 +392,7 @@
       // 小数标价 -> 读作元角分
       var y = next(1, range <= 20 ? 15 : 88);
       var j = next(1, 9);
-      var f = (seed % 3 === 0) ? next(1, 9) : 0;
+      var f = (Math.floor(seed / 3) % 2 === 0) ? next(1, 9) : 0;
       var totalCents = partsToCents(y, j, f);
       var priceStr = formatPrice(totalCents);
       var correctStr = formatCN(totalCents, true);
@@ -401,7 +411,7 @@
       // 元角分 -> 对应商品标价
       var y = next(1, range <= 20 ? 18 : 68);
       var j = (seed % 2 === 0) ? next(1, 9) : 0;
-      var f = (j === 0 || seed % 3 === 0) ? next(1, 9) : 0;
+      var f = (j === 0 || Math.floor(seed / 3) % 2 === 0) ? next(1, 9) : 0;
       if (j === 0 && f === 0) j = 5;
       var totalCents = partsToCents(y, j, f);
       var cnStr = formatCN(totalCents, true);
@@ -497,7 +507,7 @@
 
     if (mode === 0) {
       // 相同单位比较
-      var isYuan = seed % 2 === 0;
+      var isYuan = Math.floor(seed / 4) % 2 === 0;
       var val1 = next(1, range <= 20 ? 18 : 80);
       var val2 = next(1, range <= 20 ? 18 : 80);
       leftCents = isYuan ? val1 * 100 : val1 * 10;
@@ -508,7 +518,7 @@
       // 不同单位比较（元与角，或元角与角）
       var y = next(1, range <= 20 ? 10 : 30);
       var j = next(1, 9);
-      leftCents = y * 100 + (seed % 2 === 0 ? j * 10 : 0);
+      leftCents = y * 100 + (Math.floor(seed / 4) % 2 === 0 ? j * 10 : 0);
       leftStr = formatCN(leftCents);
       var offset = [ -10, 0, 10, 20, -20 ][next(0, 4)];
       rightCents = Math.max(10, leftCents + offset);
@@ -516,7 +526,7 @@
     } else if (mode === 2) {
       // 特殊换算相等比较（1元与10角、1元与100分、2元5角与25角、50角与5元）
       var y = next(1, range <= 20 ? 8 : 20);
-      var hasJiao = seed % 2 === 0;
+      var hasJiao = Math.floor(seed / 4) % 2 === 0;
       var j = hasJiao ? next(1, 9) : 0;
       leftCents = y * 100 + j * 10;
       leftStr = formatCN(leftCents);
@@ -524,7 +534,7 @@
       if (hasJiao) {
         rightStr = (leftCents / 10) + '角';
       } else {
-        var eqType = seed % 2;
+        var eqType = Math.floor(seed / 8) % 2;
         rightStr = eqType === 0 ? (y * 10) + '角' : (y * 100) + '分';
       }
     } else {
@@ -553,7 +563,7 @@
 
   // 5. 简单加减 (calc)
   function genCalc(q, next, seed, range) {
-    var isPlus = seed % 2 === 0;
+    var isPlus = Math.floor(seed / 4) % 2 === 0;
     var mode = seed % 4;
 
     if (mode === 0) {

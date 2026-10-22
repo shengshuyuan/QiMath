@@ -109,6 +109,7 @@ node tools/check-topics.js
 node tools/check-navigation.js
 node tools/check-sw-precache.js
 node tools/check-money.js
+node tools/check-money-games.js
 ```
 
 使用与部署说明（含线上地址）见 [AI_readme.md](AI_readme.md)。

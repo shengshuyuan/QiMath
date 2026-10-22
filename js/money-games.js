@@ -213,7 +213,7 @@
     html += '<p class="mission-label">' + esc(lvl.title) + '</p>';
     html += '<div class="mission-target">目标金额：<b class="target-amount">' + esc(formatCN(lvl.targetCents)) + '</b></div>';
     if (lvl.isAlt) {
-      html += '<p class="mission-tip">💡 换一种付法：请用与前一次不同的钱币数量组合凑出同一金额！</p>';
+      html += '<p class="mission-tip">💡 换一种付法：' + (r.prevComboSig ? '第一种付法已记录，请换一种不同的钱币数量组合！' : '先凑出一种付法，再用不同的钱币数量组合凑出同一金额！') + '</p>';
     }
     html += '</div>';
 
@@ -465,8 +465,16 @@
     } else if (action === 'confirm-combo') {
       var currentCents = r.selected.reduce(function (sum, d) { return sum + d.value; }, 0);
       if (currentCents === lvl.targetCents) {
-        if (lvl.isAlt && r.prevComboSig) {
+        if (lvl.isAlt) {
           var curSig = getComboSignature(r.selected);
+          if (!r.prevComboSig) {
+            r.prevComboSig = curSig;
+            r.feedback = '第一种付法凑对啦！已记录，现在换一种不同的钱币数量组合。';
+            r.feedbackGood = true;
+            MT.sound.play('right');
+            renderComboView();
+            return;
+          }
           if (curSig === r.prevComboSig) {
             r.hadWrong = true;
             r.feedback = '这是上一次的付法哦，请换一种不同的钱币张数组合再试一次！';
@@ -478,7 +486,6 @@
         }
         // 成功！
         r.passed = true;
-        r.prevComboSig = getComboSignature(r.selected);
         if (!r.hadWrong && !r.helped) r.stars[r.levelIdx] = 1;
         MT.sound.play('right');
         r.feedback = '太棒了！金额正好匹配！';
@@ -508,17 +515,19 @@
       } else if (diff < 0) {
         r.feedback = '提示：当前已经超过了 ' + formatCN(Math.abs(diff)) + '，拿掉一些钱币吧。';
       } else {
-        r.feedback = '提示：金额已经正好啦，点击“确认凑好了”即可通关！';
+        r.feedback = lvl.isAlt ? (r.prevComboSig ? '提示：金额已经正好啦，请确认这次的钱币组合与第一种不同。' : '提示：金额已经正好啦，点击“确认凑好了”记录第一种付法，再换一种组合。') : '提示：金额已经正好啦，点击“确认凑好了”即可通关！';
       }
       r.feedbackGood = true;
       renderComboView();
     } else if (action === 'next-level') {
+      if (!r.passed) return;
       if (r.levelIdx < 4) {
         r.levelIdx++;
         r.selected = [];
         r.hadWrong = false;
         r.helped = false;
         r.passed = false;
+        r.prevComboSig = null;
         r.feedback = '点击下方钱币，凑出目标金额。';
         r.feedbackGood = true;
         renderComboView();

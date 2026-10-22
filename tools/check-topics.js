@@ -248,6 +248,17 @@ click({ gameAction: 'quit' });
 assert.equal(MT.moneyGames.getActiveGame(), null);
 assert.ok(work.html.includes('元角分换算练习'));
 
+// 从游戏切到学习/错题时，应结束游戏，不能继续占用练习状态。
+['combo', 'cashier'].forEach(function (game) {
+  ['learn', 'wrong', 'practice'].forEach(function (mode) {
+    action('play-game', { game: game });
+    MT.topics.changeMode(mode);
+    assert.equal(MT.moneyGames.getActiveGame(), null);
+    assert.equal(MT.topics.isActive(), false, game + '切到' + mode + '应清理活动状态');
+    assert.ok(!work.html.includes('data-game-action='));
+  });
+});
+
 // 验证人民币打印纸生成
 var printRoot = { innerHTML: '' };
 assert.equal(MT.topics.buildPrint(printRoot), true);

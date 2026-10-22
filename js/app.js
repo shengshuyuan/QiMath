@@ -428,6 +428,7 @@
       if (MT.games) MT.games.init();
       if (MT.badges) MT.badges.init();
       MT.topics.init();
+      if (MT.moneyGames) MT.moneyGames.init();
 
       bindHeader();
       bindSettings();

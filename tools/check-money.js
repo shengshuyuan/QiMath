@@ -31,6 +31,48 @@ assert.strictEqual(money.formatPrice(205), '2.05元');
 
 assert.throws(function () { money.generate('unknown', 20, 0); }, /Unknown money skill/);
 
+function amountInCents(text) {
+  if (!/^\d/.test(text)) return null;
+  var total = 0;
+  for (var part of text.matchAll(/(\d+(?:\.\d+)?)\s*([元角分])/g)) {
+    total += Math.round(Number(part[1]) * ({ 元: 100, 角: 10, 分: 1 })[part[2]]);
+  }
+  return total;
+}
+
+// 历史误判：5元13角与6元3角等值，不能作为错误选项。
+var carryExample = money.generate('calc', 20, 2);
+assert.ok(carryExample.prompt.includes('5元8角'));
+assert.equal(carryExample.choices.filter(function (c) { return amountInCents(c) === 630; }).length, 1);
+
+// 分别遍历两个范围，避免把范围与种子奇偶绑定而漏掉子分支。
+[20, 100].forEach(function (range) {
+  var coverage = new Set();
+  money.skills.forEach(function (skill) {
+    for (var seed = 0; seed < 2000; seed++) {
+      var q = money.generate(skill.id, range, seed);
+      if (q.kind === 'choice' && q.choices.every(function (c) { return /^\d/.test(c); })) {
+        var amounts = q.choices.map(amountInCents);
+        assert.equal(new Set(amounts).size, amounts.length, '选项金额必须不同: ' + q.id + ' ' + q.choices.join(', '));
+      }
+      var d = q.data;
+      if (d.type === 'readwrite_price_to_cn') coverage.add('price-fen-' + (d.cents % 10 !== 0));
+      if (d.type === 'readwrite_cn_to_price' && d.cents % 100 >= 10 && d.cents % 10) coverage.add('cn-yuan-jiao-fen');
+      if (d.type === 'compare_money') {
+        if (/^\d+角$/.test(d.left) && /^\d+角$/.test(d.right)) coverage.add('compare-jiao');
+        if (d.right.includes('分')) coverage.add('compare-fen');
+        if (d.left.includes('元') && d.left.includes('角')) coverage.add('compare-compound');
+      }
+      if (d.type === 'calc_same_unit') coverage.add('same-' + d.unit + d.op);
+      if (d.type === 'recognize_target' && /^1[元角]/.test(d.target)) coverage.add('target-' + d.target.charAt(1));
+    }
+  });
+  ['price-fen-true', 'price-fen-false', 'cn-yuan-jiao-fen', 'compare-jiao', 'compare-fen', 'compare-compound',
+    'same-元+', 'same-元-', 'same-角+', 'same-角-', 'target-元', 'target-角'].forEach(function (branch) {
+    assert.ok(coverage.has(branch), range + '范围应覆盖 ' + branch);
+  });
+});
+
 // 不进退位加减应同时覆盖加法与减法，且加法角之和始终 < 10
 var noCarryPlus = 0;
 var noCarryMinus = 0;
