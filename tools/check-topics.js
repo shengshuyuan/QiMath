@@ -54,7 +54,7 @@ var context = vm.createContext(g);
 function load(file) {
   vm.runInContext(fs.readFileSync(path.join(__dirname, '..', 'js', file), 'utf8'), context, { filename: file });
 }
-['core.js', 'ops.js', 'mul.js', 'div.js', 'add.js', 'sub.js', 'mixed.js', 'length.js', 'money.js', 'money-games.js', 'storage.js', 'topics.js'].forEach(load);
+['core.js', 'ops.js', 'mul.js', 'div.js', 'add.js', 'sub.js', 'mixed.js', 'length.js', 'angle.js', 'time.js', 'mass.js', 'money.js', 'money-games.js', 'storage.js', 'topics.js'].forEach(load);
 var MT = g.MT;
 MT.speech = { stop: function () {}, play: function () {}, warmup: function () {} };
 MT.sound = { play: function () {} };
@@ -283,4 +283,114 @@ assert.equal(MT.progress.topics.money.wrong['money:convert:7'].seed, 7);
 assert.equal(MT.progress.topics.money.games.combo.bestStars, 4);
 assert.equal(MT.progress.topics.money.games.cashier.rounds, 1);
 
-console.log('check-topics: ok (legacy data, persistence, scoring, clean streak, practice exit, money curriculum)');
+
+// 每门新课程真实进入、答错、重试、刷新、复习和打印，防止只加目录漏接共用流程。
+['angle', 'time', 'mass'].forEach(function (id) {
+  var model = MT[id], skill = model.skills[0].id;
+  MT.topics.enter(id, { skill: skill, mode: 'learn' });
+  assert.ok(work.html.includes(model.skills[0].title));
+  seed = 0;
+  action('start');
+  var question = model.generate(skill, 20, 1);
+  assert.ok(work.html.includes(question.prompt));
+  if (question.kind === 'choice') {
+    choose((question.answer + 1) % question.choices.length);
+    choose(question.answer);
+  } else {
+    submit(question.answer + 1);
+    submit(question.answer);
+  }
+  var topic = MT.progress.topics[id];
+  assert.equal(topic.skills[skill].completed, 1);
+  assert.equal(topic.skills[skill].clean, 0);
+  assert.ok(topic.wrong[question.id]);
+  roundTrip();
+  assert.equal(MT.progress.topics[id].wrong[question.id].seed, 1);
+  MT.topics.enter(id, { skill: skill, mode: 'wrong' });
+  action('review-one', { question: question.id });
+  if (question.kind === 'choice') choose(question.answer); else submit(question.answer);
+  assert.equal(MT.progress.topics[id].wrong[question.id].cleanStreak, 1);
+  action('quit');
+  MT.progress.settings.printAnswers = 'on';
+  assert.equal(MT.topics.buildPrint(printRoot), true);
+  assert.ok(printRoot.innerHTML.includes(model.title + ' · 练习纸'));
+  assert.ok(printRoot.innerHTML.includes('参考答案'));
+});
+
+// 克的换算必须允许输入四位数，包括屏幕键盘、粘贴过滤和提交校验。
+var massSkill = MT.mass.skills.find(function (s) {
+  return Array.from({ length: 20 }, function (_, i) { return MT.mass.generate(s.id, 20, i); })
+    .some(function (q) { return q.kind === 'number' && q.answer >= 1000; });
+});
+assert.ok(massSkill, '必须包含千克换克的数值练习');
+var massSeed = 0, massQuestion;
+do { massQuestion = MT.mass.generate(massSkill.id, 20, ++massSeed); } while (massQuestion.kind !== 'number' || massQuestion.answer < 1000);
+MT.progress.topics.mass.wrong[massQuestion.id] = { skill: massSkill.id, seed: massSeed, range: 20, wrongCount: 1, cleanStreak: 0 };
+MT.topics.enter('mass', { skill: massSkill.id, mode: 'wrong' });
+action('review-one', { question: massQuestion.id });
+assert.ok(work.html.includes('maxlength="4"'));
+String(massQuestion.answer).split('').forEach(function (key) { action('key', { key: key }); });
+assert.equal(input.value, String(massQuestion.answer));
+handlers.input({ target: Object.assign(input, { id: 'topic-answer' }) });
+submit(input.value);
+assert.equal(MT.progress.topics.mass.wrong[massQuestion.id].cleanStreak, 1);
+
+// 提示先给思路，再显示解答；求助不能触发独立完成勋章。
+var awards = [];
+MT.badges = { checkTopic: function (id) { awards.push('topic:' + id); }, unlock: function (id) { awards.push(id); } };
+MT.topics.enter('mass', { skill: 'convert', mode: 'practice' });
+seed = 0;
+action('start');
+var helpQuestion = MT.mass.generate('convert', 20, 1);
+action('hint');
+assert.ok(work.html.includes(helpQuestion.hint));
+assert.ok(work.html.includes('topic-hint'), '提示使用中性色块');
+assert.ok(!work.html.includes('topic-solution'), '未完成时提示不能用答对的绿色块');
+assert.ok(!work.html.includes(helpQuestion.explanation), '第一次提示不能直接展示完整解答');
+assert.ok(work.html.includes('看完整解答'));
+action('hint');
+assert.ok(work.html.includes(helpQuestion.explanation));
+assert.ok(work.html.includes('topic-hint'));
+assert.ok(!work.html.includes('data-topic-action="hint"'), '完整解答展开后不再重复这个按钮');
+submit(helpQuestion.answer);
+assert.equal(awards.length, 0);
+action('quit');
+assert.ok(work.html.includes('独立完成 0 / 1 题'));
+assert.ok(work.html.includes('本轮计划 6 题，已完成 1 题'));
+
+// 两次复习明确展示进度；第二次才移出错题本、触发错题克星。
+action('review-one', { question: helpQuestion.id });
+submit(helpQuestion.answer);
+assert.ok(work.html.includes('1 / 2 次'));
+assert.deepEqual(awards, ['topic:mass']);
+action('review-one', { question: helpQuestion.id });
+submit(helpQuestion.answer);
+assert.ok(work.html.includes('这题已移出错题本'));
+assert.deepEqual(awards, ['topic:mass', 'mistake_slayer', 'topic:mass']);
+
+// 小题库按实际变式数开轮，文案和结果一致；完成后能继续下一知识点。
+MT.topics.enter('angle', { skill: 'parts', mode: 'practice' });
+assert.ok(work.html.includes('每轮 2 题'));
+assert.ok(work.html.includes('开始 2 题练习'));
+seed = 0;
+action('start');
+assert.ok(work.html.includes('第 1 / 2 题'));
+submit(MT.angle.generate('parts', 20, 1).answer);
+action('next');
+submit(MT.angle.generate('parts', 20, 2).answer);
+action('next');
+assert.ok(work.html.includes('独立完成 2 / 2 题'));
+assert.ok(work.html.includes('学习下一个知识点'));
+action('next-skill');
+assert.equal(MT.progress.topics.angle.lastSkill, 'classify');
+assert.ok(work.html.includes('直角、锐角和钝角'));
+MT.topics.enter('angle', { skill: 'judge', mode: 'practice' });
+assert.ok(work.html.includes('每轮 3 题'));
+
+// 看图错题必须能展开原图，不靠相同题干猜是哪一题。
+MT.progress.topics.time.wrong['time:clock:1'] = { skill: 'clock', seed: 1, range: 20, wrongCount: 1, cleanStreak: 0 };
+MT.topics.enter('time', { skill: 'clock', mode: 'wrong' });
+assert.ok(work.html.includes('查看这道题的图'));
+assert.ok(work.html.includes(MT.time.generate('clock', 20, 1).visualHTML));
+
+console.log('check-topics: ok (legacy progress, scoring, hints, partial rounds, short banks, next skill, awards, visual review, four-digit input, persistence/print)');

@@ -716,6 +716,7 @@
       if (e.key === 'Escape') resetClose();
       return;
     }
+    if (document.querySelector('.modal:not([hidden])')) return;
     if (!S.active || !dom.panel || dom.panel.hidden) return;
     if (!dom.quizPlay || dom.quizPlay.hidden) return;
     if (e.ctrlKey || e.metaKey || e.altKey) return;

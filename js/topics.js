@@ -89,13 +89,17 @@
     }
   }
 
+  function roundSize() { return skill.practiceCount || 6; }
+
+  function nextSkill() { return model.skills[model.skills.indexOf(skill) + 1]; }
+
   function renderPracticeIntro() {
     currentSubGame = null;
     var ranged = (model.id === 'mixed' && skill.id !== 'muldiv') || model.id === 'money';
-    work.innerHTML = '<article class="topic-card"><p class="topic-eyebrow">每轮 6 题 · 按自己的节奏完成</p><h3 tabindex="-1">' + esc(skill.title) + '练习</h3>' +
-      (ranged ? '<fieldset class="practice-range"><legend>这次练习的范围</legend><div class="seg"><button type="button" class="seg-btn" data-topic-range="20">' + (model.id === 'money' ? '20 元以内 · 基础' : '20 以内 · 起步') + '</button><button type="button" class="seg-btn" data-topic-range="100">' + (model.id === 'money' ? '100 元以内 · 进阶' : '100 以内 · 进阶') + '</button></div></fieldset>' : '<p class="topic-note">' + (model.id === 'mixed' ? '表内乘除，所有步骤都是整数结果。' : '看清题目里的单位，再开始作答。') + '</p>') +
-      '<p class="topic-note">' + (model.id === 'mixed' ? '先判断运算顺序，再一步一步计算。' : model.id === 'money' ? '看清钱币的面值与单位（元、角、分）。' : '可以用屏幕数字键盘，也可以直接输入答案。') + '需要帮助时，可以查看方法提示。</p>' +
-      '<div class="topic-actions">' + button('start', '开始 6 题练习 →', 'btn-main') + '</div>' +
+    work.innerHTML = '<article class="topic-card"><p class="topic-eyebrow">每轮 ' + roundSize() + ' 题 · 按自己的节奏完成</p><h3 tabindex="-1">' + esc(skill.title) + '练习</h3>' +
+      (ranged ? '<fieldset class="practice-range"><legend>这次练习的范围</legend><div class="seg"><button type="button" class="seg-btn" data-topic-range="20">' + (model.id === 'money' ? '20 元以内 · 基础' : '20 以内 · 起步') + '</button><button type="button" class="seg-btn" data-topic-range="100">' + (model.id === 'money' ? '100 元以内 · 进阶' : '100 以内 · 进阶') + '</button></div></fieldset>' : '<p class="topic-note">' + (model.id === 'mixed' ? '表内乘除，所有步骤都是整数结果。' : model.id === 'angle' ? '找顶点、看开口，不用边的长短判断角的大小。' : model.id === 'time' ? '看清钟面或时间文字，分清时与分。' : '看清题目里的单位，再开始作答。') + '</p>') +
+      '<p class="topic-note">' + (model.id === 'mixed' ? '先判断运算顺序，再一步一步计算。' : model.id === 'money' ? '看清钱币的面值与单位（元、角、分），选择或输入答案。' : model.id === 'angle' ? '观察角的顶点、两条边和开口，选择或输入答案。' : model.id === 'time' ? '先看时针，再看分针；计算时分清时刻和经过时间。选择或输入答案。' : '看清图示和单位，选择或输入答案。') + '需要帮助可以看提示，看过提示的题会加入错题复习。</p>' +
+      '<div class="topic-actions">' + button('start', '开始 ' + roundSize() + ' 题练习 →', 'btn-main') + '</div>' +
       (model.id === 'money' ? '<div class="topic-game-entries"><p class="topic-eyebrow">趣味游戏挑战 · 玩中学应用</p><div class="topic-game-row"><div class="topic-game-item"><div><b>🎮 凑钱小能手</b><small>用不同面额凑出目标金额，练习换算与付款</small></div><button type="button" class="btn btn-soft" data-topic-action="play-game" data-game="combo">去挑战 →</button></div><div class="topic-game-item"><div><b>🛒 小小收银员</b><small>计算商品总价，判断钱够不够与找零计算</small></div><button type="button" class="btn btn-soft" data-topic-action="play-game" data-game="cashier">去挑战 →</button></div></div></div>' : '') +
       '</article>';
     syncNavigation();
@@ -137,7 +141,7 @@
     if (!questions) {
       questions = [];
       var used = {}, retries = 0;
-      while (questions.length < 6) {
+      while (questions.length < roundSize()) {
         var item = makeItem(skill.id, bag().range, randomSeed());
         var key = item.q.expression || item.q.prompt + ':' + JSON.stringify(item.q.data || {});
         // 认知题的题库较小，重试后允许重复，但不阻塞出题。
@@ -161,6 +165,7 @@
     session.feedback = '';
     session.good = false;
     session.revealed = false;
+    session.hintShown = false;
   }
 
   function currentItem() { return session.questions[session.index]; }
@@ -189,10 +194,12 @@
       (!isDone && choices && !numeric ? '<div class="topic-choices" role="group" aria-label="' + (order ? '先算的部分' : '答案选项') + '">' + choices.map(function (c, i) {
         return button('choice', c, '', ' data-choice="' + i + '"');
       }).join('') + '</div>' : '') +
-      (numeric ? '<form id="topic-answer-form" class="topic-answer-form"><label for="topic-answer">' + (session.phase === 'intermediate' ? '中间结果' : '你的答案') + '</label><div class="topic-answer-row"><input id="topic-answer" name="answer" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="3" autocomplete="off" aria-describedby="topic-feedback" required><span class="topic-unit">' + esc(q.unit || '') + '</span><button type="submit" class="btn btn-main">确认答案</button></div></form>' + keyHTML() : '') +
-      '<div id="topic-feedback" class="topic-feedback ' + (session.good ? 'is-good' : '') + '" role="status" aria-live="polite">' + esc(session.feedback) + '</div>' +
-      (session.revealed || isDone ? '<div class="topic-solution">' + (q.steps ? q.steps.map(function (s) { return '<p>' + esc(s) + '</p>'; }).join('') : '<p>' + esc(q.explanation) + '</p>') + '</div>' : '') +
-      '<div class="topic-actions">' + (isDone ? button('next', session.index + 1 === session.questions.length ? '查看本轮结果 →' : '下一题 →', 'btn-main') : button('hint', '看方法提示', 'btn-soft')) + button('read-question', '🔊 读题', 'btn-soft') + button('quit', '结束本轮', 'btn-soft') + '</div></article>';
+      (numeric ? '<form id="topic-answer-form" class="topic-answer-form"><label for="topic-answer">' + (session.phase === 'intermediate' ? '中间结果' : '你的答案') + '</label><div class="topic-answer-row"><input id="topic-answer" name="answer" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" aria-describedby="topic-feedback" required><span class="topic-unit">' + esc(q.unit || '') + '</span><button type="submit" class="btn btn-main">确认答案</button></div></form>' + keyHTML() : '') +
+      '<div id="topic-feedback" class="topic-feedback ' + (session.good ? 'is-good' : session.hintShown ? 'is-help' : '') + '" role="status" aria-live="polite">' + esc(session.feedback) + '</div>' +
+      (!isDone && session.hintShown && !session.revealed ? '<div class="topic-hint"><p>' + esc(q.hint) + '</p></div>' : '') +
+      (!isDone && session.revealed ? '<div class="topic-hint">' + (q.steps ? q.steps.map(function (s) { return '<p>' + esc(s) + '</p>'; }).join('') : '<p>' + esc(q.explanation) + '</p>') + '</div>' : '') +
+      (isDone ? '<div class="topic-solution">' + (q.steps ? q.steps.map(function (s) { return '<p>' + esc(s) + '</p>'; }).join('') : '<p>' + esc(q.explanation) + '</p>') + '</div>' : '') +
+      '<div class="topic-actions">' + (isDone ? button('next', session.index + 1 === session.questions.length ? '查看本轮结果 →' : '下一题 →', 'btn-main') : (session.revealed ? '' : button('hint', session.hintShown ? '看完整解答' : '看提示', 'btn-soft'))) + button('read-question', '🔊 读题', 'btn-soft') + button('quit', '结束本轮', 'btn-soft') + '</div></article>';
   }
 
   function feedback(text, good) {
@@ -201,6 +208,7 @@
     var node = document.getElementById('topic-feedback');
     node.textContent = text;
     node.classList.toggle('is-good', !!good);
+    node.classList.toggle('is-help', false);
   }
 
   function needPractice(kind) {
@@ -233,12 +241,17 @@
     var w = b.wrong[q.id];
     if (w && clean) {
       w.cleanStreak++;
-      if (w.cleanStreak >= 2) delete b.wrong[q.id];
+      if (w.cleanStreak >= 2) {
+        delete b.wrong[q.id];
+        if (MT.badges) MT.badges.unlock('mistake_slayer');
+      }
     }
     session.phase = 'complete';
     session.feedback = clean ? '答对啦！这道题是你独立完成的。' : '完成啦！再独立练两次，就能把它移出错题本。';
+    if (clean && w) session.feedback += b.wrong[q.id] ? ' 已连续独立答对 1 / 2 次，再独立答对一次就能移出错题本。' : ' 已连续独立答对 2 次，这题已移出错题本！';
     session.good = true;
     MT.sound.play('right');
+    if (clean && MT.badges) MT.badges.checkTopic(model.id);
     save();
     syncNavigation();
     renderQuestion();
@@ -268,7 +281,7 @@
   function submit() {
     if (!session || session.done || session.phase === 'complete' || session.phase === 'order') return;
     var input = document.getElementById('topic-answer');
-    if (!input || !/^[0-9]{1,3}$/.test(input.value)) { feedback('先填入一个整数答案。'); return; }
+    if (!input || !/^[0-9]{1,4}$/.test(input.value)) { feedback('先填入一个整数答案。'); return; }
     var q = currentItem().q;
     var expected = session.phase === 'intermediate' ? q.intermediate : q.answer;
     if (Number(input.value) !== expected) {
@@ -289,7 +302,7 @@
   function renderResult() {
     session.done = true;
     syncNavigation();
-    work.innerHTML = '<article class="topic-card topic-result"><p class="topic-eyebrow">本轮练习结束</p><h3 tabindex="-1">独立完成 ' + session.clean + ' / ' + session.questions.length + ' 题</h3><p>共完成 ' + session.correct + ' 题。看过提示或答错的题，会留在错题本中帮你复习。</p><p>同一道错题连续两次独立答对，就会移出错题本。</p><div class="topic-actions">' + button('start', '再练 6 题', 'btn-main') + button('show-wrong', '去错题本', 'btn-soft') + button('learn', '回顾方法', 'btn-soft') + '</div></article>';
+    work.innerHTML = '<article class="topic-card topic-result"><p class="topic-eyebrow">本轮练习结束</p><h3 tabindex="-1">独立完成 ' + session.clean + ' / ' + session.correct + ' 题</h3><p>本轮计划 ' + session.questions.length + ' 题，已完成 ' + session.correct + ' 题。看过提示或答错的题，会留在错题本中帮你复习。</p><p>同一道错题连续两次独立答对，就会移出错题本。</p><div class="topic-actions">' + button('start', '再练 ' + roundSize() + ' 题', 'btn-main') + button('show-wrong', '去错题本', 'btn-soft') + button('learn', '回顾方法', 'btn-soft') + (mode === 'practice' && session.correct === session.questions.length && nextSkill() ? button('next-skill', '学习下一个知识点 →', 'btn-soft') : '') + '</div></article>';
     if (MT.bus) MT.bus.emit('topic:end');
     focus();
   }
@@ -300,7 +313,7 @@
     work.innerHTML = '<article class="topic-card"><h3 tabindex="-1">' + esc(model.title) + '错题本</h3><p class="topic-muted">连续两次独立答对同一道题，就会移出错题本。</p>' +
       (items.length ? '<div class="topic-actions">' + button('review-all', '复习这 ' + Math.min(10, items.length) + ' 题', 'btn-main') + '</div><div class="topic-wrong-list">' + items.map(function (item) {
         var w = bag().wrong[item.q.id];
-        return '<div class="topic-wrong-row"><div><b>' + esc(item.q.expression || item.q.prompt) + '</b><small>' + esc(skillById(item.skill).title) + ' · ' + esc(labels[w.errorKind] || '答案') + ' · 已连续答对 ' + w.cleanStreak + ' / 2 次</small></div>' + button('review-one', '复习', 'btn-soft', ' data-question="' + esc(item.q.id) + '"') + '</div>';
+        return '<div class="topic-wrong-row"><div><b>' + esc(item.q.expression || item.q.prompt) + '</b><small>' + esc(skillById(item.skill).title) + ' · ' + esc(labels[w.errorKind] || '答案') + ' · 已连续答对 ' + w.cleanStreak + ' / 2 次</small>' + (item.q.visualHTML ? '<details class="topic-wrong-preview"><summary>查看这道题的图</summary>' + item.q.visualHTML + '</details>' : '') + '</div>' + button('review-one', '复习', 'btn-soft', ' data-question="' + esc(item.q.id) + '"') + '</div>';
       }).join('') + '</div>' : '<div class="topic-empty"><span aria-hidden="true">🌱</span><p>这里还没有需要复习的题。</p>' + button('start', '开始练习', 'btn-main') + '</div>') + '</article>';
   }
 
@@ -340,7 +353,13 @@
       var action = btn.dataset.topicAction;
       if (action === 'start') start();
       if (action === 'learn') changeMode('learn');
-      if (action === 'quit') changeMode(mode === 'wrong' ? 'wrong' : 'practice');
+      if (action === 'quit') {
+        if (session && !session.done && session.correct > 0) renderResult();
+        else changeMode(mode === 'wrong' ? 'wrong' : 'practice');
+      }
+      if (action === 'next-skill' && nextSkill()) {
+        skill = nextSkill(); bag().lastSkill = skill.id; demoStep = 0; save(); changeMode('learn');
+      }
       if (action === 'show-wrong') changeMode('wrong');
       if (action === 'demo-next') { demoStep++; renderLearn(); focus(demoStep < skill.example.steps.length ? '[data-topic-action="demo-next"]' : '[data-topic-action="start"]'); }
       if (action === 'read-lesson') say(skill.title + '。' + skill.description + '。' + work.querySelector('.topic-lesson').textContent);
@@ -353,8 +372,10 @@
       }
       if (action === 'hint' && session && session.phase !== 'complete') {
         if (!session.helped) { session.helped = true; needPractice('help'); }
-        session.revealed = true;
-        session.feedback = '一起看看方法。本题完成后还可以在错题本独立练习。';
+        if (session.hintShown) session.revealed = true;
+        session.hintShown = true;
+        session.good = false;
+        session.feedback = session.revealed ? '一起看完整解答，理解后再独立复习。这题已加入错题本。' : '先想一想提示，再试着作答。这题已加入错题本，之后可以独立复习。';
         renderQuestion();
         focus('[data-topic-action="hint"]');
       }
@@ -370,7 +391,7 @@
           input.value = input.value.slice(0, cursorStart) + input.value.slice(cursorEnd);
         } else {
           var value = input.value.slice(0, cursorStart) + key + input.value.slice(cursorEnd);
-          if (value.length <= 3) { input.value = value; cursorStart++; }
+          if (value.length <= 4) { input.value = value; cursorStart++; }
         }
         input.focus({ preventScroll: true });
         if (input.setSelectionRange) input.setSelectionRange(cursorStart, cursorStart);
@@ -395,11 +416,11 @@
         var media = window.matchMedia('(min-width: 721px)');
         if (media.addEventListener) media.addEventListener('change', function () { if (model) pickerForScreen(); });
       }
-      panel.addEventListener('input', function (e) { if (e.target.id === 'topic-answer') e.target.value = e.target.value.replace(/[^0-9]/g, '').slice(0, 3); });
+      panel.addEventListener('input', function (e) { if (e.target.id === 'topic-answer') e.target.value = e.target.value.replace(/[^0-9]/g, '').slice(0, 4); });
     },
     enter: function (id, options) {
       options = options || {};
-      model = id === 'mixed' ? MT.mixed : id === 'money' ? MT.money : MT.length;
+      model = MT[id];
       skill = skillById(options.skill) || skillById(bag().lastSkill) || model.skills[0];
       bag().lastSkill = skill.id;
       mode = ['learn', 'practice', 'wrong'].indexOf(options.mode) !== -1 ? options.mode : 'learn';

@@ -129,6 +129,24 @@
     }
   ];
 
+  function segment(length) {
+    var svg = svgOpen('一条直直的线段，有两个端点' + (length ? '，长 ' + length + ' 厘米' : '') + '。', 130);
+    svg += '<path d="M 80 70 H 540" stroke="#7060d4" stroke-width="5"/><circle cx="80" cy="70" r="7" fill="#40336c"/><circle cx="540" cy="70" r="7" fill="#40336c"/>';
+    svg += '<text x="80" y="110" text-anchor="middle" font-size="22">端点</text><text x="540" y="110" text-anchor="middle" font-size="22">端点</text>';
+    if (length) svg += '<text x="310" y="40" text-anchor="middle" font-size="26">' + length + ' 厘米</text>';
+    return figure(svg + '</svg>');
+  }
+
+  skills.push({
+    id: 'segment', title: '认识和画线段', description: '线段是直的，有两个端点，可以量出长度。',
+    lessonHTML: '<div class="topic-lesson"><p>把一根线拉紧，两手之间的一段可以看作<strong>线段</strong>。线段是直的，有两个端点，可以量出长度。</p>' + segment(5) +
+      '<div class="topic-example"><p>画一条 5 厘米的线段：在 0 刻度处点一个端点，沿尺子画到 5 厘米处，再标出另一个端点。</p></div>' +
+      '<p class="topic-rule">直直的、两个端点、可以量长度。弯曲的线不是线段。</p><p class="topic-note">请在纸上用真实尺子画一画，再检查端点和长度。</p></div>'
+  }, {
+    id: 'calculate', title: '长度的加减', description: '单位相同时相加减，单位不同时先换算。',
+    lessonHTML: '<div class="topic-lesson"><p>长度相加或相减，先看单位是否相同。</p><div class="topic-example"><p>一根彩带长 80 厘米，接上 15 厘米：80＋15＝95 厘米。</p><p>1 米彩带剪去 30 厘米：先把 1 米换成 100 厘米，再算 100－30＝70 厘米。</p></div><p class="topic-rule">先统一单位 → 再计算 → 答案带单位。</p></div>'
+  });
+
   function choose(q, choices, correct, next) {
     choices = choices.slice();
     for (var i = choices.length - 1; i > 0; i--) {
@@ -244,6 +262,26 @@
     else if (skillId === 'ruler') q = readRuler(q, next, seed);
     else if (skillId === 'compare') q = compare(q, next, seed);
     else if (skillId === 'convert') q = convert(q, next, seed);
+    else if (skillId === 'segment') {
+      var facts = [
+        ['一条线段有几个端点？', ['1 个', '2 个', '没有端点'], '2 个', '一条线段有两个端点。'],
+        ['哪一种线可以是线段？', ['直直的，有两个端点', '弯弯的，有两个端点', '直直的，没有端点'], '直直的，有两个端点', '线段必须是直的，而且有两个端点。'],
+        ['画 6 厘米的线段，起点在 2 厘米刻度，终点应在哪个刻度？', ['6 厘米', '8 厘米', '4 厘米'], '8 厘米', '2＋6＝8，终点应在 8 厘米刻度。']
+      ];
+      var fact = facts[next(0, facts.length - 1)];
+      q.prompt = fact[0]; q.hint = '线段是直的，有两个端点；长度＝终点刻度－起点刻度。';
+      q.explanation = fact[3]; q.data = { item: facts.indexOf(fact) };
+      q = choose(q, fact[1], fact[2], next);
+    }
+    else if (skillId === 'calculate') {
+      var total = next(1, 9) * 100, part = next(1, 9) * 10, subtract = seed % 2 === 0;
+      q.kind = 'number'; q.unit = '厘米';
+      q.prompt = subtract ? (total / 100) + ' 米彩带剪去 ' + part + ' 厘米，还剩多少厘米？' : part + ' 厘米彩带接上 ' + (total / 100) + ' 米，一共多少厘米？';
+      q.answer = subtract ? total - part : total + part;
+      q.hint = '先把米换成厘米，1 米＝100 厘米，再计算。';
+      q.explanation = (total / 100) + ' 米＝' + total + ' 厘米，' + total + (subtract ? '－' : '＋') + part + '＝' + q.answer + '（厘米）。';
+      q.data = { total: total, part: part, subtract: subtract };
+    }
     else throw new RangeError('Unknown length skill: ' + skillId);
     q.speech = q.prompt;
     q.printPrompt = q.prompt;
@@ -252,8 +290,8 @@
 
   MT.length = {
     id: 'length',
-    title: '米和厘米',
-    subtitle: '认识单位、读尺、比较和基础换算',
+    title: '长度单位',
+    subtitle: '认识米和厘米、读尺、线段、比较与计算',
     skills: skills,
     generate: generate
   };

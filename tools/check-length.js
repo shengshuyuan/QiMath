@@ -11,7 +11,7 @@ vm.runInNewContext(fs.readFileSync(path.join(__dirname, '..', 'js', 'length.js')
 var length = g.MT.length;
 
 assert.strictEqual(length.id, 'length');
-assert.deepStrictEqual(Array.from(length.skills, function (s) { return s.id; }), ['recognize', 'unit', 'ruler', 'compare', 'convert']);
+assert.deepStrictEqual(Array.from(length.skills, function (s) { return s.id; }), ['recognize', 'unit', 'ruler', 'compare', 'convert', 'segment', 'calculate']);
 length.skills.forEach(function (skill) {
   assert.ok(skill.title && skill.description && skill.lessonHTML, skill.id + ' 课程内容完整');
 });
@@ -41,7 +41,7 @@ length.skills.forEach(function (skill) {
       assert.ok(Number.isInteger(q.answer) && q.answer >= 0 && q.answer < q.choices.length);
       assert.strictEqual(new Set(q.choices).size, q.choices.length, '选项不能重名');
     } else {
-      assert.ok(Number.isInteger(q.answer) && q.answer >= 0 && q.answer <= 900, '数值答案至多 3 位');
+      assert.ok(Number.isInteger(q.answer) && q.answer >= 0 && q.answer <= 990, '数值答案至多 3 位');
       assert.ok(q.unit === '米' || q.unit === '厘米');
     }
     var data = q.data;
@@ -57,6 +57,10 @@ length.skills.forEach(function (skill) {
       assert.ok(data.start >= 0 && data.end <= data.axisMax && data.axisMax <= 15);
       assert.ok(data.end > data.start);
       assert.strictEqual(q.answer, data.end - data.start, '读尺应为终点减起点');
+      var ticks = Array.from(q.visualHTML.matchAll(/M ([\d.]+) 108 V/g));
+      var bar = q.visualHTML.match(/y="48" width="([\d.e+-]+)"/);
+      assert.ok(ticks.length >= 2 && bar);
+      assert.ok(Math.abs(Number(bar[1]) / (Number(ticks[1][1]) - Number(ticks[0][1])) - q.answer) < 1e-6, '从SVG物体宽度和厘米刻度间距独立重算长度');
       assert.strictEqual(data.length, q.answer);
       assert.strictEqual(q.prompt, '看直尺，物体长多少厘米？', '读尺题干应要求看图');
       assert.ok(!/\d/.test(q.prompt), '题干不直接给出左右刻度');
@@ -87,6 +91,11 @@ length.skills.forEach(function (skill) {
       assert.strictEqual(data.relation, relation);
       assert.strictEqual(q.choices[q.answer], answer, '比较前先统一单位');
       seen[relation] = true;
+    } else if (skill.id === 'segment') {
+      assert.ok(q.choices[q.answer] === (q.data.item === 0 ? '2 个' : q.data.item === 1 ? '直直的，有两个端点' : '8 厘米'));
+    } else if (skill.id === 'calculate') {
+      assert.strictEqual(q.answer, q.data.subtract ? q.data.total - q.data.part : q.data.total + q.data.part);
+      assert.strictEqual(q.unit, '厘米');
     } else if (skill.id === 'convert') {
       assert.ok(Number.isInteger(data.meters) && data.meters >= 1 && data.meters <= 9);
       assert.strictEqual(data.centimeters, data.meters * 100);
@@ -112,4 +121,4 @@ Object.keys(seen).forEach(function (key) { assert.ok(seen[key], '应覆盖 ' + k
   });
 });
 
-console.log('check-length: ok (5 skills, 10000 seeded questions)');
+console.log('check-length: ok (7 skills, 14000 seeded questions)');

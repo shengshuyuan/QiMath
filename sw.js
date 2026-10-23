@@ -1,4 +1,4 @@
-var CACHE_NAME = 'mt99-cache-v32';
+var CACHE_NAME = 'mt99-cache-v37';
 var ASSETS = [
   './',
   './index.html',
@@ -32,6 +32,9 @@ var ASSETS = [
   './js/print.js',
   './js/mixed.js',
   './js/length.js',
+  './js/angle.js',
+  './js/time.js',
+  './js/mass.js',
   './js/money.js',
   './js/money-games.js',
   './js/topics.js',
@@ -94,7 +97,7 @@ self.addEventListener('fetch', function (e) {
     // Network-First for code assets so updates are immediate
     e.respondWith(
       fetch(e.request).then(function (res) {
-        if (res && res.status === 200) {
+        if (res && res.status === 200 && res.type === 'basic' && url.indexOf(self.location.origin) === 0) {
           var clone = res.clone();
           caches.open(CACHE_NAME).then(function (cache) {
             cache.put(e.request, clone);

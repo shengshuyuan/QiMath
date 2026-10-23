@@ -19,7 +19,8 @@ body { overflow-x: clip; }
 .course-card:hover { border-color: var(--brand); background: var(--field); }
 .course-mark { display: grid; place-items: center; flex-shrink: 0; width: 44px; height: 48px; color: var(--brand-d); font-size: 32px; font-family: var(--font-num); }
 .course-card[data-course="mixed"] .course-mark { font-size: 24px; }
-.course-card[data-course="length"] .course-mark { font-size: 12px; white-space: nowrap; }
+.course-card[data-course="length"] .course-mark,
+.course-card[data-course="mass"] .course-mark { font-size: 12px; white-space: nowrap; }
 .course-card-copy { min-width: 0; }
 .course-card b { display: block; font-size: 19px; margin-bottom: 6px; }
 .course-card small { display: block; color: var(--ink-2); font-size: 13px; line-height: 1.65; }
@@ -28,7 +29,7 @@ body { overflow-x: clip; }
 #course-title { font-size: 28px; line-height: 1.4; margin-bottom: 18px; }
 #course-title:focus, #catalog-title:focus { outline: none; }
 .course-modes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; max-width: 440px; padding: 4px; background: var(--muted); border: 1px solid var(--line); border-radius: var(--r-md); margin-bottom: 20px; }
-.course-modes button { min-height: 42px; padding: 7px 12px; border: 1px solid transparent; border-radius: 9px; background: transparent; color: var(--ink-2); font-size: 15px; font-weight: 600; }
+.course-modes button { min-height: 44px; padding: 7px 12px; border: 1px solid transparent; border-radius: 9px; background: transparent; color: var(--ink-2); font-size: 15px; font-weight: 600; }
 .course-modes button.is-on { background: var(--card); border-color: var(--line); color: var(--brand-d); box-shadow: 0 1px 3px rgba(40, 24, 70, .05); }
 .basic-tools { display: flex; flex-wrap: wrap; gap: 8px; margin: -4px 0 16px; }
 .basic-tools .tab { min-height: 44px; padding: 8px 16px; font-size: 14px; border-radius: 10px; box-shadow: none; background: transparent; border-color: var(--line); transform: none; }
@@ -46,7 +47,7 @@ body { overflow-x: clip; }
   .app-title { font-size: 18px; }
   .directory-link { font-size: 13px; padding: 0 6px; }
   .header-actions { gap: 5px; }
-  .act-btn { min-height: 38px; padding: 0 8px; }
+  .act-btn { min-height: 44px; min-width: 44px; padding: 0 8px; }
   .app-main { padding: 18px 16px 32px; }
   .catalog-intro { margin: 6px 0 24px; }
   .catalog-intro > p:last-child { font-size: 14px; }

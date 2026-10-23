@@ -9,14 +9,14 @@
 <link rel="manifest" href="manifest.json">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<link rel="stylesheet" href="css/base.css?v=2.5.6">
-<link rel="stylesheet" href="css/layout.css?v=2.5.6">
-<link rel="stylesheet" href="css/visuals.css?v=2.5.6">
-<link rel="stylesheet" href="css/quiz.css?v=2.5.6">
-<link rel="stylesheet" href="css/games.css?v=2.5.6">
-<link rel="stylesheet" href="css/print.css?v=2.5.6">
-<link rel="stylesheet" href="css/topics.css?v=2.5.6">
-<link rel="stylesheet" href="css/navigation.css?v=2.5.6">
+<link rel="stylesheet" href="css/base.css?v=2.6.4">
+<link rel="stylesheet" href="css/layout.css?v=2.6.4">
+<link rel="stylesheet" href="css/visuals.css?v=2.6.4">
+<link rel="stylesheet" href="css/quiz.css?v=2.6.4">
+<link rel="stylesheet" href="css/games.css?v=2.6.4">
+<link rel="stylesheet" href="css/print.css?v=2.6.4">
+<link rel="stylesheet" href="css/topics.css?v=2.6.4">
+<link rel="stylesheet" href="css/navigation.css?v=2.6.4">
 </head>
 <body>
 
@@ -124,7 +124,7 @@
     <div class="catalog-intro"><p class="topic-eyebrow">一步一步，学会数学</p><h2 id="catalog-title" tabindex="-1">今天想学什么？</h2><p>选一门课程，看懂方法，再自己试一试。</p></div>
     <button type="button" class="continue-course" id="btn-continue" hidden></button>
     <section class="catalog-group" aria-labelledby="number-domain"><div class="catalog-group-head"><h3 id="number-domain">数与运算</h3><span>理解数量与运算方法</span></div><div class="course-grid" id="number-courses"></div></section>
-    <section class="catalog-group" aria-labelledby="measure-domain"><div class="catalog-group-head"><h3 id="measure-domain">量与测量</h3><span>认识生活中的大小与长短</span></div><div class="course-grid" id="measure-courses"></div></section>
+    <section class="catalog-group" aria-labelledby="measure-domain"><div class="catalog-group-head"><h3 id="measure-domain">量与测量</h3><span>认识长短、时间、质量和钱币</span></div><div class="course-grid" id="measure-courses"></div></section>
   </section>
   <section id="course-heading" aria-labelledby="course-title" hidden>
     <nav class="course-breadcrumb" aria-label="当前位置"><span id="course-domain"></span><span aria-hidden="true"> / </span><span id="breadcrumb-course" aria-current="page"></span></nav>
@@ -331,41 +331,44 @@
     <div class="badges-modal-head">
       <div class="badges-head-left">
         <h2 id="badges-title">🎖️ 荣誉勋章馆</h2>
-        <span class="badge-stat" id="badge-stat">已收集 0 / 8 枚勋章</span>
+        <span class="badge-stat" id="badge-stat">已收集 0 / 14 枚勋章</span>
       </div>
       <button type="button" class="btn btn-soft badges-close" id="badges-close" aria-label="关闭">✕</button>
     </div>
-    <div class="badge-grid" id="badge-grid"></div>
+    <div class="badge-grid" id="badge-grid" tabindex="0" role="region" aria-label="勋章与解锁进度，可滚动查看"></div>
   </div>
 </div>
 
 <div id="print-root" aria-hidden="true"></div>
 
-<script src="js/core.js?v=2.5.6"></script>
-<script src="js/ops.js?v=2.5.6"></script>
-<script src="js/mul.js?v=2.5.6"></script>
-<script src="js/div.js?v=2.5.6"></script>
-<script src="js/add.js?v=2.5.6"></script>
-<script src="js/sub.js?v=2.5.6"></script>
-<script src="js/storage.js?v=2.5.6"></script>
-<script src="js/voice-clips.js?v=2.5.6"></script>
-<script src="js/speech.js?v=2.5.6"></script>
-<script src="js/sound.js?v=2.5.6"></script>
-<script src="js/confetti.js?v=2.5.6"></script>
-<script src="js/badges.js?v=2.5.6"></script>
-<script src="js/visuals.js?v=2.5.6"></script>
-<script src="js/explore.js?v=2.5.6"></script>
-<script src="js/table.js?v=2.5.6"></script>
-<script src="js/quiz.js?v=2.5.6"></script>
-<script src="js/games.js?v=2.5.6"></script>
-<script src="js/print.js?v=2.5.6"></script>
-<script src="js/mixed.js?v=2.5.6"></script>
-<script src="js/length.js?v=2.5.6"></script>
-<script src="js/money.js?v=2.5.6"></script>
-<script src="js/money-games.js?v=2.5.6"></script>
-<script src="js/topics.js?v=2.5.6"></script>
-<script src="js/navigation.js?v=2.5.6"></script>
-<script src="js/app.js?v=2.5.6"></script>
+<script src="js/core.js?v=2.6.4"></script>
+<script src="js/ops.js?v=2.6.4"></script>
+<script src="js/mul.js?v=2.6.4"></script>
+<script src="js/div.js?v=2.6.4"></script>
+<script src="js/add.js?v=2.6.4"></script>
+<script src="js/sub.js?v=2.6.4"></script>
+<script src="js/storage.js?v=2.6.4"></script>
+<script src="js/voice-clips.js?v=2.6.4"></script>
+<script src="js/speech.js?v=2.6.4"></script>
+<script src="js/sound.js?v=2.6.4"></script>
+<script src="js/confetti.js?v=2.6.4"></script>
+<script src="js/badges.js?v=2.6.4"></script>
+<script src="js/visuals.js?v=2.6.4"></script>
+<script src="js/explore.js?v=2.6.4"></script>
+<script src="js/table.js?v=2.6.4"></script>
+<script src="js/quiz.js?v=2.6.4"></script>
+<script src="js/games.js?v=2.6.4"></script>
+<script src="js/print.js?v=2.6.4"></script>
+<script src="js/mixed.js?v=2.6.4"></script>
+<script src="js/length.js?v=2.6.4"></script>
+<script src="js/angle.js?v=2.6.4"></script>
+<script src="js/time.js?v=2.6.4"></script>
+<script src="js/mass.js?v=2.6.4"></script>
+<script src="js/money.js?v=2.6.4"></script>
+<script src="js/money-games.js?v=2.6.4"></script>
+<script src="js/topics.js?v=2.6.4"></script>
+<script src="js/navigation.js?v=2.6.4"></script>
+<script src="js/app.js?v=2.6.4"></script>
 <script>
 (function () {
   var ok = window.MT && MT.core && MT.visuals && MT.app;

@@ -2,8 +2,8 @@
 
 ## Source of truth
 - Status: Active
-- Last refreshed: 2026-10-15
-- Primary product surfaces: QiMath 基础运算、混合运算、米和厘米、认识人民币。
+- Last refreshed: 2026-10-23
+- Primary product surfaces: QiMath 基础运算、混合运算、长度单位、角、时间、克和千克、认识人民币。
 - Evidence reviewed: `index.html`、`css/base.css`、`css/layout.css`、`js/ops.js`、`js/app.js`、`js/storage.js`、`js/quiz.js`、`js/print.js`、`js/money.js`；本轮用户确认的三个范围问题。此前没有独立设计文档。
 
 ## Brand
@@ -77,8 +77,22 @@
 - Framework/styling system: 原生 HTML/CSS/JS，IIFE + MT 命名空间，无新依赖。
 - Design-token constraints: 复用现有 CSS 变量，不另建主题系统。
 - Performance constraints: 小型结构化题目，无 eval；错题只存知识点、范围和 seed，重建显示。
-- Compatibility constraints: 保留 `mt99.progress.v1` 和原四则字段；新增 topics 字段（须覆盖 `mixed` / `length` / `money`，人民币另含 `games`）；旧记录加载时补默认值。
+- Compatibility constraints: 保留 `mt99.progress.v1` 和原四则字段；新增 topics 字段（须覆盖 `mixed` / `length` / `money` / `angle` / `time` / `mass`，人民币另含 `games`）；旧记录加载时补默认值。
 - Test/screenshot expectations: 出题边界与确定性检查、旧数据兼容、真实页面学习/答题/错题/刷新、响应式截图、离线与打印内容检查。
 
 ## Open questions
 - 后续增加新主题时，再按实际知识形态扩展题型；不提前引入通用课程平台。
+
+## 2026-10-23 量与测量模块
+- 保留 length 课程 ID 和已有知识点 ID，名称扩展为“长度单位”，增加线段和长度加减。
+- 新增 angle / time / mass 三门课程，各自提供学习、练习、错题、打印入口，复用 topics 页面和存储契约。
+- 钟面示意的时针随分钟连续转动；角按两边张口判断，不以边长判断；质量换算使用 1 千克＝1000 克。
+- 数字输入最多四位，覆盖千克换克。示意长度不代表屏幕实际厘米，称量估计应由实物观察辅助。
+- 本轮不新增后台、账号、依赖或专属游戏；不改变旧练习题 ID 和进度数据格式。
+
+## 学习与奖励反馈（2026-10-23）
+- 自主练习通常 6 题；角的组成与辨析采用 2/3 题短轮，不用相同题目凑题数。
+- 提示先给思路，第二次才展示完整解答；求助后列入复习，不计独立完成。求助反馈使用中性色，避免与答错混淆。
+- 看图错题可以展开原图；独立复习明确显示 1/2 次与移出状态，移出可获得错题克星。提前结束保留已完成数量，完整练习后可进入下一知识点。
+- 保留旧 8 枚勋章，新增 6 枚知识主题勋章；每个知识点至少独立答对一次后解锁，显示完成知识点进度，不称为知识掌握认证。打开勋章馆可补发历史达标记录。
+- 勋章馆手机单列，文字保持可读对比度，支持滚动区域键盘访问、Tab 范围、Escape 关闭与焦点恢复；基础闯关在弹窗打开时不处理后台答题键盘。

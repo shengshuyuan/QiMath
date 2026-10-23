@@ -8,7 +8,7 @@ var vm = require('node:vm');
 var context = { MT: { progress: { topics: {} } } };
 context.window = context;
 vm.createContext(context);
-['mixed.js', 'length.js', 'money.js', 'navigation.js'].forEach(function (name) {
+['mixed.js', 'length.js', 'angle.js', 'time.js', 'mass.js', 'money.js', 'navigation.js'].forEach(function (name) {
   vm.runInContext(fs.readFileSync(path.join(__dirname, '..', 'js', name), 'utf8'), context, { filename: name });
 });
 var nav = context.MT.navigation;

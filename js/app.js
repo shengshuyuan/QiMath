@@ -64,7 +64,7 @@
     resume.hidden = last.page !== 'course';
     if (!resume.hidden) {
       var c = MT.navigation.course(last.course);
-      var m = c.topic === 'mixed' ? MT.mixed : c.topic === 'length' ? MT.length : c.topic === 'money' ? MT.money : null;
+      var m = c.topic === 'basic' ? null : MT[c.id];
       var skill = m && m.skills.filter(function (s) { return s.id === last.skill; })[0];
       resume.textContent = '继续学习 · ' + c.title + (skill ? ' · ' + skill.title : '') + ' →';
     }

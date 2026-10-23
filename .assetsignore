@@ -3,6 +3,10 @@
 .vercel
 .omx
 .gstack
+.workbuddy
+.env*
+AGENTS.md
+*.genie
 **/.DS_Store
 tools/__pycache__
 *.pyc

@@ -360,10 +360,9 @@ button, .tap { user-select: none; }
 }
 
 /* ---------- 勋章馆弹窗 ---------- */
-.modal-badges-card {
-  max-width: 480px !important;
-  width: min(92vw, 480px);
-  padding: 20px 18px !important;
+.modal-card.modal-badges-card {
+  width: min(640px, 100%);
+  padding: 20px 18px;
 }
 
 .badges-modal-head {
@@ -386,8 +385,8 @@ button, .tap { user-select: none; }
 }
 
 .badges-close {
-  min-height: 36px;
-  width: 36px;
+  min-height: 44px;
+  width: 44px;
   padding: 0;
   border-radius: 50%;
   font-size: 16px;
@@ -423,8 +422,7 @@ button, .tap { user-select: none; }
 }
 
 .badge-card.is-locked {
-  opacity: .55;
-  filter: grayscale(.75);
+  opacity: 1;
 }
 
 .badge-icon-wrap {
@@ -459,13 +457,17 @@ button, .tap { user-select: none; }
 }
 
 .badge-desc {
-  font-size: 12px;
-  color: var(--ink-3);
-  line-height: 1.3;
+  font-size: 13px;
+  color: var(--ink-2);
+  line-height: 1.5;
+}
+
+@media (max-width: 480px) {
+  .badge-grid { grid-template-columns: minmax(0, 1fr); }
 }
 
 .badge-tag {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--ok-text);
   margin-top: 2px;

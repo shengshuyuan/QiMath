@@ -8,12 +8,18 @@
     { id: 'mul', topic: 'basic', title: '乘法', domain: '数与运算', mark: '×', description: '用分组与阵列理解九九乘法' },
     { id: 'div', topic: 'basic', title: '除法', domain: '数与运算', mark: '÷', description: '平均分与包含，练习表内除法' },
     { id: 'mixed', topic: 'mixed', title: '混合运算', domain: '数与运算', mark: '( )', description: '从左往右、先乘除后加减与小括号' },
-    { id: 'length', topic: 'length', title: '米和厘米', domain: '量与测量', mark: 'm / cm', description: '认识长度单位、读尺、比较与换算' },
-    { id: 'money', topic: 'money', title: '认识人民币', domain: '量与测量', mark: '¥', description: '认识钱币、元角分换算、计算与购物应用' }
+    { id: 'length', topic: 'length', title: '长度单位', domain: '量与测量', mark: 'm / cm', description: '米厘米、读尺、线段和计算' },
+    { id: 'angle', topic: 'angle', title: '角的初步认识', domain: '量与测量', mark: '∠', description: '找顶点、比开口，认识三种角' },
+    { id: 'time', topic: 'time', title: '认识时间', domain: '量与测量', mark: '◷', description: '认钟面、读时分、换算经过时间' },
+    { id: 'mass', topic: 'mass', title: '克和千克', domain: '量与测量', mark: 'g / kg', description: '克与千克、读秤、换算和比较' },
+    { id: 'money', topic: 'money', title: '认识人民币', domain: '量与测量', mark: '¥', description: '面值换算、计算和购物找零' }
   ];
 
   function course(id) { return courses.filter(function (c) { return c.id === id; })[0] || null; }
-  function model(id) { return id === 'mixed' ? MT.mixed : id === 'length' ? MT.length : id === 'money' ? MT.money : null; }
+  function model(id) {
+    var c = course(id);
+    return c && c.topic !== 'basic' ? (MT[id] || null) : null;
+  }
 
   function normalize(route) {
     var c = course(route && route.course);
@@ -25,6 +31,7 @@
       result.view = views.indexOf(route.view) !== -1 ? route.view : views[0];
     } else {
       var m = model(c.id);
+      if (!m || !m.skills) return { page: 'catalog' };
       var skills = m.skills.map(function (s) { return s.id; });
       var saved = MT.progress && MT.progress.topics[c.id];
       var last = saved && saved.lastSkill;

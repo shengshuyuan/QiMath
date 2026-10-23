@@ -25,7 +25,10 @@
 |---|---|---|
 | 加法 / 减法 / 乘法 / 除法 | 探究台、口诀表、闯关、游戏 | `#/course/mul/explore/learn` |
 | 混合运算 | 加减混合、乘除混合、优先级、小括号 | `#/course/mixed/addsub/learn` |
-| 米和厘米 | 单位、读尺、比较、换算 | `#/course/length/ruler/learn` |
+| 长度单位 | 单位、读尺、比较、换算、线段、长度加减 | `#/course/length/ruler/learn` |
+| 角的初步认识 | 顶点与边、直角锐角钝角、比较开口 | `#/course/angle/parts/learn` |
+| 认识时间 | 钟面、时分、换算、经过时间 | `#/course/time/clock/learn` |
+| 克和千克 | 单位、换算、比较、读秤 | `#/course/mass/unit/learn` |
 | 认识人民币 | 面值、读写、换算、比较、加减、购物；另有凑钱 / 收银游戏 | `#/course/money/convert/practice` |
 
 每个课程都有：**学一学 / 练一练 / 错题**。地址栏 hash 会记住课程、知识点和模式，支持刷新与浏览器前进后退。
@@ -47,7 +50,7 @@
 - **零依赖**：原生 HTML / CSS / JS，`<script src>` 顺序加载，不用打包、不用 ES module（保证 `file://` 可用）。
 - **命名空间**：全局 `MT`；基础四则用 `MT.op`，新课用 `MT.topics` + 各课模块（`mixed` / `length` / `money`）。
 - **新增课程**：主要改 `js/navigation.js` 的 `courses`，并挂上模块、写入 `index.html` 与 `sw.js` 预缓存。
-- **进度键**：`localStorage` 的 `mt99.progress.v1`。主题进度在 `topics` 下；**加载白名单须包含 `mixed` / `length` / `money`**（含人民币 `games` 字段），否则刷新会丢进度。
+- **进度键**：`localStorage` 的 `mt99.progress.v1`。主题进度在 `topics` 下。导航已加载时，非基础课程从 `navigation.courses` 恢复；否则兜底为 `mixed` / `length` / `money` / `angle` / `time` / `mass`。人民币另含 `games`。漏掉一门，刷新会丢掉该课进度。
 - **离线**：`sw.js` 的 `CACHE_NAME` 有代码变更时必须递增；代码资源网络优先，音频缓存优先。
 - **回归检查**（改完必跑）：
 

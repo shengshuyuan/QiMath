@@ -67,7 +67,8 @@
 }
 
 .act-btn {
-  min-height: 36px;
+  min-height: 44px;
+  min-width: 44px;
   padding: 0 10px;
   border-radius: var(--r-md);
   display: inline-flex;
@@ -372,6 +373,7 @@
 }
 
 .skin-opt {
+  min-height: 44px;
   border: 1.5px solid var(--line-2);
   background: var(--card);
   border-radius: var(--r-md);

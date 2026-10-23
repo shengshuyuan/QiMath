@@ -146,8 +146,11 @@
     if (data.subMastered) d.subMastered = data.subMastered;
     if (data.subNeedsPractice) d.subNeedsPractice = data.subNeedsPractice;
     if (data.topics && typeof data.topics === 'object' && !Array.isArray(data.topics)) {
-      // 认识人民币与混合运算、米厘米同级，刷新后必须能恢复进度与错题。
-      ['mixed', 'length', 'money'].forEach(function (id) {
+      // 目录是课程清单；导航还没加载时用这份兜底，避免漏一门就丢掉进度。
+      var topicIds = (MT.navigation && MT.navigation.courses)
+        ? MT.navigation.courses.filter(function (c) { return c.topic !== 'basic'; }).map(function (c) { return c.id; })
+        : ['mixed', 'length', 'money', 'angle', 'time', 'mass'];
+      topicIds.forEach(function (id) {
         var src = data.topics[id];
         if (!src || typeof src !== 'object') return;
         var dest = { skills: {}, wrong: {}, range: src.range === 100 ? 100 : 20, lastSkill: '' };
