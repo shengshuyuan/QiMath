@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="400" viewBox="0 0 1120 400" role="img" aria-labelledby="title desc">
+<title id="title">QiMath · 让数学思路看得见</title><desc id="desc">面向小学数学学习与家庭陪学；选择知识点 → 看图理解 → 动手练习 → 复习巩固</desc>
+<rect width="1120" height="400" rx="24" fill="#f5f7f5"/>
+<g font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Microsoft YaHei,PingFang SC,sans-serif">
+<text x="48" y="68" fill="#153c32" font-size="32" font-weight="700">QiMath · 让数学思路看得见</text>
+<text x="48" y="106" fill="#51665e" font-size="18">面向小学数学学习与家庭陪学</text>
+<rect x="48" y="154" width="235" height="132" rx="16" fill="white" stroke="#c9d8d0"/>
+<text x="68" y="187" fill="#5c7c6e" font-size="16">01</text>
+<text x="68" y="225" fill="#153c32" font-size="23" font-weight="600">选择知识点</text>
+<text x="68" y="260" fill="#51665e" font-size="16">运算、测量与人民币</text>
+<path d="M289 218h13m-5-5 5 5-5 5" fill="none" stroke="#5c7c6e" stroke-width="2"/>
+<rect x="311" y="154" width="235" height="132" rx="16" fill="white" stroke="#c9d8d0"/>
+<text x="331" y="187" fill="#5c7c6e" font-size="16">02</text>
+<text x="331" y="225" fill="#153c32" font-size="23" font-weight="600">看图理解</text>
+<text x="331" y="260" fill="#51665e" font-size="16">阵列、数轴与互动图示</text>
+<path d="M552 218h13m-5-5 5 5-5 5" fill="none" stroke="#5c7c6e" stroke-width="2"/>
+<rect x="574" y="154" width="235" height="132" rx="16" fill="white" stroke="#c9d8d0"/>
+<text x="594" y="187" fill="#5c7c6e" font-size="16">03</text>
+<text x="594" y="225" fill="#153c32" font-size="23" font-weight="600">动手练习</text>
+<text x="594" y="260" fill="#51665e" font-size="16">短轮答题与思路提示</text>
+<path d="M815 218h13m-5-5 5 5-5 5" fill="none" stroke="#5c7c6e" stroke-width="2"/>
+<rect x="837" y="154" width="235" height="132" rx="16" fill="white" stroke="#c9d8d0"/>
+<text x="857" y="187" fill="#5c7c6e" font-size="16">04</text>
+<text x="857" y="225" fill="#153c32" font-size="23" font-weight="600">复习巩固</text>
+<text x="857" y="260" fill="#51665e" font-size="16">错题回顾与题单打印</text>
+<text x="48" y="340" fill="#51665e" font-size="17">进度保存在当前浏览器；语音与离线能力取决于缓存和设备。</text>
+<text x="48" y="372" fill="#73867d" font-size="14">功能流程示意，非界面截图</text></g></svg>
