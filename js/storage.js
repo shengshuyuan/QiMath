@@ -126,7 +126,12 @@
     d.wrong = foldMap(data.wrong, function (a, b) {
       return (b.wrongCount || 0) > (a.wrongCount || 0) ? b : a;
     });
-    d.stats = data.stats || d.stats;
+    if (data.stats && typeof data.stats === 'object') {
+      Object.keys(d.stats).forEach(function (key) {
+        var value = data.stats[key];
+        if (typeof value === 'number' && Number.isFinite(value) && value >= 0) d.stats[key] = Math.floor(value);
+      });
+    }
     if (data.settings) {
       for (var k in d.settings) {
         if (Object.prototype.hasOwnProperty.call(data.settings, k)) d.settings[k] = data.settings[k];

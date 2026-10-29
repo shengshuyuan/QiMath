@@ -187,19 +187,19 @@
   function play(text, scene) {
     if (!enabled() || !text) return;
     if (text === lastText && isSpeaking()) return;
+    if (timer) { clearTimeout(timer); timer = null; }
     if (playClip(text)) {
-      if (timer) { clearTimeout(timer); timer = null; }
       if (supported) {
         try { window.speechSynthesis.cancel(); } catch (e) {}
       }
       lastText = text;
       return;
     }
+    stopClip();
     if (!supported) return;
     if (isSpeaking()) {
       try { window.speechSynthesis.cancel(); } catch (e) {}
-      if (timer) clearTimeout(timer);
-      timer = setTimeout(function () { utter(text, scene); }, 70);
+      timer = setTimeout(function () { timer = null; utter(text, scene); }, 70);
     } else {
       utter(text, scene);
     }

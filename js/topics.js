@@ -299,6 +299,26 @@
     } else finishQuestion();
   }
 
+  function readQuestion() {
+    var q = currentItem().q;
+    var text = q.speech || q.prompt + '。' + (q.expression || '');
+    var choices = q.kind === 'choice' ? q.choices : null;
+    if (q.kind === 'steps' && session.phase !== 'complete') {
+      if (session.phase === 'order') {
+        text += '。先选出第一步计算的部分。';
+        choices = q.firstChoices;
+      } else if (session.phase === 'intermediate') {
+        text = '现在算中间结果：' + q.firstChoices[q.correctFirst] + '，等于多少？';
+      } else {
+        text = '中间结果是 ' + q.intermediate + '。现在算最后一步：' + q.reduced + '，等于多少？';
+      }
+    }
+    if (choices && session.phase !== 'complete') {
+      text += '。' + choices.map(function (choice, index) { return '选项 ' + (index + 1) + '：' + choice; }).join('。');
+    }
+    say(text);
+  }
+
   function renderResult() {
     session.done = true;
     syncNavigation();
@@ -363,7 +383,7 @@
       if (action === 'show-wrong') changeMode('wrong');
       if (action === 'demo-next') { demoStep++; renderLearn(); focus(demoStep < skill.example.steps.length ? '[data-topic-action="demo-next"]' : '[data-topic-action="start"]'); }
       if (action === 'read-lesson') say(skill.title + '。' + skill.description + '。' + work.querySelector('.topic-lesson').textContent);
-      if (action === 'read-question' && session) { var q = currentItem().q; say(q.speech || q.prompt + '。' + (q.expression || '')); }
+      if (action === 'read-question' && session) readQuestion();
       if (action === 'choice') choose(Number(btn.dataset.choice));
       if (action === 'next' && session && session.phase === 'complete') {
         MT.speech.stop();
@@ -371,13 +391,17 @@
         else { resetQuestion(); renderQuestion(); focus(); }
       }
       if (action === 'hint' && session && session.phase !== 'complete') {
+        var inputBeforeHint = document.getElementById('topic-answer');
+        var draft = inputBeforeHint ? inputBeforeHint.value : null;
         if (!session.helped) { session.helped = true; needPractice('help'); }
         if (session.hintShown) session.revealed = true;
         session.hintShown = true;
         session.good = false;
         session.feedback = session.revealed ? '一起看完整解答，理解后再独立复习。这题已加入错题本。' : '先想一想提示，再试着作答。这题已加入错题本，之后可以独立复习。';
         renderQuestion();
-        focus('[data-topic-action="hint"]');
+        var inputAfterHint = document.getElementById('topic-answer');
+        if (draft !== null && inputAfterHint) inputAfterHint.value = draft;
+        focus(session.revealed ? undefined : '[data-topic-action="hint"]');
       }
       if (action === 'key') {
         var input = document.getElementById('topic-answer');

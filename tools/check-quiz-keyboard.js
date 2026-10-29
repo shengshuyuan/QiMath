@@ -17,7 +17,7 @@ var onKey = vm.runInNewContext('(' + handler.trim() + ')', {
   haptic: function () {}, renderInput: function () {},
   submit: function () { submissions++; }, resetClose: function () { closed++; }
 });
-function press(key) { onKey({ key: key, preventDefault: function () { prevented++; } }); }
+function press(key, target) { onKey({ key: key, target: target, preventDefault: function () { prevented++; } }); }
 visibleModal = true;
 ['2', 'Backspace', 'Enter'].forEach(press);
 assert.equal(state.answer, '1');
@@ -27,6 +27,14 @@ visibleModal = false;
 press('2'); assert.equal(state.answer, '12');
 press('Backspace'); assert.equal(state.answer, '1');
 press('Enter'); assert.equal(submissions, 1); assert.equal(prevented, 1);
+var button = { closest: function (selector) { return selector.indexOf('button') !== -1 ? this : null; } };
+press('Enter', button);
+assert.equal(submissions, 1, '按钮上的 Enter 应由按钮执行，不能提交背景题目');
+assert.equal(prevented, 1, '不能阻止结束、下一题、再试一次和勋章按钮的原生操作');
+var editable = { closest: function (selector) { return selector.indexOf('input') !== -1 ? this : null; } };
+press('2', editable); press('Backspace', editable); press('Enter', editable);
+assert.equal(state.answer, '1', '编辑控件不应把输入传给背景题目');
+assert.equal(submissions, 1);
 dom.resetModal.hidden = false;
 press('Enter'); assert.equal(submissions, 1);
 press('Escape'); assert.equal(closed, 1);

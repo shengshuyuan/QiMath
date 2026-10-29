@@ -13,10 +13,11 @@ var seed = 0;
 var math = Object.create(Math);
 math.random = function () { return (++seed) / 4294967296; };
 var input = { value: '', select: function () {}, focus: function () {} };
+var focusTarget = '', spoken = '';
 var node = { textContent: '', classList: { toggle: function () {} }, focus: function () {} };
 var work = {
   html: '',
-  querySelector: function () { return node; }
+  querySelector: function (selector) { focusTarget = selector; return node; }
 };
 Object.defineProperty(work, 'innerHTML', {
   get: function () { return this.html; },
@@ -56,7 +57,7 @@ function load(file) {
 }
 ['core.js', 'ops.js', 'mul.js', 'div.js', 'add.js', 'sub.js', 'mixed.js', 'length.js', 'angle.js', 'time.js', 'mass.js', 'money.js', 'money-games.js', 'storage.js', 'topics.js'].forEach(load);
 var MT = g.MT;
-MT.speech = { stop: function () {}, play: function () {}, warmup: function () {} };
+MT.speech = { stop: function () {}, play: function (text) { spoken = text; }, warmup: function () {} };
 MT.sound = { play: function () {} };
 
 // 旧版本没有 topics/settings.topic；读取时应补默认值并保留全部既有进度。
@@ -96,6 +97,19 @@ assert.equal(progress.badges[0], 'star_starter');
 assert.equal(progress.stats.totalCorrect, 27);
 assert.equal(progress.stats.totalWrong, 4);
 assert.equal(progress.stats.firstSeenAt, 1);
+
+// 损坏或部分统计记录不能阻断答题计数与后续保存。
+['broken', 9, [], { totalCorrect: 7 }, { totalCorrect: -1, totalWrong: '4', firstSeenAt: null }].forEach(function (stats) {
+  store['mt99.progress.v1'] = JSON.stringify({ version: 1, stats: stats });
+  MT.progress = MT.storage.load();
+  assert.equal(typeof MT.progress.stats, 'object');
+  assert.equal(MT.progress.stats.totalCorrect, stats && stats.totalCorrect === 7 ? 7 : 0);
+  assert.equal(MT.progress.stats.totalWrong, 0);
+  assert.ok(Number.isFinite(MT.progress.stats.firstSeenAt));
+  MT.progress.stats.totalCorrect++;
+  MT.storage.flush();
+  assert.equal(MT.storage.load().stats.totalCorrect, MT.progress.stats.totalCorrect);
+});
 
 MT.progress = MT.storage.defaults();
 MT.topics.init();
@@ -342,13 +356,17 @@ MT.topics.enter('mass', { skill: 'convert', mode: 'practice' });
 seed = 0;
 action('start');
 var helpQuestion = MT.mass.generate('convert', 20, 1);
+input.value = '123';
 action('hint');
+assert.equal(input.value, '123', '求助不能清空孩子已输入的答案');
 assert.ok(work.html.includes(helpQuestion.hint));
 assert.ok(work.html.includes('topic-hint'), '提示使用中性色块');
 assert.ok(!work.html.includes('topic-solution'), '未完成时提示不能用答对的绿色块');
 assert.ok(!work.html.includes(helpQuestion.explanation), '第一次提示不能直接展示完整解答');
 assert.ok(work.html.includes('看完整解答'));
 action('hint');
+assert.equal(input.value, '123', '完整解答也应保留输入');
+assert.equal(focusTarget, 'h3', '提示按钮消失后焦点应回到本题标题');
 assert.ok(work.html.includes(helpQuestion.explanation));
 assert.ok(work.html.includes('topic-hint'));
 assert.ok(!work.html.includes('data-topic-action="hint"'), '完整解答展开后不再重复这个按钮');
@@ -392,5 +410,19 @@ MT.progress.topics.time.wrong['time:clock:1'] = { skill: 'clock', seed: 1, range
 MT.topics.enter('time', { skill: 'clock', mode: 'wrong' });
 assert.ok(work.html.includes('查看这道题的图'));
 assert.ok(work.html.includes(MT.time.generate('clock', 20, 1).visualHTML));
+
+// 读题包含选择题选项；分步计算按当前阶段朗读，不能一直重复整道题。
+MT.topics.enter('angle', { skill: 'classify', mode: 'practice' });
+seed = 0; action('start'); action('read-question');
+var angleQuestion = MT.angle.generate('classify', 20, 1);
+angleQuestion.choices.forEach(function (choice, index) { assert.ok(spoken.includes('选项 ' + (index + 1) + '：' + choice)); });
+MT.topics.enter('mixed', { skill: 'addsub', mode: 'practice' });
+seed = 0; action('start'); action('read-question');
+assert.ok(spoken.includes('先选出第一步'));
+q.firstChoices.forEach(function (choice) { assert.ok(spoken.includes(choice)); });
+choose(q.correctFirst); action('read-question');
+assert.ok(spoken.includes('中间结果：' + q.firstChoices[q.correctFirst]));
+submit(q.intermediate); action('read-question');
+assert.ok(spoken.includes('最后一步：' + q.reduced));
 
 console.log('check-topics: ok (legacy progress, scoring, hints, partial rounds, short banks, next skill, awards, visual review, four-digit input, persistence/print)');

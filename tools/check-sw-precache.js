@@ -7,6 +7,7 @@ var path = require('path');
 var vm = require('vm');
 
 var stored = {};
+var handlers = {}, deleted = [];
 
 function reqUrl(request) {
   return typeof request === 'string' ? request : request.url;
@@ -29,14 +30,14 @@ var g = {
   caches: {
     open: function () { return Promise.resolve(fakeCache); },
     match: function (request) { return fakeCache.match(request); },
-    keys: function () { return Promise.resolve([]); },
-    delete: function () { return Promise.resolve(true); }
+    keys: function () { return Promise.resolve(['mt99-cache-v1', g.CACHE_NAME, 'other-app-cache']); },
+    delete: function (key) { deleted.push(key); return Promise.resolve(true); }
   },
   fetch: function () { return Promise.reject(new Error('offline')); },
   console: console,
   skipWaiting: function () { return Promise.resolve(); },
   clients: { claim: function () { return Promise.resolve(); } },
-  addEventListener: function () {}
+  addEventListener: function (event, handler) { handlers[event] = handler; }
 };
 g.self = g;
 vm.createContext(g);
@@ -63,6 +64,11 @@ g.matchCached({ url: origin + '/js/add.js?v=2.3.4' }).then(function (hit) {
   return g.matchCached({ url: origin + '/js/add.js' });
 }).then(function (exact) {
   assert.strictEqual(exact.body, 'add');
+  return new Promise(function (resolve, reject) {
+    handlers.activate({ waitUntil: function (promise) { promise.then(resolve, reject); } });
+  });
+}).then(function () {
+  assert.deepStrictEqual(deleted, ['mt99-cache-v1'], '只清理本应用的旧缓存，保留当前缓存和同源其他应用缓存');
   console.log('check-sw-precache: ok');
 }).catch(function (err) {
   console.error(err);

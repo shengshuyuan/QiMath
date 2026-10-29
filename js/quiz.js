@@ -189,6 +189,7 @@
     S.answer = '';
     S.locked = false;
     S.hinted = false;
+    S.hadWrong = false;
     dom.qCard.classList.remove('is-right', 'is-wrong');
     var fact = sub().fact(k);
     dom.qTitle.textContent = S.wrongMode ? '错题本' : sub().levelTitle(S.level);
@@ -256,7 +257,7 @@
     var st = p.settings;
     p.stats.totalCorrect++;
     var book = bags();
-    if (S.hinted) {
+    if (S.hinted || S.hadWrong) {
       if (!book.mastered[k]) book.needs[k] = true;
       if (book.wrong[k]) book.wrong[k].rightStreak = 0;
     } else if (book.wrong[k]) {
@@ -271,7 +272,7 @@
       book.mastered[k] = true;
     }
     S.correct++;
-    S.streak++;
+    S.streak = S.hinted || S.hadWrong ? 0 : S.streak + 1;
     S.locked = true;
     if (S.streak >= 3 && MT.badges) MT.badges.unlock('streak_master');
 
@@ -302,9 +303,7 @@
     }
   }
 
-  function onWrong(k) {
-    var p = MT.progress;
-    p.stats.totalWrong++;
+  function needPractice(k) {
     var book = bags();
     var prev = book.wrong[k];
     book.wrong[k] = {
@@ -315,6 +314,12 @@
     };
     delete book.mastered[k];
     book.needs[k] = true;
+  }
+
+  function onWrong(k) {
+    MT.progress.stats.totalWrong++;
+    S.hadWrong = true;
+    needPractice(k);
     S.misses++;
     S.streak = 0;
     MT.storage.save();
@@ -375,6 +380,10 @@
     var k = S.round[S.idx];
     S.helps++;
     S.hinted = true;
+    S.streak = 0;
+    needPractice(k);
+    MT.storage.save();
+    MT.bus.emit('progress:change', { key: k });
     S.locked = false;
     S.answer = '';
     dom.qHint.hidden = false;
@@ -601,7 +610,7 @@
       return (wrMap[y].wrongCount || 0) - (wrMap[x].wrongCount || 0);
     });
     dom.wrongStat.textContent = keys.length
-      ? ('共 ' + keys.length + ' 个，错得多的排在前面')
+      ? ('共 ' + keys.length + ' 个，答错或求助多的排在前面')
       : '还没有错题，真棒';
     dom.btnWrong.hidden = keys.length === 0;
     list.innerHTML = '';
@@ -612,7 +621,7 @@
         b.className = 'wrong-item';
         var item = sub().fact(k);
         b.innerHTML = '<span class="wi-eq">' + item.listHTML + '</span>' +
-          '<span class="wi-count">错 ' + wrMap[k].wrongCount + ' 次</span>';
+          '<span class="wi-count">答错或求助 ' + wrMap[k].wrongCount + ' 次</span>';
         b.addEventListener('click', function () {
           var box = dom.wrongDetail;
           box.hidden = false;
@@ -721,6 +730,12 @@
     if (!dom.quizPlay || dom.quizPlay.hidden) return;
     if (e.ctrlKey || e.metaKey || e.altKey) return;
     var k = e.key;
+    // 原生按钮仍使用 Enter 激活，不能被全局答题快捷键吞掉。
+    var target = e.target;
+    if (target && target.closest) {
+      if (target.closest('input, textarea, select, [contenteditable="true"]')) return;
+      if (k === 'Enter' && target.closest('button, a[href], summary')) return;
+    }
     if (k >= '0' && k <= '9') {
       if (S.locked || S.answer.length >= 2) return;
       haptic('tap');

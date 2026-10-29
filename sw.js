@@ -1,4 +1,4 @@
-var CACHE_NAME = 'mt99-cache-v37';
+var CACHE_NAME = 'mt99-cache-v39';
 var ASSETS = [
   './',
   './index.html',
@@ -57,7 +57,7 @@ self.addEventListener('activate', function (e) {
     caches.keys().then(function (keys) {
       return Promise.all(
         keys.map(function (key) {
-          if (key !== CACHE_NAME) return caches.delete(key);
+          if (key.indexOf('mt99-cache-') === 0 && key !== CACHE_NAME) return caches.delete(key);
         })
       );
     }).then(function () {
