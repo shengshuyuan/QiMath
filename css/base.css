@@ -119,7 +119,7 @@ button, .tap { user-select: none; }
   border-color: var(--line);
   font-size: 14px;
   padding: 0 12px;
-  min-height: 40px;
+  min-height: 44px;
   box-shadow: 0 2.5px 0 var(--line);
 }
 
@@ -191,7 +191,7 @@ button, .tap { user-select: none; }
 .seg-btn {
   border: 0;
   background: transparent;
-  min-height: 40px;
+  min-height: 44px;
   padding: 0 14px;
   font-size: 14px;
   color: var(--ink-2);
@@ -447,7 +447,7 @@ button, .tap { user-select: none; }
   display: flex;
   flex-direction: column;
   gap: 2px;
-  overflow: hidden;
+  min-width: 0;
 }
 
 .badge-title {

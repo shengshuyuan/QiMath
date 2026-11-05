@@ -9,14 +9,14 @@
 <link rel="manifest" href="manifest.json">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<link rel="stylesheet" href="css/base.css?v=2.6.6">
-<link rel="stylesheet" href="css/layout.css?v=2.6.6">
+<link rel="stylesheet" href="css/base.css?v=2.6.7">
+<link rel="stylesheet" href="css/layout.css?v=2.6.7">
 <link rel="stylesheet" href="css/visuals.css?v=2.6.6">
-<link rel="stylesheet" href="css/quiz.css?v=2.6.6">
+<link rel="stylesheet" href="css/quiz.css?v=2.6.7">
 <link rel="stylesheet" href="css/games.css?v=2.6.6">
 <link rel="stylesheet" href="css/print.css?v=2.6.6">
 <link rel="stylesheet" href="css/topics.css?v=2.6.6">
-<link rel="stylesheet" href="css/navigation.css?v=2.6.6">
+<link rel="stylesheet" href="css/navigation.css?v=2.6.9">
 </head>
 <body>
 
@@ -125,6 +125,12 @@
     <button type="button" class="continue-course" id="btn-continue" hidden></button>
     <section class="catalog-group" aria-labelledby="number-domain"><div class="catalog-group-head"><h3 id="number-domain">数与运算</h3><span>理解数量与运算方法</span></div><div class="course-grid" id="number-courses"></div></section>
     <section class="catalog-group" aria-labelledby="measure-domain"><div class="catalog-group-head"><h3 id="measure-domain">量与测量</h3><span>认识长短、时间、质量和钱币</span></div><div class="course-grid" id="measure-courses"></div></section>
+    <section class="creator-intro" aria-labelledby="creator-title">
+      <p class="topic-eyebrow">关于树园 · 关于这个网站</p>
+      <h3 id="creator-title">你好，我是树园</h3>
+      <p>欢迎来到我制作的 QiMath 启数乐学。我希望用直观的图示和有趣的练习，陪孩子一步一步看懂数学，找到自己动手解题的乐趣。</p>
+      <p>这里可以学习加减乘除、混合运算，也可以认识长度、角、时间、质量和人民币。选一门课程，先“学一学”，再“练一练”，还可以复习错题、收集勋章，或打印练习纸继续探索。</p>
+    </section>
   </section>
   <section id="course-heading" aria-labelledby="course-title" hidden>
     <nav class="course-breadcrumb" aria-label="当前位置"><span id="course-domain"></span><span aria-hidden="true"> / </span><span id="breadcrumb-course" aria-current="page"></span></nav>
@@ -230,14 +236,22 @@
         <button type="button" class="seg-btn is-on" data-mode="levels">闯关</button>
         <button type="button" class="seg-btn" data-mode="wrong">错题本</button>
       </div>
-      <button type="button" class="btn btn-danger" id="btn-quiz-reset">重置闯关</button>
     </div>
 
     <div id="quiz-levels">
+      <div class="level-head">
+        <p class="level-note">先从第 1 关开始，完成后再打开后面的关。</p>
+        <button type="button" class="btn btn-danger" id="btn-quiz-reset">重置闯关</button>
+      </div>
       <div class="level-bar" id="level-bar"></div>
     </div>
 
     <div class="quiz-wrong" id="quiz-wrong" hidden>
+      <div class="quiz-empty" id="quiz-empty" hidden>
+        <span aria-hidden="true">🌱</span>
+        <p>还没有错题。先去做几道题，答错或求助的会留在这里。</p>
+        <button type="button" class="btn btn-main" id="btn-wrong-go-practice">去练一练</button>
+      </div>
       <div class="wrong-head">
         <span id="wrong-stat">还没有错题</span>
         <button type="button" class="btn btn-main" id="btn-practice-wrong" hidden>只练错题</button>
@@ -356,7 +370,7 @@
 <script src="js/visuals.js?v=2.6.6"></script>
 <script src="js/explore.js?v=2.6.6"></script>
 <script src="js/table.js?v=2.6.6"></script>
-<script src="js/quiz.js?v=2.6.6"></script>
+<script src="js/quiz.js?v=2.6.7"></script>
 <script src="js/games.js?v=2.6.6"></script>
 <script src="js/print.js?v=2.6.6"></script>
 <script src="js/mixed.js?v=2.6.6"></script>

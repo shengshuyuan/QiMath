@@ -609,10 +609,15 @@
     keys.sort(function (x, y) {
       return (wrMap[y].wrongCount || 0) - (wrMap[x].wrongCount || 0);
     });
-    dom.wrongStat.textContent = keys.length
+    var hasWrong = keys.length > 0;
+    dom.wrongStat.textContent = hasWrong
       ? ('共 ' + keys.length + ' 个，答错或求助多的排在前面')
-      : '还没有错题，真棒';
-    dom.btnWrong.hidden = keys.length === 0;
+      : '';
+    dom.btnWrong.hidden = !hasWrong;
+    var empty = document.getElementById('quiz-empty');
+    var head = dom.wrongStat ? dom.wrongStat.parentElement : null;
+    if (empty) empty.hidden = hasWrong;
+    if (head) head.hidden = !hasWrong;
     list.innerHTML = '';
     for (var i = 0; i < keys.length; i++) {
       (function (k) {
@@ -807,6 +812,14 @@
       dom.resetOk = document.getElementById('quiz-reset-ok');
 
       buildKeypad();
+
+      var goPractice = document.getElementById('btn-wrong-go-practice');
+      if (goPractice) {
+        goPractice.addEventListener('click', function () {
+          var practice = document.querySelector('[data-course-mode="practice"]');
+          if (practice) practice.click();
+        });
+      }
 
       document.getElementById('btn-quiz-exit').addEventListener('click', function () {
         MT.speech.stop();

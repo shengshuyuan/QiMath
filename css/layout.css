@@ -178,7 +178,7 @@
   padding: 7px 0;
 }
 
-.set-row-end { justify-content: flex-end; padding-top: 12px; }
+.set-row-end { justify-content: flex-end; margin-top: 8px; padding-top: 14px; border-top: 1px solid var(--line); }
 
 .set-label { font-size: 14px; color: var(--ink); }
 
@@ -647,8 +647,8 @@
 
 .sum-total {
   flex: 0 0 auto;
-  min-width: 40px;
-  min-height: 40px;
+  min-width: 44px;
+  min-height: 44px;
   border: 1.5px solid var(--line-2);
   border-radius: 10px;
   background: var(--card);
