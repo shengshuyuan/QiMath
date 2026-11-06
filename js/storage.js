@@ -120,6 +120,10 @@
       } catch (e) {}
       return defaults();
     }
+    return restore(data);
+  }
+
+  function restore(data) {
     var d = defaults();
     d.mastered = foldMap(data.mastered);
     d.needsPractice = foldMap(data.needsPractice);
@@ -206,6 +210,102 @@
     return d;
   }
 
+  function backup() {
+    return JSON.stringify({ app: 'QiMath', version: 1, progress: MT.progress || load() }, null, 2);
+  }
+
+  function readBackup(text) {
+    var data;
+    if (typeof text !== 'string' || text.length > 2 * 1024 * 1024) throw new Error('请选择不超过 2 MB 的 QiMath 进度备份。');
+    try {
+      data = JSON.parse(text, function (key, value) {
+        if (key === '__proto__' || key === 'prototype' || key === 'constructor') throw new Error('不安全的字段');
+        return value;
+      });
+    } catch (e) { throw new Error('文件不是有效的 QiMath 进度备份。'); }
+    function record(value) { return value && typeof value === 'object' && !Array.isArray(value); }
+    function requireValid(ok) { if (!ok) throw new Error('备份格式或进度数据不正确，请选择从 QiMath 导出的 JSON 文件。'); }
+    function number(value) { return Number.isSafeInteger(value) && value >= 0; }
+    function numericRecord(value, allowed) {
+      requireValid(record(value));
+      Object.keys(value).forEach(function (key) {
+        requireValid(allowed.indexOf(key) !== -1 && number(value[key]));
+      });
+    }
+    requireValid(record(data) && data.app === 'QiMath' && data.version === 1 && record(data.progress));
+    var p = data.progress, model = defaults();
+    requireValid(p.version === 1);
+    Object.keys(p).forEach(function (key) { requireValid(Object.prototype.hasOwnProperty.call(model, key)); });
+    Object.keys(model).forEach(function (key) {
+      if (key === 'version') return;
+      requireValid(Array.isArray(model[key]) ? Array.isArray(p[key]) : record(p[key]));
+    });
+    numericRecord(p.stats, Object.keys(model.stats));
+    requireValid(Object.keys(model.stats).every(function (key) { return number(p.stats[key]); }));
+    Object.keys(p.settings).forEach(function (key) {
+      requireValid(Object.prototype.hasOwnProperty.call(model.settings, key) && typeof p.settings[key] === typeof model.settings[key]);
+      if (typeof p.settings[key] === 'string') requireValid(p.settings[key].length <= 200 && /^[a-zA-Z0-9_/#.\-]*$/.test(p.settings[key]));
+    });
+    p.badges.forEach(function (id) { requireValid(typeof id === 'string' && /^[a-z_]+$/.test(id)); });
+    ['', 'div', 'add', 'sub'].forEach(function (prefix) {
+      function field(name) { return prefix ? prefix + name : name.charAt(0).toLowerCase() + name.slice(1); }
+      ['Mastered', 'NeedsPractice', 'Wrong'].forEach(function (name) {
+        var map = p[field(name)];
+        Object.keys(map).forEach(function (key) {
+          requireValid(/^\d{1,2}[x/+\-]\d{1,2}$/.test(key));
+          if (name === 'Wrong') {
+            numericRecord(map[key], ['wrongCount', 'rightStreak', 'lastAt', 'fromLevel']);
+            requireValid(number(map[key].wrongCount) && map[key].wrongCount >= 1);
+          } else requireValid(typeof map[key] === 'boolean');
+        });
+      });
+      var levels = p[field('Levels')], count = prefix === 'add' || prefix === 'sub' ? 6 : 9;
+      Object.keys(levels).forEach(function (key) {
+        var level = levels[key];
+        requireValid(/^[1-9]$/.test(key) && Number(key) <= count && record(level));
+        requireValid(typeof level.unlocked === 'boolean' && typeof level.passed === 'boolean' && number(level.bestStars) && level.bestStars <= 3 && number(level.roundsPlayed));
+      });
+    });
+    var topicIds = ['mixed', 'length', 'money', 'angle', 'time', 'mass'];
+    Object.keys(p.topics).forEach(function (id) {
+      var topic = p.topics[id];
+      requireValid(topicIds.indexOf(id) !== -1 && record(topic) && record(topic.skills) && record(topic.wrong));
+      requireValid((topic.range === 20 || topic.range === 100) && typeof topic.lastSkill === 'string' && /^[a-z]*$/.test(topic.lastSkill));
+      Object.keys(topic.skills).forEach(function (key) {
+        requireValid(/^[a-z]+$/.test(key));
+        numericRecord(topic.skills[key], ['completed', 'clean']);
+        requireValid(number(topic.skills[key].completed) && number(topic.skills[key].clean));
+      });
+      Object.keys(topic.wrong).forEach(function (key) {
+        var wrong = topic.wrong[key];
+        requireValid(/^[a-z0-9_:.-]+$/.test(key) && record(wrong) && typeof wrong.skill === 'string' && /^[a-z]+$/.test(wrong.skill));
+        requireValid(number(wrong.seed) && wrong.seed <= 4294967295 && number(wrong.wrongCount) && number(wrong.cleanStreak));
+        requireValid((wrong.range === 20 || wrong.range === 100) && (wrong.errorKind === undefined || (typeof wrong.errorKind === 'string' && /^(answer|order|calculation|unit|reading)$/.test(wrong.errorKind))));
+      });
+      if (topic.games !== undefined) {
+        requireValid(id === 'money' && record(topic.games));
+        Object.keys(topic.games).forEach(function (key) {
+          requireValid(/^[a-z]+$/.test(key));
+          numericRecord(topic.games[key], ['rounds', 'bestStars']);
+          requireValid(number(topic.games[key].rounds) && number(topic.games[key].bestStars) && topic.games[key].bestStars <= 5);
+        });
+      }
+    });
+    return restore(p);
+  }
+
+  function importBackup(text) {
+    var progress = readBackup(text);
+    // 导入不能回退到内存模式；写入失败时保留原记录，并留下导入前的备份。
+    if (!available) throw new Error('这个浏览器不能保存进度，暂时无法导入。');
+    try {
+      localStorage.setItem(KEY + '.before-import', backup());
+      localStorage.setItem(KEY, JSON.stringify(progress));
+    } catch (e) { throw new Error('进度未导入：浏览器存储空间不足或不允许保存。原进度仍保留。'); }
+    if (timer) { clearTimeout(timer); timer = null; }
+    MT.progress = progress;
+  }
+
   var timer = null;
 
   function flush() {
@@ -232,6 +332,9 @@
     save: save,
     flush: flush,
     reset: reset,
+    backup: backup,
+    readBackup: readBackup,
+    importBackup: importBackup,
     defaults: defaults
   };
 

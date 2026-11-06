@@ -18,6 +18,11 @@
   margin-bottom: 10px;
 }
 
+.level-head:not(:has(:not([hidden]))) {
+  display: none;
+  margin: 0;
+}
+
 .level-note {
   margin: 0;
   color: var(--ink-2);

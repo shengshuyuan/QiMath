@@ -460,6 +460,7 @@ button, .tap { user-select: none; }
   font-size: 13px;
   color: var(--ink-2);
   line-height: 1.5;
+  overflow-wrap: anywhere;
 }
 
 @media (max-width: 480px) {
@@ -471,6 +472,7 @@ button, .tap { user-select: none; }
   font-weight: 600;
   color: var(--ok-text);
   margin-top: 2px;
+  overflow-wrap: anywhere;
 }
 
 .badge-card.is-locked .badge-tag {

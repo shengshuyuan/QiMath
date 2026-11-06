@@ -480,7 +480,7 @@
         '<div class="res-line">' + summary + '</div>' +
         '<div class="res-line res-sub">小算式有点调皮，多练一次就能攻克它！</div>';
       addResAction('再试一次 ↺', function () { box.hidden = true; startLevel(n); });
-      addResAction('换一关', function () { box.hidden = true; if (dom.levelsBox) dom.levelsBox.hidden = false; buildLevelBar(); });
+      addResAction('换一关', function () { box.hidden = true; setLevelsHidden(false); buildLevelBar(); });
       return;
     }
 
@@ -507,7 +507,7 @@
 
     addResAction('再来一轮', function () { box.hidden = true; startLevel(n); });
     if (n < totalLv) addResAction('下一关', function () { box.hidden = true; startLevel(n + 1); });
-    addResAction('选关', function () { box.hidden = true; if (dom.levelsBox) dom.levelsBox.hidden = false; buildLevelBar(); });
+    addResAction('选关', function () { box.hidden = true; setLevelsHidden(false); buildLevelBar(); });
 
     MT.sound.play('win');
     MT.speech.play('第' + n + '关通过', 'ok');
@@ -547,6 +547,13 @@
 
   /* ---------- 启动 ---------- */
 
+  function setLevelsHidden(hidden) {
+    if (!dom.levelsBox) return;
+    dom.levelsBox.hidden = hidden;
+    var note = document.getElementById('level-note');
+    if (note) note.hidden = hidden;
+  }
+
   function resetRound() {
     clearTimer();
     S.idx = 0;
@@ -567,7 +574,7 @@
     S.wrongMode = false;
     S.round = planRound(n, MT.progress);
     if (dom.wrongBox) dom.wrongBox.hidden = true;
-    if (dom.levelsBox) dom.levelsBox.hidden = true;
+    setLevelsHidden(true);
     resetRound();
     showQuestion();
   }
@@ -583,7 +590,7 @@
     });
     S.round = spreadDupes(keys.slice(0, 10));
     if (dom.wrongBox) dom.wrongBox.hidden = true;
-    if (dom.levelsBox) dom.levelsBox.hidden = true;
+    setLevelsHidden(true);
     if (dom.wrongDetail) dom.wrongDetail.hidden = true;
     resetRound();
     showQuestion();
@@ -595,7 +602,7 @@
     if (dom.quizResult) dom.quizResult.hidden = true;
     if (dom.quizPlay) dom.quizPlay.hidden = true;
     if (dom.wrongDetail) dom.wrongDetail.hidden = true;
-    if (dom.levelsBox) dom.levelsBox.hidden = true;
+    setLevelsHidden(true);
     if (dom.wrongBox) dom.wrongBox.hidden = false;
     showWrongList();
   }
@@ -618,6 +625,7 @@
     var head = dom.wrongStat ? dom.wrongStat.parentElement : null;
     if (empty) empty.hidden = hasWrong;
     if (head) head.hidden = !hasWrong;
+    if (!hasWrong && dom.wrongDetail) dom.wrongDetail.hidden = true;
     list.innerHTML = '';
     for (var i = 0; i < keys.length; i++) {
       (function (k) {
@@ -769,7 +777,7 @@
       kids[i].setAttribute('aria-pressed', kids[i].dataset.mode === m ? 'true' : 'false');
     }
     var isWrong = m === 'wrong';
-    dom.levelsBox.hidden = isWrong;
+    setLevelsHidden(isWrong);
     dom.wrongBox.hidden = !isWrong;
     MT.quiz.stop();
     if (isWrong) {
@@ -899,12 +907,12 @@
       buildLevelBar();
       if (S.mode === 'wrong') {
         if (dom.wrongBox) dom.wrongBox.hidden = false;
-        if (dom.levelsBox) dom.levelsBox.hidden = true;
+        setLevelsHidden(true);
         if (dom.wrongDetail) dom.wrongDetail.hidden = true;
         showWrongList();
       } else {
         if (dom.wrongBox) dom.wrongBox.hidden = true;
-        if (dom.levelsBox) dom.levelsBox.hidden = false;
+        setLevelsHidden(false);
       }
     },
 

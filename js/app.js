@@ -243,6 +243,51 @@
   }
 
   function bindSettings() {
+    var transferStatus = document.getElementById('progress-transfer-status');
+    var progressFile = document.getElementById('progress-file');
+    document.getElementById('btn-export-progress').addEventListener('click', function () {
+      var url;
+      try {
+        var link = document.createElement('a');
+        url = URL.createObjectURL(new Blob([MT.storage.backup()], { type: 'application/json' }));
+        link.href = url;
+        link.download = 'QiMath-progress-' + new Date().toISOString().slice(0, 10) + '.json';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        transferStatus.textContent = '备份已准备下载，请保留好 JSON 文件。';
+      } catch (e) {
+        transferStatus.textContent = '导出失败，请换一个支持文件下载的浏览器。';
+      }
+      if (url) setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+    });
+    document.getElementById('btn-import-progress').addEventListener('click', function () {
+      progressFile.value = '';
+      progressFile.click();
+    });
+    progressFile.addEventListener('change', function () {
+      var file = progressFile.files[0];
+      if (!file) return;
+      if (file.size > 2 * 1024 * 1024) {
+        transferStatus.textContent = '文件太大，请选择不超过 2 MB 的 QiMath 进度备份。';
+        return;
+      }
+      var reader = new FileReader();
+      reader.onerror = function () { transferStatus.textContent = '文件读取失败，原进度没有改变。'; };
+      reader.onload = function () {
+        try {
+          MT.storage.readBackup(reader.result);
+          if (!window.confirm('导入会替换这个浏览器的全部学习进度。建议先导出当前进度备份。确认导入？')) {
+            transferStatus.textContent = '已取消导入，当前进度没有改变。';
+            return;
+          }
+          MT.storage.importBackup(reader.result);
+          window.location.reload();
+        } catch (e) { transferStatus.textContent = e.message; }
+      };
+      reader.readAsText(file);
+    });
+
     var segs = document.querySelectorAll('.seg[data-setting]');
     for (var i = 0; i < segs.length; i++) {
       (function (seg) {
