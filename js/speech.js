@@ -167,11 +167,32 @@
     }
   }
 
+  // 系统朗读会把「＝」「cm」「8:25」读成符号名或字母。只在合成路径上把题面改写成口语，
+  // 预录音频仍按原句匹配。不改写单独出现的 cm / m，避免把「cm 叫什么」这类题的答案念出来。
+  function spoken(text) {
+    return String(text)
+      .replace(/(\d{1,2}):(\d{2})/g, function (m, h, mm) { return Number(h) + '时' + (Number(mm) ? Number(mm) + '分' : ''); })
+      .replace(/(\d)\s*kg\b/gi, '$1千克')
+      .replace(/(\d)\s*cm\b/gi, '$1厘米')
+      .replace(/(\d)\s*m\b/g, '$1米')
+      .replace(/(\d)\s*g\b/gi, '$1克')
+      .replace(/[＝=]/g, '等于')
+      .replace(/[＋+]/g, '加')
+      .replace(/[－−]|\s-\s/g, '减')
+      .replace(/×/g, '乘')
+      .replace(/÷/g, '除以')
+      .replace(/＞/g, '大于').replace(/＜/g, '小于')
+      .replace(/（\s*　?\s*）|\(\s*\)/g, '，括号，')
+      .replace(/_{2,}/g, '多少')
+      .replace(/[·→]/g, '，')
+      .replace(/\s{2,}/g, ' ');
+  }
+
   function utter(text, scene) {
     if (!voice) voice = pickVoice();
     var prof = SCENES[scene] || SCENES.calc;
     try {
-      var u = new window.SpeechSynthesisUtterance(String(text));
+      var u = new window.SpeechSynthesisUtterance(spoken(text));
       u.lang = 'zh-CN';
       if (voice) u.voice = voice;
       u.rate = MT.core.clamp(prof.rate * rateFactor(), 0.5, 1.5);
@@ -246,12 +267,51 @@
     try { window.speechSynthesis.cancel(); } catch (e) {}
   }
 
+  // 把某一门课会用到的录音一次性请求一遍，让 Service Worker 顺手缓存，之后断网也能听。
+  // 返回 Promise，progress(done, total) 用于显示进度。不能缓存时直接 reject。
+  var CLIP_FILTER = {
+    mul: function (k) { return /乘|、/.test(k) && !/除以/.test(k); },
+    div: function (k) { return /除以/.test(k); },
+    add: function (k) { return /加/.test(k) && !/[乘、]/.test(k); },
+    sub: function (k) { return /减/.test(k) && !/[乘、]/.test(k); }
+  };
+
+  function clipsFor(op) {
+    var map = MT.voiceClips || {}, filter = CLIP_FILTER[op], out = [];
+    for (var k in map) {
+      if (!Object.prototype.hasOwnProperty.call(map, k)) continue;
+      if (!filter || filter(k) || !/[乘、除以加减]/.test(k)) out.push(map[k]);
+    }
+    return out;
+  }
+
+  function cacheClips(op, progress) {
+    if (typeof window === 'undefined' || !('serviceWorker' in navigator) || !navigator.serviceWorker.controller || typeof fetch !== 'function') {
+      return Promise.reject(new Error('这个页面还没有离线缓存能力，请用网址打开并刷新一次再试。'));
+    }
+    var urls = clipsFor(op), done = 0, failed = 0, index = 0;
+    function worker() {
+      if (index >= urls.length) return Promise.resolve();
+      var url = urls[index++];
+      return fetch(url).then(function (res) { if (!res.ok) failed++; }, function () { failed++; }).then(function () {
+        done++;
+        if (progress) progress(done, urls.length);
+        return worker();
+      });
+    }
+    return Promise.all([worker(), worker(), worker(), worker()]).then(function () {
+      return { total: urls.length, failed: failed };
+    });
+  }
+
   MT.speech = {
     supported: supported || hasClips(),
     hasClips: hasClips,
     play: play,
     stop: stop,
     warmup: warmup,
-    enabled: enabled
+    enabled: enabled,
+    spoken: spoken,
+    cacheClips: cacheClips
   };
 })(window.MT = window.MT || {});

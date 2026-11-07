@@ -36,9 +36,9 @@
       var saved = MT.progress && MT.progress.topics[c.id];
       var last = saved && saved.lastSkill;
       result.skill = skills.indexOf(route.skill) !== -1 ? route.skill : skills.indexOf(last) !== -1 ? last : skills[0];
-      if (c.id === 'money' && mode === 'practice' && ['combo', 'cashier'].indexOf(route.game) !== -1) {
-        result.game = route.game;
-      }
+      // 找错游戏对所有专题课开放；凑钱、收银员只属于人民币课。
+      var games = c.id === 'money' ? ['combo', 'cashier', 'impostor'] : ['impostor'];
+      if (mode === 'practice' && games.indexOf(route.game) !== -1) result.game = route.game;
     }
     return result;
   }

@@ -49,4 +49,17 @@ assert.equal(audio.paused, false);
 speech.stop();
 assert.equal(audio.paused, true);
 assert.equal(timers.size, 0);
-console.log('check-speech: ok (clip/synthesis exclusivity, pending cancellation, repeated speech, stop)');
+
+// 合成语音把题面符号改写成口语；录音路径不改写，保证录音文本仍能匹配。
+assert.equal(speech.spoken('3 × 4 ＝ 12'), '3 乘 4 等于 12');
+assert.equal(speech.spoken('18 ÷ 3 － 2'), '18 除以 3 减 2');
+assert.equal(speech.spoken('从 8:25 到 9:00'), '从 8时25分 到 9时');
+assert.equal(speech.spoken('1 米 ＝ 100 cm，3 kg ＝ 多少 g？'), '1 米 等于 100厘米，3千克 等于 多少 g？');
+assert.equal(speech.spoken('长度单位 m 的中文名称是什么？'), '长度单位 m 的中文名称是什么？', '单独出现的单位字母不能被改写，否则会念出答案');
+assert.equal(speech.spoken('一个苹果约重 200（　）。'), '一个苹果约重 200，括号，。');
+spoken.length = 0;
+speech.play('5 ＋ 3 ＝ 8', 'calc');
+timers.forEach(function (fn) { fn(); });
+assert.deepEqual(spoken, ['5 加 3 等于 8'], '合成路径朗读改写后的句子');
+speech.stop();
+console.log('check-speech: ok (clip/synthesis exclusivity, pending cancellation, repeated speech, stop, spoken text)');

@@ -36,6 +36,15 @@
   }
   function say(text) { MT.speech.play(text, 'calc'); }
 
+  // 朗读讲解只读正文段落，跳过图里的刻度数字和图注，否则会听到一串「0 1 2 3」。
+  function lessonText() {
+    var lesson = work.querySelector('.topic-lesson');
+    if (!lesson) return '';
+    var copy = lesson.cloneNode(true);
+    copy.querySelectorAll('figure, svg, figcaption').forEach(function (node) { node.remove(); });
+    return copy.textContent.replace(/\s+/g, ' ').trim();
+  }
+
   function syncNavigation() {
     var b = bag();
     panel.querySelectorAll('[data-skill]').forEach(function (btn) {
@@ -71,12 +80,24 @@
     syncNavigation();
   }
 
+  // 游戏 id 合法性：impostor 对所有有文字题的课开放，combo / cashier 只属于人民币课。
+  function knownGame(gameId) {
+    if (gameId === 'impostor') return !!(MT.topicGames && MT.topicGames.available(model));
+    return model.id === 'money' && !!MT.moneyGames && (gameId === 'combo' || gameId === 'cashier');
+  }
+
   function launchGame(gameId) {
-    if (!MT.moneyGames) return;
+    if (!knownGame(gameId)) return;
     currentSubGame = gameId;
     panel.classList.toggle('is-practicing', true);
     if (MT.bus) MT.bus.emit('topic:navigate', { mode: mode, skill: skill.id, game: gameId });
-    if (gameId === 'combo') {
+    if (gameId === 'impostor') {
+      MT.topicGames.start(work, model, bag().range, function () {
+        currentSubGame = null;
+        renderPracticeIntro();
+        focus();
+      });
+    } else if (gameId === 'combo') {
       MT.moneyGames.startCombo(work, function () {
         currentSubGame = null;
         renderPracticeIntro();
@@ -93,14 +114,39 @@
 
   function nextSkill() { return model.skills[model.skills.indexOf(skill) + 1]; }
 
+  // 练习准备页只说一句最关键的提醒，其余规则（提示会进错题本等）在答题过程中自然看到。
+  var PRACTICE_TIPS = {
+    mixed: '先判断运算顺序，再一步一步计算。',
+    money: '看清元、角、分，再选择或输入答案。',
+    angle: '找顶点、看开口，角的大小和边的长短没有关系。',
+    time: '先看时针，再看分针；分清时刻和经过时间。',
+    length: '看清题目里的单位是米还是厘米。',
+    mass: '看清题目里的单位是克还是千克。'
+  };
+
+  function gameEntry(gameId, icon, title, desc) {
+    return '<div class="topic-game-item"><div><b>' + icon + ' ' + title + '</b><small>' + desc + '</small></div><button type="button" class="btn btn-soft" data-topic-action="play-game" data-game="' + gameId + '">去挑战 →</button></div>';
+  }
+
+  function gameEntriesHTML() {
+    var entries = [];
+    if (model.id === 'money' && MT.moneyGames) {
+      entries.push(gameEntry('combo', '🎮', '凑钱小能手', '用不同面额凑出目标金额，练习换算与付款'));
+      entries.push(gameEntry('cashier', '🛒', '小小收银员', '计算商品总价，判断钱够不够与找零计算'));
+    }
+    if (MT.topicGames && MT.topicGames.available(model)) entries.push(gameEntry('impostor', '🕵️', '找出算错的小捣蛋', '三张卡里有一张答案是错的，看谁火眼金睛'));
+    if (!entries.length) return '';
+    return '<div class="topic-game-entries"><p class="topic-eyebrow">换个方式练 · 趣味游戏</p><div class="topic-game-row">' + entries.join('') + '</div></div>';
+  }
+
   function renderPracticeIntro() {
     currentSubGame = null;
     var ranged = (model.id === 'mixed' && skill.id !== 'muldiv') || model.id === 'money';
     work.innerHTML = '<article class="topic-card"><p class="topic-eyebrow">每轮 ' + roundSize() + ' 题 · 按自己的节奏完成</p><h3 tabindex="-1">' + esc(skill.title) + '练习</h3>' +
-      (ranged ? '<fieldset class="practice-range"><legend>这次练习的范围</legend><div class="seg"><button type="button" class="seg-btn" data-topic-range="20">' + (model.id === 'money' ? '20 元以内 · 基础' : '20 以内 · 起步') + '</button><button type="button" class="seg-btn" data-topic-range="100">' + (model.id === 'money' ? '100 元以内 · 进阶' : '100 以内 · 进阶') + '</button></div></fieldset>' : '<p class="topic-note">' + (model.id === 'mixed' ? '表内乘除，所有步骤都是整数结果。' : model.id === 'angle' ? '找顶点、看开口，不用边的长短判断角的大小。' : model.id === 'time' ? '看清钟面或时间文字，分清时与分。' : '看清题目里的单位，再开始作答。') + '</p>') +
-      '<p class="topic-note">' + (model.id === 'mixed' ? '先判断运算顺序，再一步一步计算。' : model.id === 'money' ? '看清钱币的面值与单位（元、角、分），选择或输入答案。' : model.id === 'angle' ? '观察角的顶点、两条边和开口，选择或输入答案。' : model.id === 'time' ? '先看时针，再看分针；计算时分清时刻和经过时间。选择或输入答案。' : '看清图示和单位，选择或输入答案。') + '需要帮助可以看提示，看过提示的题会加入错题复习。</p>' +
+      (ranged ? '<fieldset class="practice-range"><legend>这次练习的范围</legend><div class="seg"><button type="button" class="seg-btn" data-topic-range="20">' + (model.id === 'money' ? '20 元以内 · 基础' : '20 以内 · 起步') + '</button><button type="button" class="seg-btn" data-topic-range="100">' + (model.id === 'money' ? '100 元以内 · 进阶' : '100 以内 · 进阶') + '</button></div></fieldset>' : '') +
+      '<p class="topic-note">' + (PRACTICE_TIPS[model.id] || '看清题目再作答。') + '不会做可以看提示，看过提示的题会留在错题本里再练。</p>' +
       '<div class="topic-actions">' + button('start', '开始 ' + roundSize() + ' 题练习 →', 'btn-main') + '</div>' +
-      (model.id === 'money' ? '<div class="topic-game-entries"><p class="topic-eyebrow">趣味游戏挑战 · 玩中学应用</p><div class="topic-game-row"><div class="topic-game-item"><div><b>🎮 凑钱小能手</b><small>用不同面额凑出目标金额，练习换算与付款</small></div><button type="button" class="btn btn-soft" data-topic-action="play-game" data-game="combo">去挑战 →</button></div><div class="topic-game-item"><div><b>🛒 小小收银员</b><small>计算商品总价，判断钱够不够与找零计算</small></div><button type="button" class="btn btn-soft" data-topic-action="play-game" data-game="cashier">去挑战 →</button></div></div></div>' : '') +
+      gameEntriesHTML() +
       '</article>';
     syncNavigation();
   }
@@ -382,7 +428,7 @@
       }
       if (action === 'show-wrong') changeMode('wrong');
       if (action === 'demo-next') { demoStep++; renderLearn(); focus(demoStep < skill.example.steps.length ? '[data-topic-action="demo-next"]' : '[data-topic-action="start"]'); }
-      if (action === 'read-lesson') say(skill.title + '。' + skill.description + '。' + work.querySelector('.topic-lesson').textContent);
+      if (action === 'read-lesson') say(skill.title + '。' + skill.description + '。' + lessonText());
       if (action === 'read-question' && session) readQuestion();
       if (action === 'choice') choose(Number(btn.dataset.choice));
       if (action === 'next' && session && session.phase === 'complete') {
@@ -451,11 +497,8 @@
       session = null; demoStep = 0; currentSubGame = null;
       renderShell();
       if (mode === 'practice') {
-        if (options.game && id === 'money' && MT.moneyGames) {
-          launchGame(options.game);
-        } else {
-          renderPracticeIntro();
-        }
+        if (options.game && knownGame(options.game)) launchGame(options.game);
+        else renderPracticeIntro();
       }
       else if (mode === 'wrong') renderWrong();
       else renderLearn();

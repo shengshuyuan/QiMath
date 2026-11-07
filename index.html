@@ -10,13 +10,14 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="stylesheet" href="css/base.css?v=2.6.8">
-<link rel="stylesheet" href="css/layout.css?v=2.6.7">
+<link rel="stylesheet" href="css/layout.css?v=2.7.0">
 <link rel="stylesheet" href="css/visuals.css?v=2.6.6">
 <link rel="stylesheet" href="css/quiz.css?v=2.6.8">
 <link rel="stylesheet" href="css/games.css?v=2.6.6">
 <link rel="stylesheet" href="css/print.css?v=2.6.6">
-<link rel="stylesheet" href="css/topics.css?v=2.6.6">
-<link rel="stylesheet" href="css/navigation.css?v=2.6.9">
+<link rel="stylesheet" href="css/topics.css?v=2.7.0">
+<link rel="stylesheet" href="css/money.css?v=2.7.0">
+<link rel="stylesheet" href="css/navigation.css?v=2.7.0">
 </head>
 <body>
 
@@ -113,13 +114,20 @@
     </div>
     <p class="set-note" id="storage-note" hidden>这个浏览器不允许保存数据，学习记录只在本次使用中保留。</p>
     <p class="set-note" id="speech-note" hidden>这个浏览器不支持朗读，已隐藏朗读按钮。</p>
-    <div class="set-row">
-      <button type="button" class="btn btn-soft" id="btn-export-progress">导出学习进度</button>
-      <button type="button" class="btn btn-soft" id="btn-import-progress">导入学习进度</button>
-      <input type="file" id="progress-file" accept=".json,application/json" hidden>
+    <div class="set-row set-row-stack" data-basic-setting id="voice-cache-row">
+      <span class="set-label">离线语音</span>
+      <button type="button" class="btn btn-soft" id="btn-cache-voice">下载这门课的真人语音</button>
+      <p class="set-note" id="voice-cache-status" role="status" aria-live="polite">下载后断网也能听到朗读，约 5 MB。</p>
     </div>
-    <p class="set-note">换网址或设备时，先在旧网址导出，再到新网址导入。</p>
-    <p class="set-note" id="progress-transfer-status" role="status" aria-live="polite"></p>
+    <div class="set-row set-row-stack">
+      <span class="set-label">换设备继续学</span>
+      <div class="set-btns">
+        <button type="button" class="btn btn-soft" id="btn-export-progress">保存进度文件</button>
+        <button type="button" class="btn btn-soft" id="btn-import-progress">读取进度文件</button>
+      </div>
+      <input type="file" id="progress-file" accept=".json,application/json" hidden>
+      <p class="set-note" id="progress-transfer-status" role="status" aria-live="polite">在旧设备上保存文件，发到新设备后读取，进度就跟着过来了。</p>
+    </div>
     <div class="set-row set-row-end">
       <button type="button" class="btn btn-danger" id="btn-reset">重置全部进度</button>
     </div>
@@ -130,6 +138,7 @@
   <section id="catalog-page" aria-labelledby="catalog-title">
     <div class="catalog-intro"><p class="topic-eyebrow">一步一步，学会数学</p><h2 id="catalog-title" tabindex="-1">今天想学什么？</h2><p>选一门课程，看懂方法，再自己试一试。</p></div>
     <button type="button" class="continue-course" id="btn-continue" hidden></button>
+    <button type="button" class="wrong-banner" id="wrong-banner" hidden></button>
     <section class="catalog-group" aria-labelledby="number-domain"><div class="catalog-group-head"><h3 id="number-domain">数与运算</h3><span>理解数量与运算方法</span></div><div class="course-grid" id="number-courses"></div></section>
     <section class="catalog-group" aria-labelledby="measure-domain"><div class="catalog-group-head"><h3 id="measure-domain">量与测量</h3><span>认识长短、时间、质量和钱币</span></div><div class="course-grid" id="measure-courses"></div></section>
     <section class="creator-intro" aria-labelledby="creator-title">
@@ -370,7 +379,7 @@
 <script src="js/sub.js?v=2.6.6"></script>
 <script src="js/storage.js?v=2.6.10"></script>
 <script src="js/voice-clips.js?v=2.6.6"></script>
-<script src="js/speech.js?v=2.6.6"></script>
+<script src="js/speech.js?v=2.7.0"></script>
 <script src="js/sound.js?v=2.6.6"></script>
 <script src="js/confetti.js?v=2.6.6"></script>
 <script src="js/badges.js?v=2.6.6"></script>
@@ -383,13 +392,14 @@
 <script src="js/mixed.js?v=2.6.6"></script>
 <script src="js/length.js?v=2.6.6"></script>
 <script src="js/angle.js?v=2.6.6"></script>
-<script src="js/time.js?v=2.6.6"></script>
+<script src="js/time.js?v=2.7.0"></script>
 <script src="js/mass.js?v=2.6.6"></script>
 <script src="js/money.js?v=2.6.6"></script>
 <script src="js/money-games.js?v=2.6.6"></script>
-<script src="js/topics.js?v=2.6.6"></script>
-<script src="js/navigation.js?v=2.6.6"></script>
-<script src="js/app.js?v=2.6.10"></script>
+<script src="js/topic-games.js?v=2.7.0"></script>
+<script src="js/topics.js?v=2.7.0"></script>
+<script src="js/navigation.js?v=2.7.0"></script>
+<script src="js/app.js?v=2.7.0"></script>
 <script>
 (function () {
   var ok = window.MT && MT.core && MT.visuals && MT.app;

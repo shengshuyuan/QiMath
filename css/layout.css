@@ -179,6 +179,12 @@
 }
 
 .set-row-end { justify-content: flex-end; margin-top: 8px; padding-top: 14px; border-top: 1px solid var(--line); }
+/* 带说明文字的设置项：标签在上，按钮和说明竖排，与上面的开关行用细线分隔 */
+.set-row-stack { flex-direction: column; align-items: stretch; gap: 8px; margin-top: 8px; padding-top: 12px; border-top: 1px solid var(--line); }
+.set-row-stack .set-label { font-weight: 600; }
+.set-row-stack .btn { min-height: 44px; }
+.set-btns { display: flex; flex-wrap: wrap; gap: 8px; }
+.set-btns .btn { flex: 1 1 120px; }
 
 .set-label { font-size: 14px; color: var(--ink); }
 

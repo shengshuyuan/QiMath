@@ -79,7 +79,8 @@ QiMath/
 │   ├── visuals.css     # 点阵/苹果/星星/饼干多皮换肤、数轴/面积等可视化样式
 │   ├── quiz.css        # 闯关答题、3D 拟物数字键盘与温柔爱心机制
 │   ├── games.css       # 游乐场（漂浮气球、捣蛋鬼卡片、结算卡）
-│   ├── topics.css      # 新知识入口、课程、分步练习与长度尺图
+│   ├── topics.css      # 专题课通用样式、分步练习、找错游戏布局
+│   ├── money.css       # 认识人民币：钱币图形、凑钱 / 收银游戏
 │   └── print.css       # A4 练习卡打印专用黑白矢量样式
 ├── js/
 │   ├── core.js         # 数字读法和共用工具
@@ -92,6 +93,7 @@ QiMath/
 │   ├── length.js       # 米厘米课程、尺图与五类题目
 │   ├── money.js        # 认识人民币：六大知识点与出题
 │   ├── money-games.js  # 凑钱小能手、小小收银员
+│   ├── topic-games.js  # 专题课通用「找出算错的小捣蛋」游戏
 │   ├── topics.js       # 新知识共用学习/练习、错题与打印界面
 │   ├── storage.js      # 本地进度。加减乘除分开记，旧档打开时补上缺的字段
 │   ├── voice-clips.js  # 音频字典映射
@@ -107,6 +109,7 @@ QiMath/
 │   ├── print.js        # A4 口算题单动态生成与打印
 │   └── app.js          # 全局生命周期与各模块协同入口
 └── tools/
+    ├── check-*.js      # 回归检查脚本（含 check-pages 无头浏览器渲染检查）
     └── build-piper-voice.py # 音频预处理工具脚本
 ```
 
@@ -118,18 +121,10 @@ QiMath/
 
 设计与内容约定见 [DESIGN.md](DESIGN.md)。保留 `MT.op` 管理基础运算；新知识模块提供 `id / title / subtitle / skills / generate`，由 `topics.js` 共用课程、数字/选择/分步题、错题与打印流程。错题保存知识点、范围和种子，显示时重建题目；新增进度在 `topics` 下分主题保存，旧版记录无需整体迁移。只有实际出现新的交互需求时才扩充题型。
 
-增加知识主题时，同步更新入口、模块加载、本地数据读取和 `sw.js` 预缓存。当前回归检查：
+增加知识主题时，同步更新入口、模块加载、本地数据读取和 `sw.js` 预缓存。改完跑全部回归检查：
 
 ```sh
-node tools/check-add-sub.js
-node tools/check-mixed.js
-node tools/check-length.js
-node tools/check-measurements.js
-node tools/check-topics.js
-node tools/check-navigation.js
-node tools/check-sw-precache.js
-node tools/check-money.js
-node tools/check-money-games.js
+for f in tools/check-*.js; do node "$f" || echo "FAIL $f"; done
 ```
 
 使用与部署说明（含线上地址）见 [AI_readme.md](AI_readme.md)。

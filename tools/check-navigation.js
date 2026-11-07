@@ -43,5 +43,8 @@ assert.equal(nav.parse('#/course/mul/games/learn').view, 'explore');
 assert.equal(nav.parse('#/course/add/table/wrong').view, 'quiz');
 assert.equal(nav.parse('#/course/money/shopping/practice/cashier').game, 'cashier');
 assert.equal(nav.parse('#/course/money/convert/practice/combo').game, 'combo');
+assert.equal(nav.parse('#/course/time/convert/practice/impostor').game, 'impostor');
+assert.equal(nav.parse('#/course/time/convert/practice/combo').game, undefined, '凑钱游戏只属于人民币课');
+assert.equal(nav.parse('#/course/time/convert/learn/impostor').game, undefined, '游戏只在练一练里打开');
 assert.equal(nav.hash({ course: 'money', skill: 'shopping', mode: 'practice', game: 'cashier' }), '#/course/money/shopping/practice/cashier');
 console.log('check-navigation: ok (' + checked + ' route combinations, invalid links, saved knowledge point)');

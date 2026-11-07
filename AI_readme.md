@@ -34,6 +34,10 @@
 
 每个课程都有：**学一学 / 练一练 / 错题**。地址栏 hash 会记住课程、知识点和模式，支持刷新与浏览器前进后退。
 
+专题课（混合运算到人民币）的「练一练」页都有一个「找出算错的小捣蛋」游戏（路由 `…/practice/impostor`）：三张卡里有一张答案是错的，用现成的出题器生成，不另写题库。
+
+首页课程卡会显示已学课程的进度条、完成数和错题数；有错题时顶部出现「有 N 道错题等着复习」横幅，点一下直接进入错题最多的那门课。
+
 ---
 
 ## 怎么用（给家长 / 学生）
@@ -42,30 +46,29 @@
 2. 点「知识目录」选一门课。
 3. 「学一学」看图和方法；「练一练」做题；错的会进「错题」，连续两次独立答对才移出。
 4. 右上角可开关朗读、打印练习纸、看勋章、改设置。
-5. 手机可「添加到主屏幕」，断网后仍能做题（语音是否可用取决于是否听过预录音频 / 系统朗读）。
+5. 手机可「添加到主屏幕」，断网后仍能做题。想断网也有真人朗读：在加减乘除任一课里打开设置，点「下载这门课的真人语音」（每门约 5 MB）。
+6. 换手机 / 换网址：设置里「保存进度文件」，把文件发到新设备后「读取进度文件」。
 
 ---
 
 ## 技术要点（给协作的 AI / 开发）
 
 - **零依赖**：原生 HTML / CSS / JS，`<script src>` 顺序加载，不用打包、不用 ES module（保证 `file://` 可用）。
-- **命名空间**：全局 `MT`；基础四则用 `MT.op`，新课用 `MT.topics` + 各课模块（`mixed` / `length` / `money`）。
-- **新增课程**：主要改 `js/navigation.js` 的 `courses`，并挂上模块、写入 `index.html` 与 `sw.js` 预缓存。
-- **进度键**：`localStorage` 的 `mt99.progress.v1`。主题进度在 `topics` 下。导航已加载时，非基础课程从 `navigation.courses` 恢复；否则兜底为 `mixed` / `length` / `money` / `angle` / `time` / `mass`。人民币另含 `games`。漏掉一门，刷新会丢掉该课进度。
-- **离线**：`sw.js` 的 `CACHE_NAME` 有代码变更时必须递增；代码资源网络优先，音频缓存优先。
-- **回归检查**（改完必跑）：
+- **命名空间**：全局 `MT`；基础四则用 `MT.op`，专题课用 `MT.topics` + 各课模块（`mixed` / `length` / `angle` / `time` / `mass` / `money`），每个模块提供 `skills` 与确定性的 `generate(skill, range, seed)`。
+- **新增课程**：改 `js/navigation.js` 的 `courses`，挂上模块，写入 `index.html` 与 `sw.js` 预缓存。只要有文字题，`js/topic-games.js` 的找错游戏会自动对它开放。
+- **进度键**：`localStorage` 的 `mt99.progress.v1`。主题进度在 `topics` 下（`skills[id].clean` 为独立答对数，`wrong` 为错题）。人民币另含 `games`。首页进度由 `app.js` 的 `courseStats()` 汇总。
+- **语音**：`MT.speech.play(text, scene)` 先找预录音频（`js/voice-clips.js`），没有才用系统合成；合成前经 `MT.speech.spoken()` 把符号、单位、时刻改写成口语。`MT.speech.cacheClips(op, progress)` 预取一门运算的全部录音。
+- **样式文件**：`topics.css` 为专题课通用样式（含找错游戏）；人民币专属图形与游戏在 `money.css`；`games.css` 的 `.impostor-*` 被两处游戏共用。
+- **离线**：`sw.js` 的 `CACHE_NAME` 有代码变更时必须递增，同时更新 `index.html` 的 `?v=`；代码资源网络优先，音频缓存优先。
+- **回归检查**（改完必跑，全部 `tools/check-*.js`）：
 
 ```sh
-node tools/check-add-sub.js
-node tools/check-mixed.js
-node tools/check-length.js
-node tools/check-topics.js
-node tools/check-navigation.js
-node tools/check-sw-precache.js
-node tools/check-money.js
+for f in tools/check-*.js; do node "$f" || echo "FAIL $f"; done
 ```
 
-更完整的产品约定见 [DESIGN.md](DESIGN.md)，功能总览见 [README.md](README.md)。
+`check-pages.js` 会用本机 Chrome 无头渲染 80 个页面（桌面 + 手机），检查 JS 报错、横向溢出和按钮是否 ≥ 44px；没装 Chrome 时自动跳过。加 `--shots 目录` 可输出截图。
+
+更完整的产品约定见 [DESIGN.md](DESIGN.md)，功能总览见 [README.md](README.md)，历次改动见 [docs/history.md](docs/history.md)。
 
 ---
 
@@ -102,34 +105,15 @@ npx wrangler pages deploy . --project-name=<项目名> --commit-dirty=true
 
 ---
 
-## 本轮审查记录（2026-10-16）
+## 当前状态（2026-11-07）
 
-### 发现并已修复
-
-1. **人民币进度刷新丢失（严重）**：`js/storage.js` 加载主题时只认 `mixed` / `length`，漏了 `money`，练习次数、错题、游戏星级刷新后全部清空。已纳入白名单并恢复 `games`。
-2. **「不进退位」加减只有减法**：`mode === 1` 时外层 `isPlus` 恒为假，加法支路死代码。已改为独立开关，并保证加法角之和 &lt; 10。
-3. **数钱讲解漏「分」**：拼钱币托盘时改写了 `f`，讲解里分部分常被吃掉。已用临时变量拆分。
-
-### 验证
-
-七项 `tools/check-*.js` 全部通过；另用本地 `localStorage` 模拟确认 `money` 进度往返可恢复。`CACHE_NAME` → `mt99-cache-v31`，资源版本 `2.5.4`。
-
-### 目录页层级（2026-11-05）
-
-知识目录仍用原来的按钮和颜色，没有加新的界面库（这个网站要能双击打开，不能装 React 组件）。课程符号改成同样大小的浅紫方块，分组标题和说明分成两行，底部「关于树园」改成细线下面的说明，不再和课程卡片抢同样的白卡片。样式版本 `2.6.8`，离线缓存 `mt99-cache-v41`。
-
-### 全站共用界面（2026-11-05）
-
-加减乘除的闯关页把「重置闯关」和关卡说明放在同一行。错题还是空的时候，给出和混合运算一样的说明卡片，并可以去练一练。勋章说明不再被裁成一行。设置里的「重置全部进度」和上面的开关用细线隔开。次要按钮和分段开关的点按高度统一为 44 像素。样式版本 `2.6.9`（基础样式 `2.6.8`），离线缓存 `mt99-cache-v44`。闯关进行中仍可点「重置闯关」，说明文字只在选关时出现。
-
-### 学习进度备份与域名迁移（2026-11-06）
-
-设置中新增「导出学习进度 / 导入学习进度」。从旧网址导出 JSON 后，在新网址导入；所有课程、错题、星级、勋章和设置一起迁移。导入前验证文件格式并确认替换，写入失败保留原进度；导入前状态另保存在同浏览器的 `mt99.progress.v1.before-import`，内容也是可导入的备份格式。仅支持 QiMath 导出的 2 MB 以内 JSON，不会自动跨域同步或合并多设备记录。相关脚本版本 `2.6.10`，离线缓存 `mt99-cache-v44`。
-
-本轮已发布到自有域名、Pages 原地址与 Vercel 原地址；WorkBuddy 国内站未发布，需在 WorkBuddy 环境发布此版本后才能使用这两个按钮。发布使用仅含网页、脚本、样式和音频的临时目录，未上传本地内部配置。
+- 资源版本：本轮改动文件 `2.7.0`；离线缓存 `mt99-cache-v45`。
+- 16 个 `tools/check-*.js` 全部通过（含新增的 `check-pages`、`check-topic-games`）。
+- 历次改动与修复记录已移到 [docs/history.md](docs/history.md)。
 
 ### 后续可改进
 
-- README / DESIGN 与「认识人民币」文档对齐（本轮已补）。
-- Cloudflare 需本机 wrangler 登录态才能一键发布。
-- WorkBuddy 发布工具仅在 WorkBuddy 环境内可用；Cursor 侧需手动或换环境发布国内站。
+- 专题课的语音目前全靠系统合成；若要真人朗读，需用 `tools/build-piper-voice.py` 为题面句式批量生成录音并登记到 `voice-clips.js`。
+- 进度迁移仍是文件导出 / 导入；二维码或短码同步需要服务端或第三方库，与「零依赖、双击可用」冲突，暂不做。
+- 找错游戏对纯图形题（读尺、看钟、读秤）不开放；若要覆盖，需要把图形缩成卡片尺寸。
+- Cloudflare 需本机 wrangler 登录态才能一键发布；WorkBuddy 国内站需在其环境内发布（发布前移出内部配置文件）。

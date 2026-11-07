@@ -46,12 +46,17 @@
     var q = { id: 'time:' + skill + ':' + seed, skill: skill, data: { type: skill } };
     if (skill === 'clock' || skill === 'minute') {
       var hour = seed % 12 + 1, minute = skill === 'clock' ? Math.floor(seed / 12) % 12 * 5 : Math.floor(seed / 12) % 60;
-      var correct = label(hour, minute), wrongMinute = label(hour, (minute + 5) % 60), wrongHour = label(hour === 12 ? 1 : hour + 1, minute);
-      q.prompt = '看钟面，现在是几时几分？'; q.visualHTML = clock(hour, minute); q.hint = '先看短时针过了几，再看长分针走了多少小格。';
-      q.explanation = '短时针' + (minute ? '过了 ' + hour + '，还没有到下一时' : '正好指向 ' + hour) + '，长分针从 12 顺时针走了 ' + minute + ' 个小格，所以是 ' + hour + ' 时 ' + minute + ' 分，写作 ' + correct + '。';
+      // 干扰项贴近常见错误：把分针指着的数字直接当分钟数，或把时针看成下一时。
+      var misread = Math.floor(minute / 5);
+      var correct = label(hour, minute), wrongMinute = label(hour, minute % 5 && misread !== minute ? misread : (minute + 5) % 60), wrongHour = label(hour === 12 ? 1 : hour + 1, minute);
+      q.prompt = '看钟面，现在是几时几分？'; q.visualHTML = clock(hour, minute);
+      q.hint = skill === 'clock' ? '先看短时针过了几，再看长分针指着哪个数字，一个数字是 5 分。' : '先看短时针过了几，再看长分针刚经过哪个数字，再数后面的小格。';
+      var minuteText = !minute ? '长分针正好指向 12，是 0 分' : minute % 5 === 0 ? '长分针指向 ' + minute / 5 + '，是 ' + minute / 5 + ' 个 5 分：' + minute + ' 分' : '长分针刚经过 ' + Math.floor(minute / 5) + '，是 ' + Math.floor(minute / 5) * 5 + ' 分，再走 ' + minute % 5 + ' 小格，是 ' + minute + ' 分';
+      q.explanation = '短时针' + (minute ? '过了 ' + hour + '，还没有到下一时' : '正好指向 ' + hour) + '，是 ' + hour + ' 时；' + minuteText + '。所以是 ' + hour + ' 时 ' + minute + ' 分，写作 ' + correct + '。';
       q.data.hour = hour; q.data.minute = minute; choice(q, [correct, wrongMinute, wrongHour], correct, seed);
     } else if (skill === 'convert') {
-      var hours = seed % 3 + 1, extra = Math.floor(seed / 3) % 6 * 10, direction = Math.floor(seed / 18) % 3;
+      // 带零头的换算至少 10 分，避免出现「1 时 0 分」这样的题面。
+      var hours = seed % 3 + 1, extra = (Math.floor(seed / 3) % 5 + 1) * 10, direction = Math.floor(seed / 15) % 3;
       q.kind = 'number'; q.data.hours = hours; q.data.extra = direction === 2 ? extra : 0; q.data.minutes = hours * 60 + q.data.extra; q.data.direction = direction;
       q.prompt = direction === 0 ? hours + ' 时＝多少分？' : direction === 1 ? hours * 60 + ' 分＝多少时？' : hours + ' 时 ' + extra + ' 分＝多少分？';
       q.answer = direction === 1 ? hours : q.data.minutes; q.unit = direction === 1 ? '时' : '分'; q.hint = '每 1 时是 60 分，先数几个 60，再加剩下的分。'; q.explanation = hours + ' 时＝' + hours * 60 + ' 分。' + (direction === 2 ? '再加 ' + extra + ' 分，共 ' + q.data.minutes + ' 分。' : '每 60 分是 1 时。');
@@ -59,7 +64,11 @@
       var start = (7 + seed % 9) * 60 + Math.floor(seed / 9) % 12 * 5, duration = (Math.floor(seed / 108) % 12 + 1) * 5, end = start + duration;
       q.kind = 'number'; q.prompt = '同一天，小明从 ' + label(Math.floor(start / 60), start % 60) + ' 开始阅读，到 ' + label(Math.floor(end / 60), end % 60) + ' 结束，一共经过多少分？';
       q.answer = duration; q.unit = '分'; q.hint = '先数到整时，再数到结束时刻，把两段相加。';
-      q.explanation = Math.floor(start / 60) === Math.floor(end / 60) ? '同一小时内，' + end % 60 + '－' + start % 60 + '＝' + duration + '，经过 ' + duration + ' 分。' : '先到下一整时，经过 ' + (60 - start % 60) + ' 分；再经过 ' + end % 60 + ' 分，合计 ' + duration + ' 分。';
+      var startLabel = label(Math.floor(start / 60), start % 60), endLabel = label(Math.floor(end / 60), end % 60);
+      q.explanation = Math.floor(start / 60) === Math.floor(end / 60) ? '同一小时内，' + end % 60 + '－' + start % 60 + '＝' + duration + '，经过 ' + duration + ' 分。'
+        : end % 60 === 0 ? '从 ' + startLabel + ' 数到整时 ' + endLabel + '，正好经过 ' + duration + ' 分。'
+        : start % 60 === 0 ? '从整时 ' + startLabel + ' 开始，经过 1 时是 ' + label(Math.floor(start / 60) + 1, 0) + '，再经过 ' + end % 60 + ' 分，合计 ' + duration + ' 分。'
+        : '先从 ' + startLabel + ' 数到整时，经过 ' + (60 - start % 60) + ' 分；再数到 ' + endLabel + '，经过 ' + end % 60 + ' 分，合计 ' + duration + ' 分。';
       q.data.start = start; q.data.end = end; q.data.duration = duration;
     } else throw new RangeError('Unknown time skill: ' + skill);
     q.speech = q.prompt; q.printPrompt = q.prompt; return q;

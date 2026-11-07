@@ -30,7 +30,17 @@ body { overflow-x: clip; }
 .course-card-copy { min-width: 0; }
 .course-card b { display: block; font-size: 19px; margin-bottom: 4px; }
 .course-card small { display: block; color: var(--ink-2); font-size: 13px; line-height: 1.55; }
+.course-progress { display: block; margin-top: 8px; }
+.course-progress-bar { display: block; height: 5px; border-radius: 3px; background: var(--muted); overflow: hidden; }
+.course-progress-bar i { display: block; height: 100%; border-radius: 3px; background: var(--brand); transition: width .3s ease; }
+.course-progress-text { display: block; margin-top: 5px; color: var(--ink-2); font-size: 12px; line-height: 1.5; }
 .course-arrow { color: var(--ink-3); margin-left: auto; font-size: 18px; line-height: 1; }
+.wrong-banner { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 54px; margin: -14px 0 28px; padding: 12px 16px; text-align: left; background: var(--warn-l); border: 1px solid var(--warn); border-radius: var(--r-md); }
+.continue-course[hidden] + .wrong-banner { margin-top: 0; }
+.wrong-banner-icon { font-size: 22px; line-height: 1; }
+.wrong-banner-copy { min-width: 0; }
+.wrong-banner-copy b { display: block; font-size: 15px; }
+.wrong-banner-copy small { display: block; color: var(--ink-2); font-size: 13px; line-height: 1.5; }
 .course-breadcrumb { display: flex; gap: 8px; color: var(--ink-2); font-size: 12px; line-height: 1.5; margin-bottom: 6px; }
 #course-title { font-size: 28px; line-height: 1.4; margin-bottom: 18px; }
 #course-title:focus, #catalog-title:focus { outline: none; }

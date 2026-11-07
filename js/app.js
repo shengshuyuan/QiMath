@@ -52,13 +52,59 @@
     return !!(id && MT.op.get(id));
   }
 
+  // 汇总一门课的学习情况：done / total 是已通关数（基础运算）或已独立答对过的知识点数（专题课），wrong 是错题数。
+  function courseStats(c) {
+    var p = MT.progress, done = 0, total = 0, wrong = 0;
+    if (c.topic === 'basic') {
+      var op = MT.op.get(c.id);
+      if (!op) return null;
+      var bag = op.bag(p), levels = bag.levels || {};
+      Object.keys(levels).forEach(function (k) { total++; if (levels[k] && levels[k].passed) done++; });
+      wrong = Object.keys(bag.wrong || {}).length;
+    } else {
+      var model = MT[c.id], t = p.topics && p.topics[c.id];
+      if (!model) return null;
+      total = model.skills.length;
+      model.skills.forEach(function (s) { if (t && t.skills[s.id] && t.skills[s.id].clean > 0) done++; });
+      wrong = t ? Object.keys(t.wrong || {}).length : 0;
+    }
+    return { done: done, total: total, wrong: wrong, started: done > 0 || wrong > 0 };
+  }
+
+  function courseProgressHTML(c, st) {
+    if (!st || !st.started) return '';
+    var unit = c.topic === 'basic' ? '关' : '个知识点';
+    var pct = st.total ? Math.round(st.done / st.total * 100) : 0;
+    var text = (st.done >= st.total ? '全部完成 🎉' : '已完成 ' + st.done + ' / ' + st.total + ' ' + unit) + (st.wrong ? ' · ' + st.wrong + ' 道错题' : '');
+    return '<span class="course-progress"><span class="course-progress-bar" aria-hidden="true"><i style="width:' + pct + '%"></i></span><span class="course-progress-text">' + text + '</span></span>';
+  }
+
+  function renderWrongBanner(stats) {
+    var box = document.getElementById('wrong-banner');
+    if (!box) return;
+    var top = null, totalWrong = 0;
+    stats.forEach(function (item) {
+      if (!item.st || !item.st.wrong) return;
+      totalWrong += item.st.wrong;
+      if (!top || item.st.wrong > top.st.wrong) top = item;
+    });
+    box.hidden = !top;
+    if (!top) return;
+    box.dataset.course = top.c.id;
+    box.innerHTML = '<span class="wrong-banner-icon" aria-hidden="true">📝</span><span class="wrong-banner-copy"><b>有 ' + totalWrong + ' 道错题等着复习</b><small>先从「' + top.c.title + '」的 ' + top.st.wrong + ' 道开始，连续答对两次就会消掉。</small></span><span class="course-arrow" aria-hidden="true">→</span>';
+  }
+
   function renderCatalog() {
+    var stats = [];
     ['number', 'measure'].forEach(function (group) {
       var courses = MT.navigation.courses.filter(function (c) { return (c.domain === '量与测量') === (group === 'measure'); });
       document.getElementById(group + '-courses').innerHTML = courses.map(function (c) {
-        return '<button type="button" class="course-card" data-course="' + c.id + '"><span class="course-mark" aria-hidden="true">' + c.mark + '</span><span class="course-card-copy"><b>' + c.title + '</b><small>' + c.description + '</small></span><span class="course-arrow" aria-hidden="true">→</span></button>';
+        var st = courseStats(c);
+        stats.push({ c: c, st: st });
+        return '<button type="button" class="course-card' + (st && st.started ? ' is-started' : '') + '" data-course="' + c.id + '"><span class="course-mark" aria-hidden="true">' + c.mark + '</span><span class="course-card-copy"><b>' + c.title + '</b><small>' + c.description + '</small>' + courseProgressHTML(c, st) + '</span><span class="course-arrow" aria-hidden="true">→</span></button>';
       }).join('');
     });
+    renderWrongBanner(stats);
     var last = MT.navigation.parse(MT.progress.settings.lastLocation);
     var resume = document.getElementById('btn-continue');
     resume.hidden = last.page !== 'course';
@@ -242,7 +288,34 @@
     document.getElementById('btn-settings').setAttribute('aria-expanded', box.hidden ? 'false' : 'true');
   }
 
+  // 离线语音：只在基础运算课显示（录音只覆盖加减乘除），下载当前运算的全部录音让 Service Worker 缓存。
+  function bindVoiceCache() {
+    var btn = document.getElementById('btn-cache-voice');
+    var status = document.getElementById('voice-cache-status');
+    var row = document.getElementById('voice-cache-row');
+    if (!btn || !status || !row) return;
+    if (!MT.speech.hasClips() || !('serviceWorker' in navigator)) {
+      row.hidden = true;
+      row.removeAttribute('data-basic-setting');
+      return;
+    }
+    btn.addEventListener('click', function () {
+      var op = MT.progress.settings.op;
+      var title = (MT.navigation.course(op) || {}).title || '这门课';
+      btn.disabled = true;
+      status.textContent = '正在下载「' + title + '」的语音……';
+      MT.speech.cacheClips(op, function (done, total) {
+        status.textContent = '正在下载「' + title + '」的语音 ' + done + ' / ' + total;
+      }).then(function (r) {
+        status.textContent = r.failed ? '下载完成，有 ' + r.failed + ' 段没成功，联网后再点一次即可补全。' : '「' + title + '」的语音已存好，断网也能听。';
+      }, function (e) {
+        status.textContent = e && e.message ? e.message : '下载失败，请检查网络后再试。';
+      }).then(function () { btn.disabled = false; });
+    });
+  }
+
   function bindSettings() {
+    bindVoiceCache();
     var transferStatus = document.getElementById('progress-transfer-status');
     var progressFile = document.getElementById('progress-file');
     document.getElementById('btn-export-progress').addEventListener('click', function () {
@@ -255,7 +328,7 @@
         document.body.appendChild(link);
         link.click();
         link.remove();
-        transferStatus.textContent = '备份已准备下载，请保留好 JSON 文件。';
+        transferStatus.textContent = '进度文件已保存到下载位置，把它发到新设备后点「读取进度文件」。';
       } catch (e) {
         transferStatus.textContent = '导出失败，请换一个支持文件下载的浏览器。';
       }
@@ -370,6 +443,9 @@
     });
     document.getElementById('btn-continue').addEventListener('click', function () {
       openRoute(MT.navigation.parse(MT.progress.settings.lastLocation));
+    });
+    document.getElementById('wrong-banner').addEventListener('click', function (e) {
+      openRoute({ course: e.currentTarget.dataset.course, mode: 'wrong' });
     });
     document.getElementById('course-modes').addEventListener('click', function (e) {
       var btn = e.target.closest('[data-course-mode]');
