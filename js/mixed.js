@@ -203,7 +203,7 @@
         description: '从 20 以内起步，再挑战 100 以内。',
         lessonHTML: '<div class="topic-rule">只有加法和减法，从左往右依次计算。</div>' +
           '<p>先圈出最左边的两个数，把第一步的结果写回算式，再算下一步。</p>' +
-          '<div class="topic-example">16 − 6 ＋ 2<br>＝ 10 ＋ 2<br>＝ 12</div>' +
+          '<div class="topic-example"><mark class="topic-first-hl">15 − 7</mark> ＋ 4<br>＝ 8 ＋ 4<br>＝ 12</div>' +
           '<p>减法和加法同级。看到加号，也要先把左边的减法算完。</p>',
         example: question('addsub', 20, 'example', [16, 6, 2], ['-', '+', 0])
       },
@@ -212,8 +212,8 @@
         description: '用表内乘除法，练习从左往右计算。',
         lessonHTML: '<div class="topic-rule">只有乘法和除法，也从左往右依次计算。</div>' +
           '<p>乘法和除法同级，不能看到乘号就抢先算。</p>' +
-          '<div class="topic-example">24 ÷ 3 × 2<br>＝ 8 × 2<br>＝ 16</div>' +
-          '<p>这里先算 24 ÷ 3。把右边的 3 × 2 抢先算，运算顺序就变了。</p>',
+          '<div class="topic-example"><mark class="topic-first-hl">18 ÷ 3</mark> × 2<br>＝ 6 × 2<br>＝ 12</div>' +
+          '<p>这里先算 18 ÷ 3。把右边的 3 × 2 抢先算，运算顺序就变了。</p>',
         example: question('muldiv', 100, 'example', [24, 3, 2], ['/', '*', 0])
       },
       {
@@ -221,16 +221,16 @@
         description: '先找到乘除法，再完成加减法。',
         lessonHTML: '<div class="topic-rule">没有括号时，先算乘除，再算加减。</div>' +
           '<p>先观察整道算式。乘除法即使在右边，也要先算。</p>' +
-          '<div class="topic-example">6 ＋ 3 × 4<br>＝ 6 ＋ 12<br>＝ 18</div>' +
-          '<p>先算 3 × 4，再把 12 写回原位；第一步没算到的 6 和加号要保留。</p>',
+          '<div class="topic-example">5 ＋ <mark class="topic-first-hl">4 × 3</mark><br>＝ 5 ＋ 12<br>＝ 17</div>' +
+          '<p>先算 4 × 3，再把 12 写回原位；第一步没算到的 5 和加号要保留。</p>',
         example: question('priority', 20, 'example', [6, 3, 4], ['+', '*', 1])
       },
       {
         id: 'brackets', title: '小括号优先',
         description: '先算括号里面，理解括号怎样改变顺序。',
         lessonHTML: '<div class="topic-rule">有小括号时，先算括号里，再算括号外。</div>' +
-          '<div class="topic-example">（6 ＋ 3） × 4<br>＝ 9 × 4<br>＝ 36</div>' +
-          '<p>括号把 6 ＋ 3 圈成一组，要先合成 9。和没有括号的 6 ＋ 3 × 4 ＝ 18 比一比，顺序改变，答案也会改变。</p>' +
+          '<div class="topic-example"><mark class="topic-first-hl">（5 ＋ 4）</mark> × 3<br>＝ 9 × 3<br>＝ 27</div>' +
+          '<p>括号把 5 ＋ 4 圈成一组，要先合成 9。和没有括号的 5 ＋ 4 × 3 ＝ 17 比一比，顺序改变，答案也会改变。</p>' +
           '<p>括号在右边也要先算。例如 12 −（3 ＋ 2），先算 3 ＋ 2，再算 12 − 5。</p>',
         example: question('brackets', 100, 'example', [6, 3, 4], ['+', '*', 0, 'left'])
       }

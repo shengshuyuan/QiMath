@@ -7,23 +7,75 @@
 (function (MT) {
   'use strict';
 
+  function topicWrongSkills(t) {
+    var map = {};
+    if (!t || !t.wrong) return map;
+    Object.keys(t.wrong).forEach(function (key) {
+      var w = t.wrong[key];
+      if (w && w.skill) map[w.skill] = true;
+    });
+    return map;
+  }
+
   function courseStats(c) {
-    var p = MT.progress, done = 0, total = 0, wrong = 0;
+    var p = MT.progress, done = 0, mastered = 0, total = 0, wrong = 0;
     if (!c || !p) return null;
     if (c.topic === 'basic') {
       var op = MT.op && MT.op.get(c.id);
       if (!op) return null;
       var bag = op.bag(p), levels = bag.levels || {};
       Object.keys(levels).forEach(function (k) { total++; if (levels[k] && levels[k].passed) done++; });
+      mastered = done;
       wrong = Object.keys(bag.wrong || {}).length;
     } else {
       var model = MT[c.id], t = p.topics && p.topics[c.id];
       if (!model || !model.skills) return null;
+      var wrongBySkill = topicWrongSkills(t);
       total = model.skills.length;
-      model.skills.forEach(function (s) { if (t && t.skills[s.id] && t.skills[s.id].clean > 0) done++; });
+      model.skills.forEach(function (s) {
+        var clean = t && t.skills && t.skills[s.id] ? t.skills[s.id].clean : 0;
+        if (clean > 0) done++;
+        if (clean >= (s.practiceCount || 6) && !wrongBySkill[s.id]) mastered++;
+      });
       wrong = t ? Object.keys(t.wrong || {}).length : 0;
     }
-    return { done: done, total: total, wrong: wrong, started: done > 0 || wrong > 0 };
+    return { done: done, mastered: mastered, total: total, wrong: wrong, started: done > 0 || wrong > 0 };
+  }
+
+  function parseDay(day) {
+    var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(day || ''));
+    return m ? new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])) : null;
+  }
+
+  function activityStats(progress) {
+    var days = progress && progress.stats && Array.isArray(progress.stats.activeDays)
+      ? progress.stats.activeDays.slice().sort()
+      : [];
+    if (!days.length) return { totalDays: 0, recent7Days: 0, streakDays: 0 };
+    var now = new Date();
+    var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    var recent7 = 0;
+    var parsed = [];
+    days.forEach(function (d) {
+      var dt = parseDay(d);
+      if (!dt) return;
+      parsed.push(dt);
+      var diff = Math.round((today - dt) / 86400000);
+      if (diff >= 0 && diff < 7) recent7++;
+    });
+    var streak = 0;
+    if (parsed.length) {
+      var latest = parsed[parsed.length - 1];
+      var gap = Math.round((today - latest) / 86400000);
+      if (gap <= 1) {
+        streak = 1;
+        for (var i = parsed.length - 2; i >= 0; i--) {
+          if (Math.round((parsed[i + 1] - parsed[i]) / 86400000) === 1) streak++;
+          else break;
+        }
+      }
+    }
+    return { totalDays: parsed.length, recent7Days: recent7, streakDays: streak };
   }
 
   function nextTopicSkill(c) {
@@ -38,12 +90,15 @@
 
   // 优先级：错题最多 → 已开始未完成 → 还没打开过的课 → 全部完成就随意练一练。
   function recommend(stats) {
-    var topWrong = null, incomplete = null, fresh = null, any = null;
+    var topWrong = null, totalWrong = 0, incomplete = null, fresh = null, any = null;
     (stats || []).forEach(function (item) {
       if (!item || !item.c || !item.st) return;
       var c = item.c, st = item.st;
       if (!any) any = item;
-      if (st.wrong > 0 && (!topWrong || st.wrong > topWrong.st.wrong)) topWrong = item;
+      if (st.wrong > 0) {
+        totalWrong += st.wrong;
+        if (!topWrong || st.wrong > topWrong.st.wrong) topWrong = item;
+      }
       if (st.started && st.done < st.total) {
         var left = st.total - st.done;
         if (!incomplete || left > (incomplete.st.total - incomplete.st.done)) incomplete = item;
@@ -55,8 +110,12 @@
       return {
         course: topWrong.c.id,
         mode: 'wrong',
+        totalWrong: totalWrong,
+        courseWrong: topWrong.st.wrong,
         title: '今天先复习错题',
-        detail: '「' + topWrong.c.title + '」有 ' + topWrong.st.wrong + ' 道错题，连续答对两次就会消掉。',
+        detail: totalWrong > topWrong.st.wrong
+          ? '共有 ' + totalWrong + ' 道错题待复习，先从「' + topWrong.c.title + '」的 ' + topWrong.st.wrong + ' 道开始，连续答对两次就会消掉。'
+          : '「' + topWrong.c.title + '」有 ' + topWrong.st.wrong + ' 道错题，连续答对两次就会消掉。',
         cta: '去复习 · ' + topWrong.c.title
       };
     }
@@ -112,7 +171,7 @@
   }
 
   function parentSummary(stats) {
-    var started = 0, finished = 0, wrongTotal = 0, weakest = null, lines = [];
+    var started = 0, finished = 0, wrongTotal = 0, weakest = null, lines = [], courses = [];
     (stats || []).forEach(function (item) {
       if (!item || !item.c || !item.st) return;
       var st = item.st;
@@ -123,6 +182,16 @@
       if (st.started) {
         var unit = item.c.topic === 'basic' ? '关' : '个知识点';
         lines.push(item.c.title + '：' + st.done + '/' + st.total + ' ' + unit + (st.wrong ? '，错题 ' + st.wrong : ''));
+        courses.push({
+          id: item.c.id,
+          title: item.c.title,
+          topic: item.c.topic,
+          done: st.done,
+          mastered: st.mastered || 0,
+          total: st.total,
+          wrong: st.wrong || 0,
+          unit: unit
+        });
       }
     });
     var tip = !started
@@ -138,12 +207,15 @@
       wrongTotal: wrongTotal,
       weakest: weakest ? weakest.c.title : '',
       lines: lines,
+      courses: courses,
+      activity: activityStats(MT.progress),
       tip: tip
     };
   }
 
   MT.insights = {
     courseStats: courseStats,
+    activityStats: activityStats,
     recommend: recommend,
     parentSummary: parentSummary
   };

@@ -57,6 +57,10 @@
 
   function levelRow(n) {
     var out = [];
+    if (n === 1) {
+      for (var b = 1; b <= 9; b++) out.push(key(1, b));
+      return out;
+    }
     for (var a = 1; a <= n; a++) out.push(key(a, n));
     return out;
   }

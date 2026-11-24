@@ -38,12 +38,41 @@
     return CN[t] + '十' + (o ? CN[o] : '');
   }
 
+  function esc(value) {
+    return String(value === undefined ? '' : value).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  function todayKey() {
+    var d = new Date();
+    var m = d.getMonth() + 1;
+    var day = d.getDate();
+    return d.getFullYear() + '-' + (m < 10 ? '0' : '') + m + '-' + (day < 10 ? '0' : '') + day;
+  }
+
+  function recordActiveDay(progress) {
+    if (!progress) return;
+    if (!progress.stats || typeof progress.stats !== 'object') progress.stats = {};
+    var list = Array.isArray(progress.stats.activeDays) ? progress.stats.activeDays : [];
+    var today = todayKey();
+    if (list.indexOf(today) === -1) {
+      list.push(today);
+      list.sort();
+      if (list.length > 90) list = list.slice(list.length - 90);
+    }
+    progress.stats.activeDays = list;
+  }
+
   MT.core = {
     CN: CN,
     nums: [1, 2, 3, 4, 5, 6, 7, 8, 9],
     clamp: clamp,
     shuffle: shuffle,
-    readNumber: readNumber
+    readNumber: readNumber,
+    esc: esc,
+    todayKey: todayKey,
+    recordActiveDay: recordActiveDay
   };
 
   MT.bus = bus;

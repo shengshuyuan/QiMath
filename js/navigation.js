@@ -3,16 +3,16 @@
 
   // 课程目录与地址共用一份定义，新增课程不再增加一排全局按钮。
   var courses = [
-    { id: 'add', topic: 'basic', title: '加法', domain: '数与运算', mark: '＋', description: '20 以内，看图理解合起来有多少' },
-    { id: 'sub', topic: 'basic', title: '减法', domain: '数与运算', mark: '−', description: '20 以内，看图理解去掉与相差' },
-    { id: 'mul', topic: 'basic', title: '乘法', domain: '数与运算', mark: '×', description: '用分组与阵列理解九九乘法' },
-    { id: 'div', topic: 'basic', title: '除法', domain: '数与运算', mark: '÷', description: '平均分与包含，练习表内除法' },
-    { id: 'mixed', topic: 'mixed', title: '混合运算', domain: '数与运算', mark: '( )', description: '从左往右、先乘除后加减与小括号' },
-    { id: 'length', topic: 'length', title: '长度单位', domain: '量与测量', mark: 'm / cm', description: '米厘米、读尺、线段和计算' },
-    { id: 'angle', topic: 'angle', title: '角的初步认识', domain: '量与测量', mark: '∠', description: '找顶点、比开口，认识三种角' },
-    { id: 'time', topic: 'time', title: '认识时间', domain: '量与测量', mark: '◷', description: '认钟面、读时分、换算经过时间' },
-    { id: 'mass', topic: 'mass', title: '克和千克', domain: '量与测量', mark: 'g / kg', description: '克与千克、读秤、换算和比较' },
-    { id: 'money', topic: 'money', title: '认识人民币', domain: '量与测量', mark: '¥', description: '面值换算、计算和购物找零' }
+    { id: 'add', topic: 'basic', grade: '一年级', title: '加法', domain: '数与运算', mark: '＋', description: '20 以内，看图理解合起来有多少' },
+    { id: 'sub', topic: 'basic', grade: '一年级', title: '减法', domain: '数与运算', mark: '−', description: '20 以内，看图理解去掉与相差' },
+    { id: 'mul', topic: 'basic', grade: '二年级', title: '乘法', domain: '数与运算', mark: '×', description: '用分组与阵列理解九九乘法' },
+    { id: 'div', topic: 'basic', grade: '二年级', title: '除法', domain: '数与运算', mark: '÷', description: '平均分与包含，练习表内除法' },
+    { id: 'mixed', topic: 'mixed', grade: '二年级', title: '混合运算', domain: '数与运算', mark: '( )', description: '从左往右、先乘除后加减与小括号' },
+    { id: 'length', topic: 'length', grade: '二年级', title: '长度单位', domain: '量与测量', mark: 'm / cm', description: '米厘米、读尺、线段和计算' },
+    { id: 'angle', topic: 'angle', grade: '二年级', title: '角的初步认识', domain: '量与测量', mark: '∠', description: '找顶点、比开口，认识三种角' },
+    { id: 'time', topic: 'time', grade: '二年级', title: '认识时间', domain: '量与测量', mark: '◷', description: '认钟面、读时分、换算经过时间' },
+    { id: 'mass', topic: 'mass', grade: '二年级', title: '克和千克', domain: '量与测量', mark: 'g / kg', description: '克与千克、读秤、换算和比较' },
+    { id: 'money', topic: 'money', grade: '一年级', title: '认识人民币', domain: '量与测量', mark: '¥', description: '面值换算、计算和购物找零' }
   ];
 
   function course(id) { return courses.filter(function (c) { return c.id === id; })[0] || null; }

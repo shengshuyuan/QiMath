@@ -94,9 +94,11 @@
 
   MT.confetti = {
     burst: function (x, y) {
-      // 检查减弱动画设置
+      // 检查减弱动画设置与系统偏好
       var st = MT.progress && MT.progress.settings;
       if (st && st.reduceMotion === 'on') return;
+      var mq = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)');
+      if (mq && mq.matches) return;
       spawn(x, y, 65);
     }
   };

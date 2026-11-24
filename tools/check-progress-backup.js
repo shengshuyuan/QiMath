@@ -25,10 +25,12 @@ vm.runInContext(fs.readFileSync(path.join(__dirname, '../js/storage.js'), 'utf8'
 var MT = context.MT, key = 'mt99.progress.v1';
 MT.progress = MT.storage.defaults();
 MT.progress.mastered['2x3'] = true;
-MT.progress.divWrong['12/3'] = { wrongCount: 2, rightStreak: 1, lastAt: 10, fromLevel: 3 };
+MT.progress.divMastered['24d6'] = true;
+MT.progress.divWrong['12d3'] = { wrongCount: 2, rightStreak: 1, lastAt: 10, fromLevel: 3 };
 MT.progress.addLevels[2].passed = true;
 MT.progress.subMastered['9-3'] = true;
 MT.progress.stats.totalCorrect = 21;
+MT.progress.stats.activeDays = ['2026-11-23', '2026-11-24'];
 MT.progress.badges.push('star_starter');
 ['mixed', 'length', 'money', 'angle', 'time', 'mass'].forEach(function (id) {
   MT.progress.topics[id] = {
@@ -36,7 +38,7 @@ MT.progress.badges.push('star_starter');
     wrong: {}, range: 100, lastSkill: 'convert'
   };
   MT.progress.topics[id].wrong[id + ':convert:100:3'] = {
-    skill: 'convert', seed: 3, range: 100, wrongCount: 2, cleanStreak: 1, errorKind: 'calculation'
+    skill: 'convert', seed: 3, range: 100, wrongCount: 2, cleanStreak: 1, errorKind: id === 'mixed' ? 'help' : 'calculation'
   };
 });
 MT.progress.topics.money.games = { combo: { rounds: 2, bestStars: 5 } };
@@ -54,6 +56,11 @@ assert.equal(JSON.stringify(MT.storage.load()), original, 'import survives reloa
 assert.equal(JSON.parse(values[key + '.before-import']).progress.stats.totalCorrect, 3, 'previous progress is retained independently');
 assert.equal(JSON.parse(previous).stats.totalCorrect, 3);
 
+// 兼容旧版不含 activeDays 的备份
+var legacyBackup = JSON.parse(backup);
+delete legacyBackup.progress.stats.activeDays;
+assert.ok(Array.isArray(MT.storage.readBackup(JSON.stringify(legacyBackup)).stats.activeDays));
+
 function rejected(change) {
   var bad = JSON.parse(backup);
   change(bad);
@@ -67,7 +74,7 @@ rejected(function (b) { b.progress = {}; });
 rejected(function (b) { b.progress.stats.totalCorrect = -1; });
 rejected(function (b) { b.progress.settings.speechOn = 'yes'; });
 rejected(function (b) { b.progress.mastered['<img src=x>'] = true; });
-rejected(function (b) { b.progress.divWrong['12/3'].wrongCount = '2'; });
+rejected(function (b) { b.progress.divWrong['12d3'].wrongCount = '2'; });
 rejected(function (b) { b.progress.levels[1].bestStars = 99; });
 rejected(function (b) { b.progress.topics.money.games.combo.rounds = null; });
 rejected(function (b) { b.progress.topics.money.wrong['money:convert:100:3'].seed = -1; });

@@ -36,23 +36,40 @@
   }
   function say(text) { MT.speech.play(text, 'calc'); }
 
-  // 朗读讲解只读正文段落，跳过图里的刻度数字和图注，否则会听到一串「0 1 2 3」。
+  // 朗读讲解只读正文段落，跳过图里的刻度数字、图注和互动教具，否则会听到一串零散数字或按钮文案。
   function lessonText() {
     var lesson = work.querySelector('.topic-lesson');
     if (!lesson) return '';
     var copy = lesson.cloneNode(true);
-    copy.querySelectorAll('figure, svg, figcaption').forEach(function (node) { node.remove(); });
+    copy.querySelectorAll('figure, svg, figcaption, .topic-widget').forEach(function (node) { node.remove(); });
     return copy.textContent.replace(/\s+/g, ' ').trim();
+  }
+
+  function topicWrongSkills(b) {
+    var map = {};
+    if (!b || !b.wrong) return map;
+    Object.keys(b.wrong).forEach(function (key) {
+      var w = b.wrong[key];
+      if (w && w.skill) map[w.skill] = true;
+    });
+    return map;
   }
 
   function syncNavigation() {
     var b = bag();
+    var wrongBySkill = topicWrongSkills(b);
     panel.querySelectorAll('[data-skill]').forEach(function (btn) {
       var on = btn.dataset.skill === skill.id;
-      btn.classList.toggle('is-on', on);
-      btn.setAttribute('aria-pressed', String(on));
+      var def = skillById(btn.dataset.skill);
       var s = b.skills[btn.dataset.skill];
-      btn.querySelector('small').textContent = s ? '独立答对 ' + s.clean + ' 题' : '还没开始练习';
+      var clean = s ? s.clean : 0;
+      var mastered = def && clean >= (def.practiceCount || 6) && !wrongBySkill[btn.dataset.skill];
+      btn.classList.toggle('is-on', on);
+      btn.classList.toggle('is-mastered', !!mastered);
+      btn.setAttribute('aria-pressed', String(on));
+      btn.querySelector('small').textContent = mastered
+        ? '✓ 已熟练 · 独立答对 ' + clean + ' 题'
+        : s ? '独立答对 ' + clean + ' 题' : '还没开始练习';
     });
     panel.querySelectorAll('[data-topic-range]').forEach(function (btn) {
       var on = Number(btn.dataset.topicRange) === b.range;
@@ -151,15 +168,30 @@
     syncNavigation();
   }
 
+  function highlightFirstHTML(expr, firstPart) {
+    if (!expr || !firstPart) return esc(expr);
+    var idx = expr.indexOf(firstPart);
+    if (idx === -1) return esc(expr);
+    var open = idx > 0 && expr.charAt(idx - 1) === '（';
+    var close = idx + firstPart.length < expr.length && expr.charAt(idx + firstPart.length) === '）';
+    var start = open ? idx - 1 : idx;
+    var end = close ? idx + firstPart.length + 1 : idx + firstPart.length;
+    return esc(expr.slice(0, start)) + '<mark class="topic-first-hl">' + esc(expr.slice(start, end)) + '</mark>' + esc(expr.slice(end));
+  }
+
   function renderLearn() {
     var example = skill.example;
+    var demoExpr = example ? (demoStep > 0 ? highlightFirstHTML(example.expression, example.firstChoices && example.firstChoices[example.correctFirst]) : esc(example.expression)) : '';
     work.innerHTML = '<article class="topic-card"><div class="topic-card-head"><div><h3 tabindex="-1">' + esc(skill.title) + '</h3><p>' + esc(skill.description) + '</p></div>' +
-      button('read-lesson', '🔊 听方法', 'btn-soft') + '</div><div class="topic-lesson">' + skill.lessonHTML + '</div>' +
-      (example ? '<div class="topic-demo"><p class="topic-eyebrow">跟着例题走两步</p><div class="topic-expression">' + esc(example.expression) + '</div>' +
+      button('read-lesson', '🔊 听方法', 'btn-soft') + '</div><div class="topic-lesson">' + skill.lessonHTML + '</div><div id="topic-widget-slot"></div>' +
+      (example ? '<div class="topic-demo"><p class="topic-eyebrow">跟着例题走两步</p><div class="topic-expression">' + demoExpr + '</div>' +
         '<div class="topic-demo-steps" aria-live="polite">' + example.steps.slice(0, demoStep).map(function (s, i) {
           return '<p><span class="topic-step-label">第 ' + (i + 1) + ' 步</span>' + esc(s) + '</p>';
         }).join('') + '</div>' + (demoStep < example.steps.length ? button('demo-next', demoStep ? '看第二步' : '先看第一步', 'btn-soft') : '<p class="topic-rule">' + esc(example.rule) + '</p>') + '</div>' : '') +
       '<div class="topic-actions">' + button('start', '现在自己试一试 →', 'btn-main') + '</div></article>';
+    if (MT.topicWidgets && MT.topicWidgets.mount) {
+      MT.topicWidgets.mount(document.getElementById('topic-widget-slot'), model.id, skill.id);
+    }
   }
 
   function makeItem(skillId, range, seed) {
@@ -217,8 +249,10 @@
   function currentItem() { return session.questions[session.index]; }
 
   function keyHTML() {
-    return '<div class="topic-keypad" role="group" aria-label="数字键盘">' + [1, 2, 3, 4, 5, 6, 7, 8, 9, '清空', 0, '退格'].map(function (key) {
-      return button('key', key, 'btn-soft', ' data-key="' + key + '" aria-label="' + (key === '退格' ? '删除最后一位' : key) + '"');
+    return '<div class="topic-keypad" role="group" aria-label="数字键盘">' + [1, 2, 3, 4, 5, 6, 7, 8, 9, '退格', 0, '确定'].map(function (key) {
+      var cls = key === '确定' ? 'btn-main' : 'btn-soft';
+      var aria = key === '退格' ? '删除最后一位' : key === '确定' ? '确认答案' : key;
+      return button('key', key, cls, ' data-key="' + key + '" aria-label="' + aria + '"');
     }).join('') + '</div>';
   }
 
@@ -230,10 +264,11 @@
     var phaseLabel = step ? (order ? '第 1 步 · 判断先算哪一部分' : session.phase === 'intermediate' ? '第 2 步 · 算出中间结果' : '第 3 步 · 算出最后结果') : '想一想，再作答';
     var choices = order ? q.firstChoices : q.choices;
     var numeric = !order && q.kind !== 'choice' && !isDone;
+    var exprHTML = step ? ((session.phase === 'intermediate' ? highlightFirstHTML(q.expression, q.firstChoices[q.correctFirst]) : esc(q.expression)) + (isDone ? ' = ' + q.answer : '')) : '';
     work.innerHTML = '<article class="topic-card topic-question"><div class="topic-round-meta"><span>' + esc(skillById(item.skill).title) + '</span><span>第 ' + (session.index + 1) + ' / ' + session.questions.length + ' 题</span></div>' +
       '<progress class="topic-progress" aria-label="本轮练习进度" max="' + session.questions.length + '" value="' + session.index + '"></progress>' +
       '<h3 tabindex="-1">' + esc(isDone ? '这道题完成啦' : (step ? phaseLabel : q.prompt)) + '</h3>' +
-      (step ? '<p class="topic-expression">' + esc(q.expression) + (isDone ? ' = ' + q.answer : '') + '</p>' : '') +
+      (step ? '<p class="topic-expression">' + exprHTML + '</p>' : '') +
       (q.visualHTML || '') +
       (step && session.phase === 'intermediate' ? '<p class="topic-prompt">先算：<b>' + esc(q.firstChoices[q.correctFirst]) + ' = ?</b></p>' : '') +
       (step && session.phase === 'answer' ? '<p class="topic-prompt">中间结果是 ' + q.intermediate + '，现在算：<b>' + esc(q.reduced) + ' = ?</b></p>' : '') +
@@ -297,6 +332,7 @@
     if (clean && w) session.feedback += b.wrong[q.id] ? ' 已连续独立答对 1 / 2 次，再独立答对一次就能移出错题本。' : ' 已连续独立答对 2 次，这题已移出错题本！';
     session.good = true;
     MT.sound.play('right');
+    if (MT.core && MT.core.recordActiveDay) MT.core.recordActiveDay(MT.progress);
     if (clean && MT.badges) MT.badges.checkTopic(model.id);
     save();
     syncNavigation();
@@ -376,7 +412,12 @@
   function renderResult() {
     session.done = true;
     syncNavigation();
+    var allClean = session.questions.length > 0 && session.clean === session.questions.length;
     work.innerHTML = '<article class="topic-card topic-result"><p class="topic-eyebrow">本轮练习结束</p><h3 tabindex="-1">独立完成 ' + session.clean + ' / ' + session.correct + ' 题</h3><p>本轮计划 ' + session.questions.length + ' 题，已完成 ' + session.correct + ' 题。看过提示或答错的题，会留在错题本中帮你复习。</p><p>同一道错题连续两次独立答对，就会移出错题本。</p><div class="topic-actions">' + button('start', '再练 ' + roundSize() + ' 题', 'btn-main') + button('show-wrong', '去错题本', 'btn-soft') + button('learn', '回顾方法', 'btn-soft') + (mode === 'practice' && session.correct === session.questions.length && nextSkill() ? button('next-skill', '学习下一个知识点 →', 'btn-soft') : '') + '</div></article>';
+    if (allClean) {
+      MT.sound.play('win');
+      if (MT.confetti) MT.confetti.burst();
+    }
     if (MT.bus) MT.bus.emit('topic:end');
     focus();
   }
@@ -458,9 +499,10 @@
         focus(session.revealed ? undefined : '[data-topic-action="hint"]');
       }
       if (action === 'key') {
+        var key = btn.dataset.key;
+        if (key === '确定') { submit(); return; }
         var input = document.getElementById('topic-answer');
         if (!input) return;
-        var key = btn.dataset.key;
         var cursorStart = input.selectionStart, cursorEnd = input.selectionEnd;
         if (cursorStart === null || cursorStart === undefined) cursorStart = cursorEnd = input.value.length;
         if (key === '清空') { input.value = ''; cursorStart = 0; }

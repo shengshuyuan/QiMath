@@ -13,14 +13,12 @@ body { overflow-x: clip; }
 .creator-intro h3 { margin: 4px 0 8px; font-size: 16px; }
 .creator-intro > p:not(.topic-eyebrow) { max-width: 68ch; color: var(--ink-2); font-size: 13px; line-height: 1.7; }
 .creator-intro > p + p { margin-top: 8px; }
-.today-recommend { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 64px; margin-bottom: 16px; padding: 14px 16px; text-align: left; color: var(--ink); background: linear-gradient(135deg, var(--brand-l), #fff); border: 1px solid var(--brand); border-radius: var(--r-md); }
+.today-recommend { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 64px; margin-bottom: 12px; padding: 14px 16px; text-align: left; color: var(--ink); background: linear-gradient(135deg, var(--brand-l), #fff); border: 1px solid var(--brand); border-radius: var(--r-md); }
 .today-recommend-icon { font-size: 24px; line-height: 1; }
 .today-recommend-copy { min-width: 0; flex: 1; }
 .today-recommend-copy b { display: block; font-size: 16px; color: var(--brand-d); }
 .today-recommend-copy small { display: block; margin-top: 4px; color: var(--ink-2); font-size: 13px; line-height: 1.5; }
 .today-recommend-cta { flex-shrink: 0; color: var(--brand-d); font-size: 13px; font-weight: 700; white-space: nowrap; }
-.continue-course { display: block; width: 100%; min-height: 54px; margin-bottom: 16px; padding: 14px 18px; text-align: left; color: var(--brand-d); background: var(--brand-l); border: 1px solid var(--line-2); border-radius: var(--r-md); font-weight: 600; }
-.today-recommend[hidden] + .continue-course { margin-top: 0; }
 .catalog-group { margin-top: 28px; }
 .catalog-group-head { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--line); }
 .catalog-group-head h3 { font-size: 18px; }
@@ -35,15 +33,24 @@ body { overflow-x: clip; }
 .course-card[data-course="length"] .course-mark,
 .course-card[data-course="mass"] .course-mark { font-size: 11px; font-weight: 700; letter-spacing: -0.03em; white-space: nowrap; }
 .course-card-copy { min-width: 0; }
-.course-card b { display: block; font-size: 19px; margin-bottom: 4px; }
+.course-card-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 4px; }
+.course-card b { display: inline-block; font-size: 19px; margin-bottom: 0; }
+.course-grade { display: inline-block; padding: 1px 7px; border-radius: 999px; font-size: 11px; font-weight: 600; color: var(--brand-d); background: var(--brand-l); line-height: 1.5; white-space: nowrap; }
 .course-card small { display: block; color: var(--ink-2); font-size: 13px; line-height: 1.55; }
 .course-progress { display: block; margin-top: 8px; }
 .course-progress-bar { display: block; height: 5px; border-radius: 3px; background: var(--muted); overflow: hidden; }
 .course-progress-bar i { display: block; height: 100%; border-radius: 3px; background: var(--brand); transition: width .3s ease; }
 .course-progress-text { display: block; margin-top: 5px; color: var(--ink-2); font-size: 12px; line-height: 1.5; }
 .course-arrow { color: var(--ink-3); margin-left: auto; font-size: 18px; line-height: 1; }
-.wrong-banner { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 54px; margin: -14px 0 28px; padding: 12px 16px; text-align: left; background: var(--warn-l); border: 1px solid var(--warn); border-radius: var(--r-md); }
-.continue-course[hidden] + .wrong-banner { margin-top: 0; }
+.grade-filter { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 4px; }
+.grade-pill { min-height: 44px; padding: 0 14px; border: 1.5px solid var(--line-2); border-radius: 999px; background: var(--card); color: var(--ink-2); font-size: 14px; font-weight: 600; transition: background .15s, border-color .15s, color .15s; }
+.grade-pill.is-on { background: var(--brand); border-color: var(--brand-d); color: #fff; }
+.continue-course { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; min-height: 48px; margin-bottom: 12px; padding: 10px 16px; text-align: left; color: var(--brand-d); background: var(--card); border: 1px solid var(--line-2); border-radius: var(--r-md); font-size: 14px; font-weight: 600; }
+.wrong-banner { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 54px; margin: 0 0 16px; padding: 12px 16px; text-align: left; background: var(--warn-l); border: 1px solid var(--warn); border-radius: var(--r-md); }
+.today-recommend { margin-bottom: 12px; }
+body.is-practicing .basic-tools { display: none; }
+.nav-svg { width: 18px; height: 18px; display: block; flex-shrink: 0; }
+@media (max-width: 480px) { .act-btn { padding: 0 10px; } }
 .wrong-banner-icon { font-size: 22px; line-height: 1; }
 .wrong-banner-copy { min-width: 0; }
 .wrong-banner-copy b { display: block; font-size: 15px; }

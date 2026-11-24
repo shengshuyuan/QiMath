@@ -224,6 +224,7 @@
     var b = dom.btnHelp;
     if (!b) return;
     var answeredRight = S.locked && dom.qCard && dom.qCard.classList.contains('is-right');
+    if (dom.btnRead) dom.btnRead.disabled = !S.active || S.failed;
     if (!S.active || S.failed || answeredRight) {
       b.disabled = true;
       b.textContent = '求助解答';
@@ -241,6 +242,30 @@
     }
     b.disabled = false;
     b.textContent = '求助解答';
+  }
+
+  function questionSpeech(k) {
+    var m = sub();
+    if (!m) return '';
+    if (m.id === 'mul' && m.parse) {
+      var f = m.parse(k);
+      return MT.core.readNumber(f.a) + '乘' + MT.core.readNumber(f.b) + '等于多少';
+    }
+    if (m.id === 'div' && m.parse) {
+      var d = m.parse(k);
+      return MT.core.readNumber(d.n) + '除以' + MT.core.readNumber(d.divisor) + '等于多少';
+    }
+    if (m.id === 'add' && m.parse) {
+      var p = m.parse(k);
+      var r = function (n) { return n === 10 ? '十' : MT.core.readNumber(n); };
+      return r(p.a) + '加' + r(p.b) + '等于多少';
+    }
+    if (m.id === 'sub' && m.parse) {
+      var s = m.parse(k);
+      var r2 = function (n) { return n === 10 ? '十' : MT.core.readNumber(n); };
+      return r2(s.m) + '减' + r2(s.s) + '等于多少';
+    }
+    return '';
   }
 
   function renderInput() {
@@ -284,6 +309,7 @@
     dom.qFb.className = 'q-fb is-ok';
     dom.qFb.innerHTML = iconCheck() + '<span>' + word + '</span>';
     dom.qInput.className = 'q-input is-ok';
+    if (MT.core && MT.core.recordActiveDay) MT.core.recordActiveDay(MT.progress);
     MT.storage.save();
     MT.bus.emit('progress:change', { key: k });
 
@@ -322,6 +348,7 @@
     needPractice(k);
     S.misses++;
     S.streak = 0;
+    if (MT.core && MT.core.recordActiveDay) MT.core.recordActiveDay(MT.progress);
     MT.storage.save();
     MT.bus.emit('progress:change', { key: k });
 
@@ -429,6 +456,9 @@
   function finish() {
     clearTimer();
     S.active = false;
+    if (typeof document !== 'undefined' && document.body && document.body.classList) {
+      document.body.classList.remove('is-practicing');
+    }
     MT.bus.emit('quiz:end', {});
     dom.quizPlay.hidden = true;
     var box = dom.quizResult;
@@ -552,6 +582,8 @@
     dom.levelsBox.hidden = hidden;
     var note = document.getElementById('level-note');
     if (note) note.hidden = hidden;
+    var head = document.getElementById('level-head');
+    if (head) head.hidden = hidden;
   }
 
   function resetRound() {
@@ -563,6 +595,9 @@
     S.failed = false;
     S.streak = 0;
     S.active = true;
+    if (typeof document !== 'undefined' && document.body && document.body.classList) {
+      document.body.classList.add('is-practicing');
+    }
     dom.quizResult.hidden = true;
     dom.quizPlay.hidden = false;
   }
@@ -579,12 +614,12 @@
     showQuestion();
   }
 
-  function startWrong() {
+  function startWrong(onlyKey) {
     var wrMap = bags().wrong;
-    var keys = Object.keys(wrMap);
+    var keys = onlyKey ? (wrMap[onlyKey] ? [onlyKey] : []) : Object.keys(wrMap);
     if (!keys.length) return;
     S.wrongMode = true;
-    S.wrongBefore = keys.length;
+    S.wrongBefore = Object.keys(wrMap).length;
     keys.sort(function (a, b) {
       return (wrMap[b].wrongCount || 0) - (wrMap[a].wrongCount || 0);
     });
@@ -629,12 +664,16 @@
     list.innerHTML = '';
     for (var i = 0; i < keys.length; i++) {
       (function (k) {
+        var row = document.createElement('div');
+        row.className = 'wrong-row';
         var b = document.createElement('button');
         b.type = 'button';
         b.className = 'wrong-item';
         var item = sub().fact(k);
+        var w = wrMap[k];
+        var streak = w.rightStreak || 0;
         b.innerHTML = '<span class="wi-eq">' + item.listHTML + '</span>' +
-          '<span class="wi-count">答错或求助 ' + wrMap[k].wrongCount + ' 次</span>';
+          '<span class="wi-count">错 ' + w.wrongCount + ' 次 · 已连对 ' + streak + '/2 次</span>';
         b.addEventListener('click', function () {
           var box = dom.wrongDetail;
           box.hidden = false;
@@ -675,7 +714,18 @@
           var heard = sub().fact(k);
           MT.speech.play(heard.speak, heard.scene);
         });
-        list.appendChild(b);
+        var practiceOne = document.createElement('button');
+        practiceOne.type = 'button';
+        practiceOne.className = 'btn btn-soft wrong-review-btn';
+        practiceOne.textContent = '复习';
+        practiceOne.addEventListener('click', function () {
+          MT.speech.warmup();
+          MT.sound.play('click');
+          startWrong(k);
+        });
+        row.appendChild(b);
+        row.appendChild(practiceOne);
+        list.appendChild(row);
       })(keys[i]);
     }
     if (!keys.length) dom.wrongDetail.hidden = true;
@@ -685,8 +735,8 @@
 
   function buildKeypad() {
     var pad = dom.keypad;
-    var keys = ['7', '8', '9', '4', '5', '6', '1', '2', '3', 'del', '0', 'ok'];
-    var label = { del: '删除', ok: '确定' };
+    var keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'del', '0', 'ok'];
+    var label = { del: '退格', ok: '确定' };
     pad.innerHTML = '';
     for (var i = 0; i < keys.length; i++) {
       (function (k) {
@@ -802,6 +852,7 @@
       dom.qCount = document.getElementById('q-count');
       dom.qBudget = document.getElementById('q-budget');
       dom.btnHelp = document.getElementById('btn-quiz-help');
+      dom.btnRead = document.getElementById('btn-quiz-read');
       dom.qDots = document.getElementById('q-dots');
       dom.qAsk = document.getElementById('q-ask');
       dom.qTip = document.getElementById('q-tip');
@@ -840,6 +891,15 @@
         dom.btnHelp.addEventListener('click', function () {
           MT.sound.play('click');
           useHelp();
+        });
+      }
+
+      if (dom.btnRead) {
+        dom.btnRead.addEventListener('click', function () {
+          if (!S.active) return;
+          MT.speech.warmup();
+          var text = questionSpeech(S.round[S.idx]);
+          if (text) MT.speech.play(text, 'calc');
         });
       }
 
@@ -919,6 +979,9 @@
     stop: function () {
       clearTimer();
       S.active = false;
+      if (typeof document !== 'undefined' && document.body && document.body.classList) {
+        document.body.classList.remove('is-practicing');
+      }
       if (dom.quizPlay) dom.quizPlay.hidden = true;
       if (dom.quizResult) dom.quizResult.hidden = true;
     },

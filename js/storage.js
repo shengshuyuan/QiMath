@@ -76,7 +76,7 @@
         lastLocation: '',
         divStory: 'share'
       },
-      stats: { totalCorrect: 0, totalWrong: 0, firstSeenAt: Date.now(), lastSeenAt: Date.now() }
+      stats: { totalCorrect: 0, totalWrong: 0, firstSeenAt: Date.now(), lastSeenAt: Date.now(), activeDays: [] }
     };
   }
 
@@ -131,10 +131,19 @@
       return (b.wrongCount || 0) > (a.wrongCount || 0) ? b : a;
     });
     if (data.stats && typeof data.stats === 'object') {
-      Object.keys(d.stats).forEach(function (key) {
+      ['totalCorrect', 'totalWrong', 'firstSeenAt', 'lastSeenAt'].forEach(function (key) {
         var value = data.stats[key];
         if (typeof value === 'number' && Number.isFinite(value) && value >= 0) d.stats[key] = Math.floor(value);
       });
+      if (Array.isArray(data.stats.activeDays)) {
+        var seenDays = {};
+        d.stats.activeDays = data.stats.activeDays.filter(function (day) {
+          if (typeof day !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(day) || seenDays[day]) return false;
+          seenDays[day] = true;
+          return true;
+        }).sort();
+        if (d.stats.activeDays.length > 90) d.stats.activeDays = d.stats.activeDays.slice(d.stats.activeDays.length - 90);
+      }
     }
     if (data.settings) {
       for (var k in d.settings) {
@@ -240,8 +249,18 @@
       if (key === 'version') return;
       requireValid(Array.isArray(model[key]) ? Array.isArray(p[key]) : record(p[key]));
     });
-    numericRecord(p.stats, Object.keys(model.stats));
-    requireValid(Object.keys(model.stats).every(function (key) { return number(p.stats[key]); }));
+    var statNumKeys = ['totalCorrect', 'totalWrong', 'firstSeenAt', 'lastSeenAt'];
+    requireValid(record(p.stats));
+    Object.keys(p.stats).forEach(function (key) {
+      requireValid(statNumKeys.indexOf(key) !== -1 || key === 'activeDays');
+    });
+    statNumKeys.forEach(function (key) { requireValid(number(p.stats[key])); });
+    if (p.stats.activeDays !== undefined) {
+      requireValid(Array.isArray(p.stats.activeDays) && p.stats.activeDays.length <= 120);
+      p.stats.activeDays.forEach(function (day) {
+        requireValid(typeof day === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(day));
+      });
+    }
     Object.keys(p.settings).forEach(function (key) {
       requireValid(Object.prototype.hasOwnProperty.call(model.settings, key) && typeof p.settings[key] === typeof model.settings[key]);
       if (typeof p.settings[key] === 'string') requireValid(p.settings[key].length <= 200 && /^[a-zA-Z0-9_/#.\-]*$/.test(p.settings[key]));
@@ -252,7 +271,7 @@
       ['Mastered', 'NeedsPractice', 'Wrong'].forEach(function (name) {
         var map = p[field(name)];
         Object.keys(map).forEach(function (key) {
-          requireValid(/^\d{1,2}[x/+\-]\d{1,2}$/.test(key));
+          requireValid(/^\d{1,2}[xd/+\-]\d{1,2}$/.test(key));
           if (name === 'Wrong') {
             numericRecord(map[key], ['wrongCount', 'rightStreak', 'lastAt', 'fromLevel']);
             requireValid(number(map[key].wrongCount) && map[key].wrongCount >= 1);
@@ -280,7 +299,7 @@
         var wrong = topic.wrong[key];
         requireValid(/^[a-z0-9_:.-]+$/.test(key) && record(wrong) && typeof wrong.skill === 'string' && /^[a-z]+$/.test(wrong.skill));
         requireValid(number(wrong.seed) && wrong.seed <= 4294967295 && number(wrong.wrongCount) && number(wrong.cleanStreak));
-        requireValid((wrong.range === 20 || wrong.range === 100) && (wrong.errorKind === undefined || (typeof wrong.errorKind === 'string' && /^(answer|order|calculation|unit|reading)$/.test(wrong.errorKind))));
+        requireValid((wrong.range === 20 || wrong.range === 100) && (wrong.errorKind === undefined || (typeof wrong.errorKind === 'string' && /^(answer|order|calculation|unit|reading|help)$/.test(wrong.errorKind))));
       });
       if (topic.games !== undefined) {
         requireValid(id === 'money' && record(topic.games));

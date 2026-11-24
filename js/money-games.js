@@ -138,14 +138,66 @@
     return levels;
   }
 
+  function randInt(min, max) {
+    return min + Math.floor(Math.random() * (max - min + 1));
+  }
+
+  function createRandomComboLevels(range) {
+    var isAdv = range > 20;
+    var amt1 = isAdv ? randInt(11, 25) * 100 : randInt(4, 9) * 100;
+    var amt2 = isAdv ? randInt(6, 18) * 100 + 50 : randInt(2, 6) * 100 + 50;
+    var amt3 = isAdv ? randInt(4, 9) * 100 : randInt(2, 5) * 100;
+    var amt4 = isAdv ? randInt(22, 38) * 100 : randInt(6, 9) * 100 + randInt(2, 8) * 10;
+    var amt5 = isAdv ? randInt(41, 78) * 100 + 50 : randInt(8, 15) * 100 + randInt(1, 9) * 10;
+    return [
+      { targetCents: amt1, denoms: isAdv ? ['y10', 'y5', 'y1_p', 'y1_c', 'j5_c'] : ['y1_p', 'y1_c', 'j5_c', 'j1_c'], isAlt: false, title: '第 1 关 · 基础凑钱' },
+      { targetCents: amt2, denoms: isAdv ? ['y10', 'y5', 'y1_c', 'j5_c', 'j1_c'] : ['y5', 'y1_c', 'j5_c', 'j1_c'], isAlt: false, title: '第 2 关 · 元角搭配' },
+      { targetCents: amt3, denoms: ['y5', 'y1_c', 'j5_c', 'j1_c'], isAlt: true, title: '第 3 关 · 换一种付法' },
+      { targetCents: amt4, denoms: isAdv ? ['y20', 'y10', 'y5', 'y1_c', 'j5_c', 'j1_c'] : ['y5', 'y1_c', 'j5_c', 'j1_c'], isAlt: false, title: '第 4 关 · 综合付款' },
+      { targetCents: amt5, denoms: isAdv ? ['y50', 'y20', 'y10', 'y5', 'y1_c', 'j5_c', 'j1_c', 'f5_c'] : ['y5', 'y1_c', 'j5_c', 'j1_c'], isAlt: false, title: '第 5 关 · 终极挑战' }
+    ];
+  }
+
+  function createRandomCashierLevels(range) {
+    var isAdv = range > 20;
+    var goodsRepo = [
+      { name: '自动铅笔', price: 250 },
+      { name: '卡通橡皮', price: 150 },
+      { name: '直尺三角板', price: 200 },
+      { name: '荧光笔', price: 300 },
+      { name: '修正带', price: 450 },
+      { name: '精装画本', price: 800 },
+      { name: '水彩笔套装', price: 1450 },
+      { name: '多功能笔袋', price: 1800 }
+    ];
+    var g1 = goodsRepo[randInt(0, 3)];
+    var p1Options = [200, 500, 1000].filter(function (v) { return v > g1.price; });
+    var g2 = goodsRepo[randInt(0, 4)];
+    var g3 = goodsRepo[randInt(2, 5)];
+    var shortDiff = [50, 100][randInt(0, 1)];
+    var g4 = goodsRepo[randInt(4, isAdv ? 7 : 5)];
+    var p4 = g4.price >= 1000 ? 2000 : 1000;
+    var iA = randInt(0, 3), iB = (iA + randInt(1, 3)) % 5;
+    var g5a = goodsRepo[iA], g5b = goodsRepo[iB];
+    var total5 = g5a.price + g5b.price;
+    var p5 = total5 < 500 ? 500 : total5 < 1000 ? 1000 : 2000;
+    return [
+      { goods: [g1], paid: p1Options[0] || 500, title: '第 1 关 · 基础找零' },
+      { goods: [g2], paid: g2.price, title: '第 2 关 · 正好付清' },
+      { goods: [g3], paid: Math.max(100, g3.price - shortDiff), title: '第 3 关 · 细心辨别' },
+      { goods: [g4], paid: p4, title: '第 4 关 · 整元找零' },
+      { goods: [g5a, g5b], paid: p5, title: '第 5 关 · 两件购物结算' }
+    ];
+  }
+
   // ---------------- 游戏渲染与交互引擎 ----------------
-  function startComboGame(targetElement, onExit) {
+  function startComboGame(targetElement, onExit, options) {
     activeGame = 'combo';
     container = targetElement;
     onExitCallback = onExit;
 
     var bag = getMoneyBag();
-    var levels = createComboLevels(bag.range);
+    var levels = (options && options.randomized) ? createRandomComboLevels(bag.range) : createComboLevels(bag.range);
 
     currentRound = {
       game: 'combo',
@@ -164,13 +216,13 @@
     renderComboView();
   }
 
-  function startCashierGame(targetElement, onExit) {
+  function startCashierGame(targetElement, onExit, options) {
     activeGame = 'cashier';
     container = targetElement;
     onExitCallback = onExit;
 
     var bag = getMoneyBag();
-    var levels = createCashierLevels(bag.range);
+    var levels = (options && options.randomized) ? createRandomCashierLevels(bag.range) : createCashierLevels(bag.range);
 
     currentRound = {
       game: 'cashier',
@@ -368,8 +420,16 @@
       html += '<div class="game-passed-banner cashier-audit-banner">';
       html += '<div class="passed-title">🎉 收银结算正确！</div>';
       html += '<div class="cashier-audit-details">';
-      html += '<p><strong>收银核算：</strong>' + esc(formatCN(lvl.paid)) + ' － ' + esc(formatCN(totalPrice)) + ' ＝ ' + (changeNeeded > 0 ? esc(formatCN(changeNeeded)) : '0元') + '</p>';
-      html += '<p><strong>反向核验：</strong>' + esc(formatCN(totalPrice)) + ' ＋ ' + (changeNeeded > 0 ? esc(formatCN(changeNeeded)) : '0元') + ' ＝ ' + esc(formatCN(lvl.paid)) + '（正好等于付的钱）</p>';
+      if (changeNeeded < 0) {
+        var shortAmt = totalPrice - lvl.paid;
+        html += '<p><strong>收银核算：</strong>商品总价 ' + esc(formatCN(totalPrice)) + ' ＞ 顾客付款 ' + esc(formatCN(lvl.paid)) + '，还差 <b>' + esc(formatCN(shortAmt)) + '</b></p>';
+        html += '<p><strong>反向核验：</strong>' + esc(formatCN(lvl.paid)) + ' ＋ ' + esc(formatCN(shortAmt)) + ' ＝ ' + esc(formatCN(totalPrice)) + '（确实不够买这件商品）</p>';
+      } else if (changeNeeded === 0) {
+        html += '<p><strong>收银核算：</strong>顾客付款 ' + esc(formatCN(lvl.paid)) + ' ＝ 商品总价 ' + esc(formatCN(totalPrice)) + '，正好付清，无需找零</p>';
+      } else {
+        html += '<p><strong>收银核算：</strong>' + esc(formatCN(lvl.paid)) + ' － ' + esc(formatCN(totalPrice)) + ' ＝ ' + esc(formatCN(changeNeeded)) + '</p>';
+        html += '<p><strong>反向核验：</strong>' + esc(formatCN(totalPrice)) + ' ＋ ' + esc(formatCN(changeNeeded)) + ' ＝ ' + esc(formatCN(lvl.paid)) + '（正好等于付的钱）</p>';
+      }
       html += '</div>';
       html += '<div class="game-bottom-actions">';
       html += '<button type="button" class="btn btn-main btn-lg" data-game-action="next-level">' + (r.levelIdx === 4 ? '查看收银挑战结果 →' : '接待下一位顾客 →') + '</button>';
@@ -386,6 +446,7 @@
     var wonStars = r.stars.filter(function (s) { return s === 1; }).length;
 
     // 记录最佳星数与轮次
+    if (MT.core && MT.core.recordActiveDay) MT.core.recordActiveDay(MT.progress);
     var bag = getMoneyBag();
     var rec = bag.games[r.game] || (bag.games[r.game] = { rounds: 0, bestStars: 0 });
     rec.rounds = (rec.rounds || 0) + 1;
@@ -418,7 +479,7 @@
     html += '</div>';
 
     html += '<div class="topic-actions">';
-    html += '<button type="button" class="btn btn-main" data-game-action="replay">再挑战一轮 ↺</button>';
+    html += '<button type="button" class="btn btn-main" data-game-action="replay">🎲 换随机题再挑战 ↺</button>';
     html += '<button type="button" class="btn btn-soft" data-game-action="quit">返回练习页 →</button>';
     html += '</div>';
 
@@ -535,7 +596,7 @@
         renderGameSummary();
       }
     } else if (action === 'replay') {
-      startComboGame(container, onExitCallback);
+      startComboGame(container, onExitCallback, { randomized: true });
     } else if (action === 'quit') {
       exitGame();
     }
@@ -664,7 +725,7 @@
         renderGameSummary();
       }
     } else if (action === 'replay') {
-      startCashierGame(container, onExitCallback);
+      startCashierGame(container, onExitCallback, { randomized: true });
     } else if (action === 'quit') {
       exitGame();
     }
@@ -673,6 +734,7 @@
   function onBoardClick(e) {
     var btn = e.target.closest('[data-game-action]');
     if (!btn || !activeGame) return;
+    if (container && typeof container.contains === 'function' && !container.contains(btn)) return;
     var action = btn.dataset.gameAction;
     if (activeGame === 'combo') handleComboAction(action, btn);
     else if (activeGame === 'cashier') handleCashierAction(action, btn);

@@ -109,8 +109,8 @@ npx wrangler pages deploy . --project-name=<项目名> --commit-dirty=true
 
 ## 当前状态（2026-11-24）
 
-- 资源版本：本轮改动文件 `2.8.0`；离线缓存 `mt99-cache-v46`。
-- 17 个 `tools/check-*.js` 全部通过（含 `check-insights`）。
+- 资源版本：本轮改动文件 `2.9.0`；离线缓存 `mt99-cache-v47`（离线语音单独存 `mt99-audio-v1`，代码升级不清空已下载语音）。
+- 17 个 `tools/check-*.js` 全部通过（含 `check-insights`、`check-pages`）。
 - 历次改动与修复记录见 [docs/history.md](docs/history.md)。
 
 ### 后续可改进

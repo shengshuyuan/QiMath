@@ -9,15 +9,15 @@
 <link rel="manifest" href="manifest.json">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<link rel="stylesheet" href="css/base.css?v=2.6.8">
-<link rel="stylesheet" href="css/layout.css?v=2.8.0">
+<link rel="stylesheet" href="css/base.css?v=2.9.0">
+<link rel="stylesheet" href="css/layout.css?v=2.9.0">
 <link rel="stylesheet" href="css/visuals.css?v=2.6.6">
-<link rel="stylesheet" href="css/quiz.css?v=2.6.8">
+<link rel="stylesheet" href="css/quiz.css?v=2.9.0">
 <link rel="stylesheet" href="css/games.css?v=2.6.6">
 <link rel="stylesheet" href="css/print.css?v=2.6.6">
-<link rel="stylesheet" href="css/topics.css?v=2.8.0">
-<link rel="stylesheet" href="css/money.css?v=2.7.0">
-<link rel="stylesheet" href="css/navigation.css?v=2.8.0">
+<link rel="stylesheet" href="css/topics.css?v=2.9.0">
+<link rel="stylesheet" href="css/money.css?v=2.9.0">
+<link rel="stylesheet" href="css/navigation.css?v=2.9.0">
 </head>
 <body>
 
@@ -37,22 +37,26 @@
     </div>
     <div class="header-actions">
       <button type="button" class="btn btn-soft act-btn" id="btn-badges" title="荣誉勋章馆" aria-label="荣誉勋章">
-        <span class="act-icon">🎖️</span><span class="act-text">勋章</span>
+        <svg class="nav-svg" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="5"/><path d="M8.5 13.5 7 21l5-2.5L17 21l-1.5-7.5"/></svg><span class="act-text">勋章</span>
+      </button>
+      <button type="button" class="btn btn-soft act-btn" id="btn-report" title="学习报告（给家长看）" aria-label="学习报告">
+        <svg class="nav-svg" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19h16"/><path d="M7 15v-5"/><path d="M12 15V7"/><path d="M17 15v-3"/></svg><span class="act-text">报告</span>
       </button>
       <button type="button" class="btn btn-soft act-btn" id="btn-speech" aria-pressed="true" title="声音朗读" aria-label="朗读">
-        <span class="act-icon" id="speech-icon">🔊</span><span class="act-text" id="speech-text">朗读</span>
+        <span class="act-icon" id="speech-icon"><svg class="nav-svg" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg></span><span class="act-text" id="speech-text">朗读</span>
       </button>
       <button type="button" class="btn btn-soft act-btn" id="btn-print" title="打印练习纸" aria-label="打印">
-        <span class="act-icon">🖨️</span><span class="act-text">打印</span>
+        <svg class="nav-svg" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V4h12v5"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="6"/></svg><span class="act-text">打印</span>
       </button>
       <button type="button" class="btn btn-soft act-btn" id="btn-settings" aria-expanded="false" title="设置" aria-label="设置">
-        <span class="act-icon">⚙️</span>
+        <svg class="nav-svg" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.01a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h.01a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.01a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
       </button>
     </div>
   </div>
 
 </header>
 
+<div class="settings-backdrop" id="settings-backdrop" hidden></div>
 <div class="settings" id="settings" hidden>
   <div class="settings-inner">
     <div class="set-row" data-basic-setting>
@@ -122,6 +126,7 @@
     <div class="set-row set-row-stack" id="parent-summary-row">
       <span class="set-label">学习概况（给家长看）</span>
       <div id="parent-summary" class="parent-summary" role="status" aria-live="polite">打开设置后会汇总当前进度。</div>
+      <button type="button" class="btn btn-soft" id="btn-open-report">打开完整学习报告 →</button>
     </div>
     <div class="set-row set-row-stack">
       <span class="set-label">换设备继续学</span>
@@ -144,6 +149,11 @@
     <button type="button" class="today-recommend" id="today-recommend" hidden></button>
     <button type="button" class="continue-course" id="btn-continue" hidden></button>
     <button type="button" class="wrong-banner" id="wrong-banner" hidden></button>
+    <div class="grade-filter" id="grade-filter" role="group" aria-label="按年级筛选课程">
+      <button type="button" class="grade-pill is-on" data-grade="all" aria-pressed="true">全部课程</button>
+      <button type="button" class="grade-pill" data-grade="一年级" aria-pressed="false">一年级</button>
+      <button type="button" class="grade-pill" data-grade="二年级" aria-pressed="false">二年级</button>
+    </div>
     <section class="catalog-group" aria-labelledby="number-domain"><div class="catalog-group-head"><h3 id="number-domain">数与运算</h3><span>理解数量与运算方法</span></div><div class="course-grid" id="number-courses"></div></section>
     <section class="catalog-group" aria-labelledby="measure-domain"><div class="catalog-group-head"><h3 id="measure-domain">量与测量</h3><span>认识长短、时间、质量和钱币</span></div><div class="course-grid" id="measure-courses"></div></section>
     <section class="creator-intro" aria-labelledby="creator-title">
@@ -168,6 +178,34 @@
     <div class="seg div-story" id="div-story" role="group" aria-label="除法看法" hidden>
       <button type="button" class="seg-btn is-on" data-story="share" aria-pressed="true">平均分</button>
       <button type="button" class="seg-btn" data-story="measure" aria-pressed="false">几个一份</button>
+    </div>
+
+    <div class="explore-toolbar">
+      <div class="viewswitch" id="view-switch">
+        <button type="button" class="vs is-on" data-view="array">阵列</button>
+        <button type="button" class="vs" data-view="groups">分组</button>
+        <button type="button" class="vs" data-view="numberline">数轴</button>
+        <button type="button" class="vs" data-view="area">方格</button>
+        <button type="button" class="vs" data-view="all">全部</button>
+      </div>
+      <div class="skin-bar">
+        <span class="skin-bar-label">皮肤:</span>
+        <div class="skin-options" id="skin-options" role="group" aria-label="实物具象皮肤">
+          <button type="button" class="skin-opt is-on" data-skin="dot" aria-pressed="true" title="糖果珠" aria-label="糖果珠">🟣</button>
+          <button type="button" class="skin-opt" data-skin="apple" aria-pressed="false" title="红苹果" aria-label="红苹果">🍎</button>
+          <button type="button" class="skin-opt" data-skin="star" aria-pressed="false" title="闪闪星" aria-label="闪闪星">⭐</button>
+          <button type="button" class="skin-opt" data-skin="cookie" aria-pressed="false" title="巧克饼" aria-label="巧克饼">🍪</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="stage" id="stage"></div>
+    <div class="sumline" id="sumline"></div>
+
+    <div class="explore-actions">
+      <button type="button" class="btn btn-main" id="btn-say">读一遍</button>
+      <button type="button" class="btn" id="btn-replay">再看一次</button>
+      <button type="button" class="btn" id="btn-swap" title="交换行与列 (乘法交换律)">交换因数 ⇄</button>
     </div>
 
     <div class="pickers">
@@ -199,33 +237,6 @@
           <input type="range" class="slider" id="slider-b" min="1" max="9" step="1" value="4" aria-label="每行个数">
         </div>
       </div>
-    </div>
-
-    <div class="viewswitch" id="view-switch">
-      <button type="button" class="vs is-on" data-view="array">阵列</button>
-      <button type="button" class="vs" data-view="groups">分组</button>
-      <button type="button" class="vs" data-view="numberline">数轴</button>
-      <button type="button" class="vs" data-view="area">方格</button>
-      <button type="button" class="vs" data-view="all">全部</button>
-    </div>
-
-    <div class="skin-bar">
-      <span class="skin-bar-label">实物皮肤:</span>
-      <div class="skin-options" id="skin-options" role="group" aria-label="实物具象皮肤">
-        <button type="button" class="skin-opt is-on" data-skin="dot" aria-pressed="true">🟣 糖果珠</button>
-        <button type="button" class="skin-opt" data-skin="apple" aria-pressed="false">🍎 红苹果</button>
-        <button type="button" class="skin-opt" data-skin="star" aria-pressed="false">⭐ 闪闪星</button>
-        <button type="button" class="skin-opt" data-skin="cookie" aria-pressed="false">🍪 巧克饼</button>
-      </div>
-    </div>
-
-    <div class="stage" id="stage"></div>
-    <div class="sumline" id="sumline"></div>
-
-    <div class="explore-actions">
-      <button type="button" class="btn btn-main" id="btn-say">读一遍</button>
-      <button type="button" class="btn" id="btn-replay">再看一次</button>
-      <button type="button" class="btn" id="btn-swap" title="交换行与列 (乘法交换律)">交换因数 ⇄</button>
     </div>
   </section>
 
@@ -294,7 +305,10 @@
         <div class="q-input" id="q-input"></div>
         <div class="q-fb" id="q-fb" role="status" aria-live="polite"></div>
         <div class="q-hint" id="q-hint" hidden></div>
-        <button type="button" class="btn q-help" id="btn-quiz-help">求助解答</button>
+        <div class="q-tools">
+          <button type="button" class="btn q-help" id="btn-quiz-help">求助解答</button>
+          <button type="button" class="btn btn-soft q-read" id="btn-quiz-read">🔊 读题</button>
+        </div>
         <div class="q-actions" id="q-actions"></div>
       </div>
       <div class="keypad" id="keypad"></div>
@@ -374,38 +388,52 @@
   </div>
 </div>
 
+<div class="modal" id="report-modal" hidden>
+  <div class="modal-card modal-report-card" role="dialog" aria-modal="true" aria-labelledby="report-title">
+    <div class="badges-modal-head">
+      <div class="badges-head-left">
+        <h2 id="report-title">📊 家长学习报告</h2>
+        <span class="badge-stat" id="report-stat">汇总本地学习进度与陪学建议</span>
+      </div>
+      <button type="button" class="btn btn-soft badges-close" id="report-close" aria-label="关闭">✕</button>
+    </div>
+    <div id="report-body"></div>
+  </div>
+</div>
+
 <div id="print-root" aria-hidden="true"></div>
 
-<script src="js/core.js?v=2.6.6"></script>
+<script src="js/core.js?v=2.9.0"></script>
 <script src="js/ops.js?v=2.6.6"></script>
-<script src="js/mul.js?v=2.6.6"></script>
+<script src="js/mul.js?v=2.9.0"></script>
 <script src="js/div.js?v=2.6.6"></script>
 <script src="js/add.js?v=2.6.6"></script>
 <script src="js/sub.js?v=2.6.6"></script>
-<script src="js/storage.js?v=2.6.10"></script>
+<script src="js/storage.js?v=2.9.0"></script>
 <script src="js/voice-clips.js?v=2.8.0"></script>
 <script src="js/speech.js?v=2.8.0"></script>
 <script src="js/sound.js?v=2.6.6"></script>
-<script src="js/confetti.js?v=2.6.6"></script>
+<script src="js/confetti.js?v=2.9.0"></script>
 <script src="js/badges.js?v=2.6.6"></script>
 <script src="js/visuals.js?v=2.6.6"></script>
 <script src="js/explore.js?v=2.6.6"></script>
 <script src="js/table.js?v=2.6.6"></script>
-<script src="js/quiz.js?v=2.6.8"></script>
+<script src="js/quiz.js?v=2.9.0"></script>
 <script src="js/games.js?v=2.6.6"></script>
-<script src="js/print.js?v=2.6.6"></script>
-<script src="js/mixed.js?v=2.6.6"></script>
+<script src="js/print.js?v=2.9.0"></script>
+<script src="js/mixed.js?v=2.9.0"></script>
 <script src="js/length.js?v=2.6.6"></script>
 <script src="js/angle.js?v=2.6.6"></script>
 <script src="js/time.js?v=2.7.0"></script>
 <script src="js/mass.js?v=2.6.6"></script>
-<script src="js/money.js?v=2.6.6"></script>
-<script src="js/money-games.js?v=2.6.6"></script>
-<script src="js/topic-games.js?v=2.8.0"></script>
-<script src="js/topics.js?v=2.8.0"></script>
-<script src="js/navigation.js?v=2.7.0"></script>
-<script src="js/insights.js?v=2.8.0"></script>
-<script src="js/app.js?v=2.8.0"></script>
+<script src="js/money.js?v=2.9.0"></script>
+<script src="js/money-games.js?v=2.9.0"></script>
+<script src="js/topic-games.js?v=2.9.0"></script>
+<script src="js/topic-widgets.js?v=2.9.0"></script>
+<script src="js/topics.js?v=2.9.0"></script>
+<script src="js/navigation.js?v=2.9.0"></script>
+<script src="js/insights.js?v=2.9.0"></script>
+<script src="js/app.js?v=2.9.0"></script>
 <script>
 (function () {
   var ok = window.MT && MT.core && MT.visuals && MT.app;

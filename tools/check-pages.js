@@ -153,6 +153,29 @@ async function main() {
         }
       }
     }
+    // 回归检查：首页有错题时，推荐横幅与错题横幅均不可被课程卡委托劫持到 learn。
+    await cdp.send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 900, deviceScaleFactor: 1, mobile: false });
+    await cdp.send('Page.navigate', { url: origin + '?p=reg#/catalog' });
+    await new Promise(function (res) { setTimeout(res, 450); });
+    var bannerCheck = (await cdp.send('Runtime.evaluate', {
+      expression: '(' + function () {
+        var p = MT.storage.defaults();
+        p.wrong['7x8'] = { wrongCount: 1, rightStreak: 0, lastAt: 1, fromLevel: 1 };
+        MT.progress = p;
+        MT.storage.flush();
+        document.getElementById('btn-directory').click();
+        document.getElementById('today-recommend').click();
+        var recHash = location.hash;
+        document.getElementById('btn-directory').click();
+        var recHiddenWrong = document.getElementById('wrong-banner').hidden;
+        return JSON.stringify({ recHash: recHash, recHiddenWrong: recHiddenWrong });
+      } + ')()',
+      returnByValue: true
+    })).result.value;
+    var parsedBanner = JSON.parse(bannerCheck);
+    if (!/\/wrong$/.test(parsedBanner.recHash)) problems.push('catalog today-recommend 点击未落入 wrong，实际为 ' + parsedBanner.recHash);
+    if (!parsedBanner.recHiddenWrong) problems.push('catalog 当推荐已为错题复习时，#wrong-banner 应隐藏以免重复堆叠');
+
     cdp.close();
   } finally {
     proc.kill();

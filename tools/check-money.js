@@ -59,9 +59,13 @@ assert.equal(carryExample.choices.filter(function (c) { return amountInCents(c) 
       if (d.type === 'readwrite_price_to_cn') coverage.add('price-fen-' + (d.cents % 10 !== 0));
       if (d.type === 'readwrite_cn_to_price' && d.cents % 100 >= 10 && d.cents % 10) coverage.add('cn-yuan-jiao-fen');
       if (d.type === 'compare_money') {
+        assert.ok(!/<small>\d+(?:\.\d+)?角<\/small>/.test(q.visualHTML), '比较钱数图示不能直接剧透换算后的角数');
         if (/^\d+角$/.test(d.left) && /^\d+角$/.test(d.right)) coverage.add('compare-jiao');
         if (d.right.includes('分')) coverage.add('compare-fen');
         if (d.left.includes('元') && d.left.includes('角')) coverage.add('compare-compound');
+      }
+      if (d.type === 'shopping_enough') {
+        assert.ok(!/买一本 .*的(?:尺子|剪刀|铅笔|橡皮|笔袋)/.test(q.prompt), '购物题量词应匹配商品: ' + q.prompt);
       }
       if (d.type === 'calc_same_unit') coverage.add('same-' + d.unit + d.op);
       if (d.type === 'recognize_target' && /^1[元角]/.test(d.target)) coverage.add('target-' + d.target.charAt(1));

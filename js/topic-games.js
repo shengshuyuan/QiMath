@@ -53,6 +53,29 @@
     return value === answer || value < 0 ? answer + delta : value;
   }
 
+  function applyOp(op, a, b) {
+    if (op === '+') return a + b;
+    if (op === '-') return a - b;
+    if (op === '*') return a * b;
+    if (op === '/' && b > 0 && a % b === 0) return a / b;
+    return null;
+  }
+
+  // 对混合运算优先生成「算错运算顺序」的真实陷阱答案。
+  function wrongStepAnswer(q) {
+    if (q && Array.isArray(q.numbers) && q.numbers.length === 3 && Array.isArray(q.operators) && q.operators.length === 2 && typeof q.first === 'number') {
+      var alt = 1 - q.first;
+      var mid = applyOp(q.operators[alt], q.numbers[alt], q.numbers[alt + 1]);
+      if (mid !== null && mid >= 0) {
+        var finalVal = alt === 0
+          ? applyOp(q.operators[1], mid, q.numbers[2])
+          : applyOp(q.operators[0], q.numbers[0], mid);
+        if (finalVal !== null && finalVal >= 0 && finalVal <= 200 && finalVal !== q.answer) return finalVal;
+      }
+    }
+    return wrongNumber(q.answer);
+  }
+
   function cardFrom(q, impostor) {
     var card = {
       kind: q.kind,
@@ -63,7 +86,7 @@
     if (q.kind === 'steps') {
       card.left = q.expression;
       card.correct = String(q.answer);
-      card.shown = impostor ? String(wrongNumber(q.answer)) : card.correct;
+      card.shown = impostor ? String(wrongStepAnswer(q)) : card.correct;
       card.formula = true;
     } else if (q.kind === 'choice') {
       var others = q.choices.map(function (_, i) { return i; }).filter(function (i) { return i !== q.answer; });

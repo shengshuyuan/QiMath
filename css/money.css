@@ -117,11 +117,13 @@
   min-width: 120px;
 }
 .compare-amount-box .box-tag {
+  display: block;
   font-size: 11px;
   color: var(--ink-2);
   margin-bottom: 4px;
 }
 .compare-amount-box b {
+  display: block;
   font-size: 20px;
   color: var(--ink);
 }
@@ -561,16 +563,16 @@
   gap: 10px;
   margin: 20px 0 12px;
 }
-.big-star {
+.game-summary-board .big-star {
   font-size: 36px;
   transition: transform .2s var(--ease);
 }
-.big-star.is-won {
+.game-summary-board .big-star.is-won {
   color: #F59E0B;
   transform: scale(1.15);
   filter: drop-shadow(0 2px 6px rgba(245, 158, 11, .5));
 }
-.big-star.is-missed {
+.game-summary-board .big-star.is-missed {
   color: var(--line-2);
   opacity: .5;
 }

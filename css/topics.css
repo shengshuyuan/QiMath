@@ -14,6 +14,9 @@
 .topic-skill-num { display: grid; place-items: center; flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%; color: var(--ink-2); background: var(--muted); font-family: var(--font-num); }
 .topic-skill.is-on { border-color: var(--line-2); background: var(--brand-l); }
 .topic-skill.is-on .topic-skill-num { color: white; background: var(--brand-d); }
+.topic-skill.is-mastered .topic-skill-num { color: var(--ok-text); background: var(--ok-l); }
+.topic-skill.is-mastered small { color: var(--ok-text); font-weight: 600; }
+.topic-first-hl { background: var(--warn-l); color: var(--ink); padding: 2px 6px; border-radius: 6px; border: 1.5px solid var(--warn); }
 .is-practicing .topic-layout, .is-wrong .topic-layout { grid-template-columns: minmax(0, 1fr); max-width: 760px; margin: 0 auto; }
 .is-practicing .topic-skill-picker, .is-wrong .topic-skill-picker { display: none; }
 .practice-range { border: 0; padding: 0; margin: 24px 0 18px; }
@@ -59,7 +62,7 @@
 .topic-unit, .topic-answer-row .btn { flex-shrink: 0; }
 .topic-keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; max-width: 330px; margin: 16px auto; }
 .topic-keypad .btn { min-height: 46px; font-size: 19px; }
-.topic-keypad .btn[data-key="清空"], .topic-keypad .btn[data-key="退格"] { font-size: 14px; }
+.topic-keypad .btn[data-key="退格"], .topic-keypad .btn[data-key="确定"] { font-size: 16px; }
 .topic-feedback { min-height: 32px; color: var(--bad-text); margin: 12px 0 0; font-size: 15px; }
 .topic-feedback.is-good { color: var(--ok-text); }
 .topic-feedback.is-help { color: var(--ink-2); }
@@ -88,12 +91,13 @@
 /* ---------- 通用找错游戏（复用 games.css 的 .impostor-* 组件） ---------- */
 .topic-game .game-hud { margin: 16px 0 12px; }
 .topic-impostor-cards { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.topic-impostor-cards .impostor-card { padding: 18px 14px; min-height: 150px; }
+.topic-impostor-cards .impostor-card { padding: 18px 14px; min-height: 180px; justify-content: flex-start; }
 .topic-impostor-cards .impostor-card.has-visual { align-items: stretch; }
-.topic-impostor-cards .impostor-visual { width: 100%; margin: 0 0 10px; max-height: 118px; overflow: hidden; }
+.topic-impostor-cards .impostor-tag { margin-top: auto; padding-top: 6px; justify-content: center; }
+.topic-impostor-cards .impostor-visual { width: 100%; margin: 0 0 10px; max-height: 165px; overflow: hidden; }
 .topic-impostor-cards .impostor-visual .length-diagram,
 .topic-impostor-cards .impostor-visual figure { margin: 0 auto; max-width: 100%; }
-.topic-impostor-cards .impostor-visual svg { display: block; width: 100%; height: auto; max-height: 100px; }
+.topic-impostor-cards .impostor-visual svg { display: block; width: 100%; height: auto; max-height: 150px; }
 .topic-impostor-cards .impostor-visual figcaption,
 .topic-impostor-cards .impostor-visual .topic-note { display: none; }
 .topic-impostor-cards .impostor-formula { font-size: clamp(18px, 3vw, 24px); word-break: break-word; text-align: center; }
@@ -103,9 +107,23 @@
 @media (max-width: 720px) {
   .topic-impostor-cards { grid-template-columns: 1fr; }
   .topic-impostor-cards .impostor-card { min-height: 0; }
-  .topic-impostor-cards .impostor-visual { max-height: 140px; }
-  .topic-impostor-cards .impostor-visual svg { max-height: 120px; }
+  .topic-impostor-cards .impostor-visual { max-height: 180px; }
+  .topic-impostor-cards .impostor-visual svg { max-height: 165px; }
 }
+
+/* ---------- 专题课互动教具 ---------- */
+.topic-widget { margin-top: 18px; padding: 16px; border: 1.5px solid var(--line-2); border-radius: var(--r-md); background: var(--field); }
+.topic-widget-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+.topic-widget-head b { font-size: 15px; color: var(--brand-d); }
+.topic-widget-head span { font-size: 12px; color: var(--ink-2); }
+.topic-widget-readout { text-align: center; font-family: var(--font-num); font-size: 22px; font-weight: 700; color: var(--brand-d); margin: 8px 0; }
+.topic-widget-note { text-align: center; font-size: 13px; color: var(--ink-2); margin: 6px 0 12px; min-height: 20px; }
+.topic-widget-controls { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.topic-widget-controls .btn { min-height: 44px; }
+.topic-widget-slider { display: flex; align-items: center; gap: 10px; max-width: 420px; margin: 10px auto; font-size: 14px; color: var(--ink-2); }
+.topic-widget-slider input[type="range"] { flex: 1; min-height: 44px; accent-color: var(--brand); }
+.topic-widget svg { display: block; width: 100%; height: auto; max-height: 240px; margin: 0 auto; }
+.topic-widget .time-clock { max-width: 220px; }
 
 /* ---------- 练习页游戏入口模块 ---------- */
 .topic-game-entries {

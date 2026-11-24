@@ -30,7 +30,7 @@ var g = {
   caches: {
     open: function () { return Promise.resolve(fakeCache); },
     match: function (request) { return fakeCache.match(request); },
-    keys: function () { return Promise.resolve(['mt99-cache-v1', g.CACHE_NAME, 'other-app-cache']); },
+    keys: function () { return Promise.resolve(['mt99-cache-v1', g.CACHE_NAME, 'mt99-audio-v1', 'other-app-cache']); },
     delete: function (key) { deleted.push(key); return Promise.resolve(true); }
   },
   fetch: function () { return Promise.reject(new Error('offline')); },
@@ -68,7 +68,7 @@ g.matchCached({ url: origin + '/js/add.js?v=2.3.4' }).then(function (hit) {
     handlers.activate({ waitUntil: function (promise) { promise.then(resolve, reject); } });
   });
 }).then(function () {
-  assert.deepStrictEqual(deleted, ['mt99-cache-v1'], '只清理本应用的旧缓存，保留当前缓存和同源其他应用缓存');
+  assert.deepStrictEqual(deleted, ['mt99-cache-v1'], '只清理本应用的旧代码缓存，保留当前缓存、音频缓存和同源其他应用缓存');
   console.log('check-sw-precache: ok');
 }).catch(function (err) {
   console.error(err);

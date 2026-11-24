@@ -551,9 +551,9 @@
     var relation = leftCents > rightCents ? '左边多' : leftCents < rightCents ? '右边多' : '一样多';
     q.prompt = '左边是 ' + leftStr + '，右边是 ' + rightStr + '。哪边钱更多？';
     q.visualHTML = '<div class="compare-amount-cards">' +
-      '<div class="compare-amount-box box-left"><span class="box-tag">左边</span><b>' + leftStr + '</b><small>' + (leftCents / 10) + '角</small></div>' +
+      '<div class="compare-amount-box box-left"><span class="box-tag">左边</span><b>' + leftStr + '</b></div>' +
       '<div class="compare-amount-mid">VS</div>' +
-      '<div class="compare-amount-box box-right"><span class="box-tag">右边</span><b>' + rightStr + '</b><small>' + (rightCents / 10) + '角</small></div>' +
+      '<div class="compare-amount-box box-right"><span class="box-tag">右边</span><b>' + rightStr + '</b></div>' +
       '</div>';
     q.hint = '先看单位，单位不同时先换成相同的单位（例如全部换成“角”）再比大小。';
     q.explanation = leftStr + ' ＝ ' + (leftCents / 10) + '角，' + rightStr + ' ＝ ' + (rightCents / 10) + '角。' + (relation === '一样多' ? '两边表示的钱数一样多。' : relation === '左边多' ? leftStr + ' ＞ ' + rightStr + '，所以左边多。' : leftStr + ' ＜ ' + rightStr + '，所以右边多。');
@@ -653,16 +653,16 @@
   function genShopping(q, next, seed, range) {
     var mode = seed % 3;
     var goods = [
-      { name: '铅笔', price: 80, str: '8角' },
-      { name: '橡皮', price: 50, str: '5角' },
-      { name: '尺子', price: 150, str: '1元5角' },
-      { name: '笔记本', price: 300, str: '3元' },
-      { name: '彩笔', price: 650, str: '6元5角' },
-      { name: '剪刀', price: 400, str: '4元' },
-      { name: '笔袋', price: 900, str: '9元' },
-      { name: '故事书', price: 1200, str: '12元' },
-      { name: '水彩画本', price: 1500, str: '15元' },
-      { name: '文具礼盒', price: 2500, str: '25元' }
+      { name: '铅笔', mw: '支', price: 80, str: '8角' },
+      { name: '橡皮', mw: '块', price: 50, str: '5角' },
+      { name: '尺子', mw: '把', price: 150, str: '1元5角' },
+      { name: '笔记本', mw: '本', price: 300, str: '3元' },
+      { name: '彩笔', mw: '盒', price: 650, str: '6元5角' },
+      { name: '剪刀', mw: '把', price: 400, str: '4元' },
+      { name: '笔袋', mw: '个', price: 900, str: '9元' },
+      { name: '故事书', mw: '本', price: 1200, str: '12元' },
+      { name: '水彩画本', mw: '本', price: 1500, str: '15元' },
+      { name: '文具礼盒', mw: '盒', price: 2500, str: '25元' }
     ];
 
     if (mode === 0) {
@@ -675,7 +675,7 @@
       var changeStr = formatCN(changeCents);
       var paidStr = formatCN(paid);
 
-      q.prompt = '买一件 ' + item.name + ' 需要 ' + item.str + '，付给售货员 ' + paidStr + '，应找回多少钱？';
+      q.prompt = '买一' + item.mw + item.name + '需要 ' + item.str + '，付给售货员 ' + paidStr + '，应找回多少钱？';
       q.visualHTML = '<div class="shopping-question-card"><div class="goods-pill"><b>' + escapeHTML(item.name) + '</b><span>' + escapeHTML(item.str) + '</span></div><div class="paid-pill"><b>付了</b><span>' + escapeHTML(paidStr) + '</span></div></div>';
       q.hint = '应找回的钱 ＝ 付的钱 － 商品价钱。';
       q.explanation = paidStr + ' － ' + item.str + ' ＝ ' + changeStr + '。应找回 ' + changeStr + '。（验算：' + item.str + ' ＋ ' + changeStr + ' ＝ ' + paidStr + '）';
@@ -693,12 +693,13 @@
       var myMoneyStr = formatCN(myMoney);
       var isEnough = myMoney >= item.price;
       var diffStr = formatCN(Math.abs(item.price - myMoney));
+      var fakeDiff = [100, 200, 300][(seed >>> 2) % 3];
 
-      q.prompt = '小明有 ' + myMoneyStr + '，想买一本 ' + item.str + ' 的' + item.name + '，他的钱够吗？';
+      q.prompt = '小明有 ' + myMoneyStr + '，想买一' + item.mw + ' ' + item.str + ' 的' + item.name + '，他的钱够吗？';
       q.hint = '比较带的钱和商品的价格。如果带的钱大于或等于价格就够，小于就不够。';
       var ansText = isEnough ? '够' : '不够，还差 ' + diffStr;
       q.explanation = '小明有 ' + myMoneyStr + '，商品需要 ' + item.str + '。因为 ' + myMoneyStr + (myMoney > item.price ? ' ＞ ' : myMoney < item.price ? ' ＜ ' : ' ＝ ') + item.str + '，所以' + (isEnough ? '钱够了。' : '钱不够，还差 ' + diffStr + '。');
-      var choices = isEnough ? ['够', '不够，还差 2元'] : ['够', '不够，还差 ' + diffStr];
+      var choices = isEnough ? ['够', '不够，还差 ' + formatCN(fakeDiff)] : ['够', '不够，还差 ' + diffStr];
       q.data = { type: 'shopping_enough', price: item.price, money: myMoney, isEnough: isEnough, answer: ansText };
       return choose(q, choices, ansText, next);
     } else {
@@ -708,7 +709,7 @@
       var totalCents = it1.price + it2.price;
       var totalStr = formatCN(totalCents);
 
-      q.prompt = '买一件 ' + it1.name + '（' + it1.str + '）和一件 ' + it2.name + '（' + it2.str + '），一共需要多少钱？';
+      q.prompt = '买一' + it1.mw + it1.name + '（' + it1.str + '）和一' + it2.mw + it2.name + '（' + it2.str + '），一共需要多少钱？';
       q.visualHTML = '<div class="shopping-cart-card"><span class="cart-item">' + escapeHTML(it1.name) + ' <b>' + escapeHTML(it1.str) + '</b></span><span class="cart-plus">＋</span><span class="cart-item">' + escapeHTML(it2.name) + ' <b>' + escapeHTML(it2.str) + '</b></span></div>';
       q.hint = '把两件商品的价钱相加：' + it1.str + ' ＋ ' + it2.str + '。';
       q.explanation = it1.str + ' ＋ ' + it2.str + ' ＝ ' + totalStr + '。一共需要 ' + totalStr + '。';

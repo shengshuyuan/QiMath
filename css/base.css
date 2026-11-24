@@ -49,6 +49,7 @@
   --r-sm: 10px;
   --r-md: 14px;
   --r-lg: 20px;
+  --r-full: 999px;
   --ease: cubic-bezier(.34, 1.4, .64, 1);
   --shadow: 0 4px 14px rgba(91, 63, 150, .08);
   --font: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Heiti SC", sans-serif;

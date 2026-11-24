@@ -7,6 +7,10 @@
   var applyingRoute = false;
   var handledHash = '';
   var basicViews = { learn: 'explore', practice: 'quiz' };
+  var gradeFilter = 'all';
+  var reportFocus = null;
+  var SPEECH_SVG_ON = '<svg class="nav-svg" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>';
+  var SPEECH_SVG_OFF = '<svg class="nav-svg" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z"/><line x1="22" y1="9" x2="16" y2="15"/><line x1="16" y1="9" x2="22" y2="15"/></svg>';
 
   function showFatal(msg) {
     var box = document.getElementById('boot-error');
@@ -60,7 +64,8 @@
     if (!st || !st.started) return '';
     var unit = c.topic === 'basic' ? '关' : '个知识点';
     var pct = st.total ? Math.round(st.done / st.total * 100) : 0;
-    var text = (st.done >= st.total ? '全部完成 🎉' : '已完成 ' + st.done + ' / ' + st.total + ' ' + unit) + (st.wrong ? ' · ' + st.wrong + ' 道错题' : '');
+    var extra = (c.topic !== 'basic' && st.mastered > 0 && st.done < st.total) ? '（熟练 ' + st.mastered + '）' : '';
+    var text = (st.done >= st.total ? '全部完成 🎉' : '已完成 ' + st.done + ' / ' + st.total + ' ' + unit + extra) + (st.wrong ? ' · ' + st.wrong + ' 道错题' : '');
     return '<span class="course-progress"><span class="course-progress-bar" aria-hidden="true"><i style="width:' + pct + '%"></i></span><span class="course-progress-text">' + text + '</span></span>';
   }
 
@@ -68,9 +73,13 @@
     return MT.navigation.courses.map(function (c) { return { c: c, st: courseStats(c) }; });
   }
 
-  function renderWrongBanner(stats) {
+  function renderWrongBanner(stats, tip) {
     var box = document.getElementById('wrong-banner');
     if (!box) return;
+    if (tip && tip.mode === 'wrong') {
+      box.hidden = true;
+      return;
+    }
     var top = null, totalWrong = 0;
     stats.forEach(function (item) {
       if (!item.st || !item.st.wrong) return;
@@ -85,49 +94,123 @@
 
   function renderTodayRecommend(stats) {
     var box = document.getElementById('today-recommend');
-    if (!box) return;
+    if (!box) return null;
     var tip = MT.insights.recommend(stats);
     box.hidden = !tip;
-    if (!tip) return;
+    if (!tip) return null;
     box.dataset.course = tip.course;
     box.dataset.mode = tip.mode || 'learn';
     box.dataset.view = tip.view || '';
     box.dataset.skill = tip.skill || '';
     box.dataset.game = tip.game || '';
     box.innerHTML = '<span class="today-recommend-icon" aria-hidden="true">🎯</span><span class="today-recommend-copy"><b>' + tip.title + '</b><small>' + tip.detail + '</small></span><span class="today-recommend-cta">' + tip.cta + ' →</span>';
+    return tip;
   }
 
   function renderParentSummary() {
     var box = document.getElementById('parent-summary');
     if (!box || !MT.insights) return;
     var summary = MT.insights.parentSummary(collectStats());
+    var act = summary.activity || { totalDays: 0, streakDays: 0 };
+    var daysLine = act.totalDays ? ' · 累计练习 <b>' + act.totalDays + '</b> 天' + (act.streakDays > 1 ? '（连学 ' + act.streakDays + ' 天）' : '') : '';
     var list = summary.lines.length
       ? '<ul class="parent-summary-list">' + summary.lines.map(function (line) { return '<li>' + line + '</li>'; }).join('') + '</ul>'
       : '<p class="set-note">还没有各课明细。</p>';
-    box.innerHTML = '<p class="parent-summary-stats">已开始 <b>' + summary.started + '</b> 门 · 全部完成 <b>' + summary.finished + '</b> 门 · 错题 <b>' + summary.wrongTotal + '</b> 道</p>' +
+    box.innerHTML = '<p class="parent-summary-stats">已开始 <b>' + summary.started + '</b> 门 · 全部完成 <b>' + summary.finished + '</b> 门 · 错题 <b>' + summary.wrongTotal + '</b> 道' + daysLine + '</p>' +
       list + '<p class="set-note">' + summary.tip + '</p>';
+  }
+
+  function renderReportModal() {
+    var body = document.getElementById('report-body');
+    var stat = document.getElementById('report-stat');
+    if (!body || !MT.insights) return;
+    var summary = MT.insights.parentSummary(collectStats());
+    var act = summary.activity || { totalDays: 0, recent7Days: 0, streakDays: 0 };
+    var badgesCount = Array.isArray(MT.progress && MT.progress.badges) ? MT.progress.badges.length : 0;
+    if (stat) {
+      stat.textContent = act.streakDays > 1
+        ? '已连续坚持 ' + act.streakDays + ' 天 · 近 7 天学习 ' + act.recent7Days + ' 天'
+        : '本地学习数据实时汇总，无需联网即可查看';
+    }
+    var listHTML = summary.courses.length
+      ? '<div class="report-course-list">' + summary.courses.map(function (item) {
+        var desc = item.done + '/' + item.total + ' ' + item.unit +
+          (item.topic !== 'basic' && item.mastered ? '（熟练 ' + item.mastered + '）' : '') +
+          (item.wrong ? ' · 错题 ' + item.wrong + ' 道' : '');
+        var btnText = item.wrong ? '复习错题' : '去练习';
+        var mode = item.wrong ? 'wrong' : 'practice';
+        return '<div class="report-course-row"><div class="report-course-info"><b>' + item.title + '</b><small>' + desc + '</small></div>' +
+          '<button type="button" class="btn btn-soft" data-report-course="' + item.id + '" data-report-mode="' + mode + '">' + btnText + ' →</button></div>';
+      }).join('') + '</div>'
+      : '<p class="set-note">还没有学习记录。回到知识目录挑一门课，先「学一学」再「练一练」吧。</p>';
+    body.innerHTML = '<div class="report-summary-grid">' +
+      '<div class="report-stat-box"><b>' + summary.started + ' / ' + MT.navigation.courses.length + '</b><span>已学课程</span></div>' +
+      '<div class="report-stat-box"><b>' + summary.wrongTotal + '</b><span>待复习错题</span></div>' +
+      '<div class="report-stat-box"><b>' + badgesCount + ' / 14</b><span>收集勋章</span></div>' +
+      '<div class="report-stat-box"><b>' + act.totalDays + ' 天</b><span>累计练习</span></div>' +
+      '</div>' + listHTML +
+      '<div class="report-tip">' + summary.tip + '</div>' +
+      '<div class="report-actions">' +
+      (summary.wrongTotal ? '<button type="button" class="btn btn-main" id="btn-print-wrong-sheet">🖨️ 打印错题巩固卷（' + summary.wrongTotal + ' 题）</button>' : '') +
+      '<button type="button" class="btn btn-soft" id="btn-report-done">知道了</button>' +
+      '</div>';
+  }
+
+  function openReportModal() {
+    var modal = document.getElementById('report-modal');
+    if (!modal) return;
+    closeSettings();
+    if (MT.badges) MT.badges.close();
+    if (modal.hidden) reportFocus = document.activeElement;
+    renderReportModal();
+    modal.hidden = false;
+    var closeBtn = document.getElementById('report-close');
+    if (closeBtn) closeBtn.focus();
+  }
+
+  function closeReportModal() {
+    var modal = document.getElementById('report-modal');
+    if (!modal || modal.hidden) return;
+    modal.hidden = true;
+    if (reportFocus && reportFocus.isConnected) reportFocus.focus();
+    reportFocus = null;
   }
 
   function renderCatalog() {
     var stats = [];
     ['number', 'measure'].forEach(function (group) {
-      var courses = MT.navigation.courses.filter(function (c) { return (c.domain === '量与测量') === (group === 'measure'); });
-      document.getElementById(group + '-courses').innerHTML = courses.map(function (c) {
+      var courses = MT.navigation.courses.filter(function (c) {
+        var matchDomain = (c.domain === '量与测量') === (group === 'measure');
+        var matchGrade = gradeFilter === 'all' || c.grade === gradeFilter;
+        return matchDomain && matchGrade;
+      });
+      var grid = document.getElementById(group + '-courses');
+      var section = grid && grid.closest ? grid.closest('.catalog-group') : null;
+      if (section) section.hidden = courses.length === 0;
+      grid.innerHTML = courses.map(function (c) {
         var st = courseStats(c);
         stats.push({ c: c, st: st });
-        return '<button type="button" class="course-card' + (st && st.started ? ' is-started' : '') + '" data-course="' + c.id + '"><span class="course-mark" aria-hidden="true">' + c.mark + '</span><span class="course-card-copy"><b>' + c.title + '</b><small>' + c.description + '</small>' + courseProgressHTML(c, st) + '</span><span class="course-arrow" aria-hidden="true">→</span></button>';
+        var gradeTag = c.grade ? '<span class="course-grade">' + c.grade + '</span>' : '';
+        return '<button type="button" class="course-card' + (st && st.started ? ' is-started' : '') + '" data-course="' + c.id + '"><span class="course-mark" aria-hidden="true">' + c.mark + '</span><span class="course-card-copy"><span class="course-card-head"><b>' + c.title + '</b>' + gradeTag + '</span><small>' + c.description + '</small>' + courseProgressHTML(c, st) + '</span><span class="course-arrow" aria-hidden="true">→</span></button>';
       }).join('');
     });
-    renderTodayRecommend(stats);
-    renderWrongBanner(stats);
+    if (gradeFilter !== 'all') stats = collectStats();
+    document.querySelectorAll('#grade-filter [data-grade]').forEach(function (btn) {
+      var on = btn.dataset.grade === gradeFilter;
+      btn.classList.toggle('is-on', on);
+      btn.setAttribute('aria-pressed', String(on));
+    });
+    var tip = renderTodayRecommend(stats);
+    renderWrongBanner(stats, tip);
     var last = MT.navigation.parse(MT.progress.settings.lastLocation);
     var resume = document.getElementById('btn-continue');
-    resume.hidden = last.page !== 'course';
+    var sameAsTip = tip && last.page === 'course' && tip.course === last.course && tip.mode === last.mode;
+    resume.hidden = last.page !== 'course' || !!sameAsTip;
     if (!resume.hidden) {
       var c = MT.navigation.course(last.course);
       var m = c.topic === 'basic' ? null : MT[c.id];
       var skill = m && m.skills.filter(function (s) { return s.id === last.skill; })[0];
-      resume.textContent = '继续学习 · ' + c.title + (skill ? ' · ' + skill.title : '') + ' →';
+      resume.innerHTML = '<span>继续上次：' + c.title + (skill ? ' · ' + skill.title : '') + '</span><span aria-hidden="true">→</span>';
     }
   }
 
@@ -166,6 +249,7 @@
     MT.quiz.stop();
     MT.quiz.closeDialogs();
     if (MT.badges) MT.badges.close();
+    closeReportModal();
     if (MT.games) MT.games.pause();
     MT.table.close();
     MT.topics.leave();
@@ -279,7 +363,7 @@
       var icon = sp.querySelector('#speech-icon');
       var txt = sp.querySelector('#speech-text');
       if (icon && txt) {
-        icon.textContent = st.speechOn ? '🔊' : '🔇';
+        icon.innerHTML = st.speechOn ? SPEECH_SVG_ON : SPEECH_SVG_OFF;
         txt.textContent = st.speechOn ? '朗读' : '静音';
       } else {
         sp.textContent = '朗读：' + (st.speechOn ? '开' : '关');
@@ -292,6 +376,8 @@
 
   function closeSettings() {
     var box = document.getElementById('settings');
+    var backdrop = document.getElementById('settings-backdrop');
+    if (backdrop) backdrop.hidden = true;
     if (box.hidden) return;
     box.hidden = true;
     document.getElementById('btn-settings').setAttribute('aria-expanded', 'false');
@@ -299,7 +385,9 @@
 
   function toggleSettings() {
     var box = document.getElementById('settings');
+    var backdrop = document.getElementById('settings-backdrop');
     box.hidden = !box.hidden;
+    if (backdrop) backdrop.hidden = box.hidden;
     document.getElementById('btn-settings').setAttribute('aria-expanded', box.hidden ? 'false' : 'true');
     if (!box.hidden) renderParentSummary();
   }
@@ -455,6 +543,9 @@
       e.stopPropagation();
     });
 
+    var sBackdrop = document.getElementById('settings-backdrop');
+    if (sBackdrop) sBackdrop.addEventListener('click', closeSettings);
+
     document.addEventListener('click', function () {
       if (!document.getElementById('settings').hidden) closeSettings();
     });
@@ -463,9 +554,55 @@
       if (e.key === 'Escape') closeSettings();
     });
 
+    var reportBtn = document.getElementById('btn-report');
+    if (reportBtn) reportBtn.addEventListener('click', function () { MT.sound.play('click'); openReportModal(); });
+    var openReportBtn = document.getElementById('btn-open-report');
+    if (openReportBtn) openReportBtn.addEventListener('click', function () { MT.sound.play('click'); openReportModal(); });
+    var reportClose = document.getElementById('report-close');
+    if (reportClose) reportClose.addEventListener('click', closeReportModal);
+    var reportModal = document.getElementById('report-modal');
+    if (reportModal) {
+      reportModal.addEventListener('click', function (e) {
+        if (e.target === reportModal) { closeReportModal(); return; }
+        var doneBtn = e.target.closest('#btn-report-done');
+        if (doneBtn) { closeReportModal(); return; }
+        var printBtn = e.target.closest('#btn-print-wrong-sheet');
+        if (printBtn) { MT.sound.play('click'); closeReportModal(); MT.print.runWrongSheet(); return; }
+        var jump = e.target.closest('[data-report-course]');
+        if (jump) {
+          var cid = jump.dataset.reportCourse;
+          var md = jump.dataset.reportMode || 'practice';
+          closeReportModal();
+          openRoute({ course: cid, mode: md, view: 'quiz' });
+        }
+      });
+      document.addEventListener('keydown', function (e) {
+        if (reportModal.hidden) return;
+        if (e.key === 'Escape') { e.preventDefault(); closeReportModal(); return; }
+        if (e.key === 'Tab') {
+          var nodes = Array.prototype.filter.call(reportModal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'), function (el) {
+            return !el.disabled && !el.hidden && el.getAttribute('aria-hidden') !== 'true';
+          });
+          var first = nodes[0], last = nodes[nodes.length - 1];
+          if (!first) return;
+          if (!reportModal.contains(document.activeElement) || (e.shiftKey ? document.activeElement === first : document.activeElement === last)) {
+            e.preventDefault();
+            (e.shiftKey ? last : first).focus();
+          }
+        }
+      });
+    }
+
     document.getElementById('btn-directory').addEventListener('click', function () { openRoute({ page: 'catalog' }); });
     document.getElementById('catalog-page').addEventListener('click', function (e) {
-      var btn = e.target.closest('[data-course]');
+      var pill = e.target.closest('[data-grade]');
+      if (pill) {
+        MT.sound.play('click');
+        gradeFilter = pill.dataset.grade || 'all';
+        renderCatalog();
+        return;
+      }
+      var btn = e.target.closest('.course-card[data-course]');
       if (btn) openRoute({ course: btn.dataset.course, mode: 'learn' });
     });
     document.getElementById('btn-continue').addEventListener('click', function () {

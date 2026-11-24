@@ -88,6 +88,16 @@ function enterAlternative(range) {
   assert.ok(passed(), '收银员找零规则保持不变');
   click('next-level'); click('judge-exact');
   assert.ok(passed(), '收银员正好付款规则保持不变');
+  click('next-level'); click('judge-not-enough');
+  assert.ok(passed(), '第 3 关钱不够应能正确判断通过');
+  assert.ok(board.innerHTML.includes('还差'), '第 3 关钱不够应展示还差金额');
+  assert.ok(!board.innerHTML.includes('4元 － 4元5角 ＝ 0元'), '不得出现错误的倒减零元算式');
+  click('next-level'); add(['y1_c', 'y1_c']); click('confirm-cashier');
+  click('next-level'); add(range === 20 ? ['y1_c'] : ['y1_c', 'y1_c', 'y1_c', 'j5_c']); click('confirm-cashier');
+  click('next-level');
+  assert.ok(board.innerHTML.includes('营业结业'));
+  click('replay');
+  assert.ok(board.innerHTML.includes('第 1 / 5 关'), '随机再挑战应回到第 1 关');
 });
 
 console.log('check-money-games: ok (both ranges, two payment methods, repeated combinations, edits, stars, cashier)');

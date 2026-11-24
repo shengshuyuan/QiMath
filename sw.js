@@ -1,4 +1,5 @@
-var CACHE_NAME = 'mt99-cache-v46';
+var CACHE_NAME = 'mt99-cache-v47';
+var AUDIO_CACHE = 'mt99-audio-v1';
 var ASSETS = [
   './',
   './index.html',
@@ -39,6 +40,7 @@ var ASSETS = [
   './js/money.js',
   './js/money-games.js',
   './js/topic-games.js',
+  './js/topic-widgets.js',
   './js/topics.js',
   './js/navigation.js',
   './js/insights.js',
@@ -121,7 +123,8 @@ self.addEventListener('fetch', function (e) {
       return fetch(e.request).then(function (res) {
         if (!res || res.status !== 200 || (res.type !== 'basic' && res.type !== 'cors')) return res;
         var clone = res.clone();
-        caches.open(CACHE_NAME).then(function (cache) {
+        var targetCache = (url.indexOf('/audio/') !== -1 || /\.mp3(\?|$)/i.test(url)) ? AUDIO_CACHE : CACHE_NAME;
+        caches.open(targetCache).then(function (cache) {
           cache.put(e.request, clone);
         });
         return res;
