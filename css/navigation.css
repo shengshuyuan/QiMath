@@ -13,7 +13,14 @@ body { overflow-x: clip; }
 .creator-intro h3 { margin: 4px 0 8px; font-size: 16px; }
 .creator-intro > p:not(.topic-eyebrow) { max-width: 68ch; color: var(--ink-2); font-size: 13px; line-height: 1.7; }
 .creator-intro > p + p { margin-top: 8px; }
-.continue-course { display: block; width: 100%; min-height: 54px; margin-bottom: 28px; padding: 14px 18px; text-align: left; color: var(--brand-d); background: var(--brand-l); border: 1px solid var(--line-2); border-radius: var(--r-md); font-weight: 600; }
+.today-recommend { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 64px; margin-bottom: 16px; padding: 14px 16px; text-align: left; color: var(--ink); background: linear-gradient(135deg, var(--brand-l), #fff); border: 1px solid var(--brand); border-radius: var(--r-md); }
+.today-recommend-icon { font-size: 24px; line-height: 1; }
+.today-recommend-copy { min-width: 0; flex: 1; }
+.today-recommend-copy b { display: block; font-size: 16px; color: var(--brand-d); }
+.today-recommend-copy small { display: block; margin-top: 4px; color: var(--ink-2); font-size: 13px; line-height: 1.5; }
+.today-recommend-cta { flex-shrink: 0; color: var(--brand-d); font-size: 13px; font-weight: 700; white-space: nowrap; }
+.continue-course { display: block; width: 100%; min-height: 54px; margin-bottom: 16px; padding: 14px 18px; text-align: left; color: var(--brand-d); background: var(--brand-l); border: 1px solid var(--line-2); border-radius: var(--r-md); font-weight: 600; }
+.today-recommend[hidden] + .continue-course { margin-top: 0; }
 .catalog-group { margin-top: 28px; }
 .catalog-group-head { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--line); }
 .catalog-group-head h3 { font-size: 18px; }

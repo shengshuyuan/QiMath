@@ -41,9 +41,15 @@ vm.createContext(g);
 });
 var MT = g.MT;
 
+// 看图题也能做成卡片（读钟、读尺、认角）。
+assert.ok(MT.topicGames.playable(MT.time.generate('clock', 20, 0)), '钟面题应可玩');
+assert.ok(MT.time.generate('clock', 20, 0).visualHTML, '钟面题带图');
+assert.ok(MT.topicGames.playable(MT.length.generate('ruler', 20, 0)), '读尺题应可玩');
+assert.ok(MT.topicGames.playable(MT.angle.generate('classify', 20, 0)), '认角题应可玩');
+
 ['mixed', 'length', 'angle', 'time', 'mass', 'money'].forEach(function (id) {
   var model = MT[id];
-  assert.ok(MT.topicGames.available(model), id + ' 应有足够的文字题开放找错游戏');
+  assert.ok(MT.topicGames.available(model), id + ' 应有足够的题开放找错游戏');
   var exited = 0;
   var work = new Element();
   MT.topicGames.start(work, model, 20, function () { exited++; });
@@ -79,4 +85,19 @@ var work100 = new Element();
 MT.topicGames.start(work100, MT.money, 100, function () {});
 assert.equal(byId['topic-impostor-cards'].children.length, 3);
 
-console.log('check-topic-games: ok (6 courses, 3 cards with one impostor, wrong pick continues, 5 rounds, replay, exit)');
+// 强制抽到看图题时，卡片 HTML 要带缩略图容器。
+var visualQ = MT.time.generate('clock', 20, 3);
+assert.ok(visualQ.visualHTML);
+var visualWork = new Element();
+// 用桩 generate 保证三张都是看图题，方便断言 DOM。
+var clockModel = {
+  title: '认识时间',
+  skills: MT.time.skills,
+  generate: function (skill, range, seed) { return MT.time.generate('clock', range, seed); }
+};
+MT.topicGames.start(visualWork, clockModel, 20, function () {});
+assert.ok(visualWork.innerHTML.includes('impostor-visual') || byId['topic-impostor-cards'].children.some(function (c) {
+  return c.innerHTML.indexOf('impostor-visual') !== -1;
+}), '看图题卡片应渲染 impostor-visual');
+
+console.log('check-topic-games: ok (6 courses + visual cards, 3 cards with one impostor, 5 rounds, replay, exit)');

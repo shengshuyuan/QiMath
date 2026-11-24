@@ -347,17 +347,25 @@
 
   function readQuestion() {
     var q = currentItem().q;
-    var text = q.speech || q.prompt + '。' + (q.expression || '');
+    var prompt = q.speech || q.prompt;
+    var text = prompt + (q.expression ? '。' + q.expression : '');
     var choices = q.kind === 'choice' ? q.choices : null;
     if (q.kind === 'steps' && session.phase !== 'complete') {
       if (session.phase === 'order') {
-        text += '。先选出第一步计算的部分。';
+        text = prompt + (q.expression ? '。' + q.expression : '') + '。先选出第一步计算的部分。';
         choices = q.firstChoices;
       } else if (session.phase === 'intermediate') {
         text = '现在算中间结果：' + q.firstChoices[q.correctFirst] + '，等于多少？';
+        choices = null;
       } else {
         text = '中间结果是 ' + q.intermediate + '。现在算最后一步：' + q.reduced + '，等于多少？';
+        choices = null;
       }
+    }
+    // 固定题面若有真人录音，优先只读题干（避免拼上选项后对不上录音）；选项留给孩子自己看。
+    if (MT.speech.hasClip && MT.speech.hasClip(prompt) && session.phase !== 'intermediate' && session.phase !== 'answer') {
+      say(prompt);
+      return;
     }
     if (choices && session.phase !== 'complete') {
       text += '。' + choices.map(function (choice, index) { return '选项 ' + (index + 1) + '：' + choice; }).join('。');

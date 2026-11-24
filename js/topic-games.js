@@ -2,13 +2,14 @@
    专题课通用小游戏：找出算错的小捣蛋
    ----------------------------------------------------------------
    给混合运算、长度、角、时间、质量、人民币这些课共用。每轮从当前课程
-   的文字题里取 3 道，把其中一道的答案悄悄改错，让孩子找出来。
+   取 3 道题，把其中一道的答案悄悄改错，让孩子找出来。
    题目全部来自各课程现成的 generate(skill, range, seed)，不另写题库；
-   带图的题（读尺、看钟）不适合做成文字卡片，会被跳过。
+   文字题与看图题（读尺、看钟、读秤、角）都可以做成卡片。
    样式复用 games.css 里的 .impostor-* 组件。
 
    对外接口：
-     MT.topicGames.available(model)                 这门课有没有足够的文字题
+     MT.topicGames.available(model)                 这门课有没有足够的题
+     MT.topicGames.playable(q)                      单题能不能做成卡片
      MT.topicGames.start(work, model, range, onExit)  在 work 容器里开始游戏
    ============================================================== */
 (function () {
@@ -36,9 +37,9 @@
 
   /* ---------- 把一道题变成一张「陈述卡」 ---------- */
 
-  // 文字题才能做卡片：没有图，并且能用一句话说清「题目 → 答案」。
-  function textual(q) {
-    if (!q || q.visualHTML) return false;
+  // 能做成卡片：有可展示的题面，并且答案可对可错（含带 visualHTML 的看图题）。
+  function playable(q) {
+    if (!q) return false;
     if (q.kind === 'steps') return !!q.expression && typeof q.answer === 'number';
     if (q.kind === 'choice') return Array.isArray(q.choices) && q.choices.length >= 2 && typeof q.answer === 'number';
     return typeof q.answer === 'number' && !!q.prompt;
@@ -53,7 +54,12 @@
   }
 
   function cardFrom(q, impostor) {
-    var card = { kind: q.kind, impostor: impostor, explanation: q.steps ? q.steps.join('；') : (q.explanation || '') };
+    var card = {
+      kind: q.kind,
+      impostor: impostor,
+      visualHTML: q.visualHTML || '',
+      explanation: q.steps ? q.steps.join('；') : (q.explanation || '')
+    };
     if (q.kind === 'steps') {
       card.left = q.expression;
       card.correct = String(q.answer);
@@ -72,14 +78,14 @@
     return card;
   }
 
-  // 从这门课所有知识点里随机抽文字题，直到凑够 CARDS 道互不相同的题。
+  // 从这门课所有知识点里随机抽题，直到凑够 CARDS 道互不相同的题。
   function drawQuestions(model, range) {
     var out = [], seen = {}, tries = 0;
     while (out.length < CARDS && tries++ < MAX_TRIES) {
       var skill = pick(model.skills);
       var q = model.generate(skill.id, range, randomSeed());
-      if (!textual(q)) continue;
-      var key = q.expression || q.prompt;
+      if (!playable(q)) continue;
+      var key = (q.expression || q.prompt) + (q.visualHTML ? '#v' : '');
       if (seen[key]) continue;
       seen[key] = true;
       out.push(q);
@@ -89,9 +95,8 @@
 
   function available(model) {
     if (!model || !model.skills || !model.generate) return false;
-    // 任意一个知识点有文字题即可；连抽 12 次都不是文字题就视为不适合。
     for (var i = 0; i < model.skills.length; i++) {
-      for (var s = 0; s < 12; s++) if (textual(model.generate(model.skills[i].id, 20, s))) return true;
+      for (var s = 0; s < 12; s++) if (playable(model.generate(model.skills[i].id, 20, s))) return true;
     }
     return false;
   }
@@ -108,7 +113,7 @@
 
     function render() {
       work.innerHTML = '<article class="topic-card topic-game"><p class="topic-eyebrow">趣味游戏 · ' + esc(model.title || '') + '</p><h3 tabindex="-1">找出算错的小捣蛋</h3>' +
-        '<p class="topic-note">三张卡里有一张的答案是错的，点一点把它找出来。点到正确的卡不扣分，但会断掉连胜。</p>' +
+        '<p class="topic-note">三张卡里有一张的答案是错的，点一点把它找出来。点到正确的卡不扣分，但会断掉连胜。看图题也算。</p>' +
         hud() + '<div class="impostor-cards topic-impostor-cards" id="topic-impostor-cards"></div>' +
         '<div class="game-feedback" id="topic-impostor-feedback" hidden></div><div class="game-summary-card" id="topic-impostor-summary" hidden></div>' +
         '<div class="topic-actions"><button type="button" class="btn btn-soft" id="topic-impostor-exit">退出游戏</button></div></article>';
@@ -125,7 +130,8 @@
         : esc(card.shown);
       var tag = card.checked && card.impostor ? '<span class="impostor-badge">🕵️ 捣蛋鬼被抓啦！</span>'
         : card.checked ? '<span class="impostor-badge-ok">✓ 这张是对的</span>' : '点它验算一下？';
-      return '<div class="impostor-formula' + (card.formula ? '' : ' is-text') + '">' +
+      var visual = card.visualHTML ? '<div class="impostor-visual">' + card.visualHTML + '</div>' : '';
+      return visual + '<div class="impostor-formula' + (card.formula ? '' : ' is-text') + '">' +
         (card.formula ? esc(card.left) + ' = ' + answer : '<span class="impostor-question">' + esc(card.left) + '</span><span class="impostor-answer">' + answer + '</span>') +
         '</div><div class="impostor-tag">' + tag + '</div>';
     }
@@ -137,7 +143,7 @@
       state.cards.forEach(function (card, index) {
         var btn = document.createElement('button');
         btn.type = 'button';
-        btn.className = 'impostor-card' + (card.checked ? (card.impostor ? ' is-caught' : ' is-correct-checked') : '');
+        btn.className = 'impostor-card' + (card.checked ? (card.impostor ? ' is-caught' : ' is-correct-checked') : '') + (card.visualHTML ? ' has-visual' : '');
         btn.innerHTML = cardHTML(card);
         btn.addEventListener('click', function () { onCard(index, btn); });
         box.appendChild(btn);
@@ -161,7 +167,7 @@
         state.cleared = true;
         state.streak = state.mistake ? 1 : state.streak + 1;
         state.best = Math.max(state.best, state.streak);
-        btn.className = 'impostor-card is-caught';
+        btn.className = 'impostor-card is-caught' + (card.visualHTML ? ' has-visual' : '');
         btn.innerHTML = cardHTML(card);
         haptic('ok');
         MT.sound.play('win');
@@ -169,7 +175,7 @@
         summary(card);
       } else {
         state.mistake = true;
-        btn.className = 'impostor-card is-correct-checked';
+        btn.className = 'impostor-card is-correct-checked' + (card.visualHTML ? ' has-visual' : '');
         btn.innerHTML = cardHTML(card);
         haptic('bad');
         MT.sound.play('wrong');
@@ -220,5 +226,5 @@
     startRound(0);
   }
 
-  MT.topicGames = { available: available, start: start };
+  MT.topicGames = { available: available, playable: playable, start: start };
 })();

@@ -172,10 +172,14 @@
   function spoken(text) {
     return String(text)
       .replace(/(\d{1,2}):(\d{2})/g, function (m, h, mm) { return Number(h) + '时' + (Number(mm) ? Number(mm) + '分' : ''); })
-      .replace(/(\d)\s*kg\b/gi, '$1千克')
-      .replace(/(\d)\s*cm\b/gi, '$1厘米')
-      .replace(/(\d)\s*m\b/g, '$1米')
-      .replace(/(\d)\s*g\b/gi, '$1克')
+      .replace(/(\d+(?:\.\d+)?)\s*kg\b/gi, '$1千克')
+      .replace(/(\d+(?:\.\d+)?)\s*cm\b/gi, '$1厘米')
+      .replace(/(\d+(?:\.\d+)?)\s*m\b/g, '$1米')
+      .replace(/(\d+(?:\.\d+)?)\s*g\b/gi, '$1克')
+      .replace(/¥\s*(\d+)/g, '$1元')
+      .replace(/￥\s*(\d+)/g, '$1元')
+      .replace(/(\d+)\s*°/g, '$1度')
+      .replace(/∠/g, '角')
       .replace(/[＝=]/g, '等于')
       .replace(/[＋+]/g, '加')
       .replace(/[－−]|\s-\s/g, '减')
@@ -184,8 +188,12 @@
       .replace(/＞/g, '大于').replace(/＜/g, '小于')
       .replace(/（\s*　?\s*）|\(\s*\)/g, '，括号，')
       .replace(/_{2,}/g, '多少')
-      .replace(/[·→]/g, '，')
+      .replace(/[·→～~]/g, '，')
       .replace(/\s{2,}/g, ' ');
+  }
+
+  function hasClip(text) {
+    return !!clipUrl(text);
   }
 
   function utter(text, scene) {
@@ -307,6 +315,7 @@
   MT.speech = {
     supported: supported || hasClips(),
     hasClips: hasClips,
+    hasClip: hasClip,
     play: play,
     stop: stop,
     warmup: warmup,

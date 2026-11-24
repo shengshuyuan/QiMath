@@ -52,23 +52,8 @@
     return !!(id && MT.op.get(id));
   }
 
-  // 汇总一门课的学习情况：done / total 是已通关数（基础运算）或已独立答对过的知识点数（专题课），wrong 是错题数。
   function courseStats(c) {
-    var p = MT.progress, done = 0, total = 0, wrong = 0;
-    if (c.topic === 'basic') {
-      var op = MT.op.get(c.id);
-      if (!op) return null;
-      var bag = op.bag(p), levels = bag.levels || {};
-      Object.keys(levels).forEach(function (k) { total++; if (levels[k] && levels[k].passed) done++; });
-      wrong = Object.keys(bag.wrong || {}).length;
-    } else {
-      var model = MT[c.id], t = p.topics && p.topics[c.id];
-      if (!model) return null;
-      total = model.skills.length;
-      model.skills.forEach(function (s) { if (t && t.skills[s.id] && t.skills[s.id].clean > 0) done++; });
-      wrong = t ? Object.keys(t.wrong || {}).length : 0;
-    }
-    return { done: done, total: total, wrong: wrong, started: done > 0 || wrong > 0 };
+    return MT.insights.courseStats(c);
   }
 
   function courseProgressHTML(c, st) {
@@ -77,6 +62,10 @@
     var pct = st.total ? Math.round(st.done / st.total * 100) : 0;
     var text = (st.done >= st.total ? '全部完成 🎉' : '已完成 ' + st.done + ' / ' + st.total + ' ' + unit) + (st.wrong ? ' · ' + st.wrong + ' 道错题' : '');
     return '<span class="course-progress"><span class="course-progress-bar" aria-hidden="true"><i style="width:' + pct + '%"></i></span><span class="course-progress-text">' + text + '</span></span>';
+  }
+
+  function collectStats() {
+    return MT.navigation.courses.map(function (c) { return { c: c, st: courseStats(c) }; });
   }
 
   function renderWrongBanner(stats) {
@@ -94,6 +83,31 @@
     box.innerHTML = '<span class="wrong-banner-icon" aria-hidden="true">📝</span><span class="wrong-banner-copy"><b>有 ' + totalWrong + ' 道错题等着复习</b><small>先从「' + top.c.title + '」的 ' + top.st.wrong + ' 道开始，连续答对两次就会消掉。</small></span><span class="course-arrow" aria-hidden="true">→</span>';
   }
 
+  function renderTodayRecommend(stats) {
+    var box = document.getElementById('today-recommend');
+    if (!box) return;
+    var tip = MT.insights.recommend(stats);
+    box.hidden = !tip;
+    if (!tip) return;
+    box.dataset.course = tip.course;
+    box.dataset.mode = tip.mode || 'learn';
+    box.dataset.view = tip.view || '';
+    box.dataset.skill = tip.skill || '';
+    box.dataset.game = tip.game || '';
+    box.innerHTML = '<span class="today-recommend-icon" aria-hidden="true">🎯</span><span class="today-recommend-copy"><b>' + tip.title + '</b><small>' + tip.detail + '</small></span><span class="today-recommend-cta">' + tip.cta + ' →</span>';
+  }
+
+  function renderParentSummary() {
+    var box = document.getElementById('parent-summary');
+    if (!box || !MT.insights) return;
+    var summary = MT.insights.parentSummary(collectStats());
+    var list = summary.lines.length
+      ? '<ul class="parent-summary-list">' + summary.lines.map(function (line) { return '<li>' + line + '</li>'; }).join('') + '</ul>'
+      : '<p class="set-note">还没有各课明细。</p>';
+    box.innerHTML = '<p class="parent-summary-stats">已开始 <b>' + summary.started + '</b> 门 · 全部完成 <b>' + summary.finished + '</b> 门 · 错题 <b>' + summary.wrongTotal + '</b> 道</p>' +
+      list + '<p class="set-note">' + summary.tip + '</p>';
+  }
+
   function renderCatalog() {
     var stats = [];
     ['number', 'measure'].forEach(function (group) {
@@ -104,6 +118,7 @@
         return '<button type="button" class="course-card' + (st && st.started ? ' is-started' : '') + '" data-course="' + c.id + '"><span class="course-mark" aria-hidden="true">' + c.mark + '</span><span class="course-card-copy"><b>' + c.title + '</b><small>' + c.description + '</small>' + courseProgressHTML(c, st) + '</span><span class="course-arrow" aria-hidden="true">→</span></button>';
       }).join('');
     });
+    renderTodayRecommend(stats);
     renderWrongBanner(stats);
     var last = MT.navigation.parse(MT.progress.settings.lastLocation);
     var resume = document.getElementById('btn-continue');
@@ -286,6 +301,18 @@
     var box = document.getElementById('settings');
     box.hidden = !box.hidden;
     document.getElementById('btn-settings').setAttribute('aria-expanded', box.hidden ? 'false' : 'true');
+    if (!box.hidden) renderParentSummary();
+  }
+
+  function openRecommend(btn) {
+    var route = {
+      course: btn.dataset.course,
+      mode: btn.dataset.mode || 'learn'
+    };
+    if (btn.dataset.view) route.view = btn.dataset.view;
+    if (btn.dataset.skill) route.skill = btn.dataset.skill;
+    if (btn.dataset.game) route.game = btn.dataset.game;
+    openRoute(route);
   }
 
   // 离线语音：只在基础运算课显示（录音只覆盖加减乘除），下载当前运算的全部录音让 Service Worker 缓存。
@@ -446,6 +473,9 @@
     });
     document.getElementById('wrong-banner').addEventListener('click', function (e) {
       openRoute({ course: e.currentTarget.dataset.course, mode: 'wrong' });
+    });
+    document.getElementById('today-recommend').addEventListener('click', function (e) {
+      openRecommend(e.currentTarget);
     });
     document.getElementById('course-modes').addEventListener('click', function (e) {
       var btn = e.target.closest('[data-course-mode]');

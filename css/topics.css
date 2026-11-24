@@ -89,6 +89,13 @@
 .topic-game .game-hud { margin: 16px 0 12px; }
 .topic-impostor-cards { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .topic-impostor-cards .impostor-card { padding: 18px 14px; min-height: 150px; }
+.topic-impostor-cards .impostor-card.has-visual { align-items: stretch; }
+.topic-impostor-cards .impostor-visual { width: 100%; margin: 0 0 10px; max-height: 118px; overflow: hidden; }
+.topic-impostor-cards .impostor-visual .length-diagram,
+.topic-impostor-cards .impostor-visual figure { margin: 0 auto; max-width: 100%; }
+.topic-impostor-cards .impostor-visual svg { display: block; width: 100%; height: auto; max-height: 100px; }
+.topic-impostor-cards .impostor-visual figcaption,
+.topic-impostor-cards .impostor-visual .topic-note { display: none; }
 .topic-impostor-cards .impostor-formula { font-size: clamp(18px, 3vw, 24px); word-break: break-word; text-align: center; }
 .topic-impostor-cards .impostor-formula.is-text { display: flex; flex-direction: column; gap: 8px; font-family: inherit; font-size: 15px; font-weight: 500; letter-spacing: 0; line-height: 1.5; }
 .topic-impostor-cards .impostor-answer { font-size: 18px; font-weight: 700; color: var(--brand-d); }
@@ -96,6 +103,8 @@
 @media (max-width: 720px) {
   .topic-impostor-cards { grid-template-columns: 1fr; }
   .topic-impostor-cards .impostor-card { min-height: 0; }
+  .topic-impostor-cards .impostor-visual { max-height: 140px; }
+  .topic-impostor-cards .impostor-visual svg { max-height: 120px; }
 }
 
 /* ---------- 练习页游戏入口模块 ---------- */

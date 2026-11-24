@@ -2,9 +2,9 @@
 
 ## Source of truth
 - Status: Active
-- Last refreshed: 2026-10-23
-- Primary product surfaces: QiMath 基础运算、混合运算、长度单位、角、时间、克和千克、认识人民币。
-- Evidence reviewed: `index.html`、`css/base.css`、`css/layout.css`、`js/ops.js`、`js/app.js`、`js/storage.js`、`js/quiz.js`、`js/print.js`、`js/money.js`；本轮用户确认的三个范围问题。此前没有独立设计文档。
+- Last refreshed: 2026-11-24
+- Primary product surfaces: QiMath 基础运算、混合运算、长度单位、角、时间、克和千克、认识人民币；知识目录的今日推荐与设置里的家长学习概况。
+- Evidence reviewed: `index.html`、`css/base.css`、`css/layout.css`、`css/navigation.css`、`js/ops.js`、`js/app.js`、`js/insights.js`、`js/storage.js`、`js/quiz.js`、`js/print.js`、`js/money.js`、`js/topic-games.js`；与 AI_readme 当前版本对齐。
 
 ## Brand
 - Personality: 友好、清楚、鼓励孩子尝试，用图和步骤解释数学。
@@ -25,8 +25,9 @@
 - Primary navigation: 独立知识目录，按“数与运算 / 量与测量”分组；加法、减法、乘法、除法、混合运算、米和厘米、认识人民币是同一粒度的课程入口。
 - Core routes/screens: 知识目录 → 课程。所有课程使用同一组“学一学 / 练一练 / 错题”。基础运算的探究与口诀是学习工具，闯关与游戏是练习工具；知识点目录在桌面为侧栏，在手机默认折叠。练习范围只出现在对应练习准备页；答题中收起知识点目录。
 - Content hierarchy: 知识分类 → 课程 → 知识点 → 学习或练习 → 反馈与复习。页头只保留品牌、知识目录和辅助操作，不再放子级课程切换。
+- Catalog guidance: 首页「今天练什么」按错题最多 → 已开始未完成 → 尚未打开的课排序给出一条主建议；有错题时另显示错题横幅。设置中「学习概况」汇总已开始/完成门数、错题与陪学建议，不另存字段。
 - Navigation state: URL hash 保存课程、知识点、学习方式及基础工具，支持直接打开、刷新、浏览器返回和前进。首次打开显示目录，可继续上次位置；练习刷新回到准备页，不恢复半道题、不重复计分。
-- Topic ownership: `MT.op` 继续只管理四种基础运算；`MT.topics` 负责新知识的共享学习/练习界面。新模块提供课程与确定性题目数据，不复制整套页面。
+- Topic ownership: `MT.op` 继续只管理四种基础运算；`MT.topics` 负责新知识的共享学习/练习界面；`MT.insights` 只读进度做推荐。新模块提供课程与确定性题目数据，不复制整套页面。
 
 ## Design principles
 - 先看图和算式，再操作；沿用现有探究台的内容顺序。
