@@ -53,6 +53,7 @@
   font-family: var(--font-num);
   font-size: 28px;
   font-weight: 700;
+  font-variant-numeric: tabular-nums;
   color: var(--brand-d);
   line-height: 1;
 }
@@ -68,6 +69,7 @@
 .hud-score b {
   font-family: var(--font-num);
   font-size: 18px;
+  font-variant-numeric: tabular-nums;
   color: var(--brand-d);
 }
 
@@ -75,9 +77,10 @@
   background: var(--brand-l);
   color: var(--brand-d);
   padding: 3px 10px;
-  border-radius: 999px;
+  border-radius: var(--r-full);
   font-size: 13px;
   font-weight: 500;
+  font-variant-numeric: tabular-nums;
 }
 
 /* ---------- 游戏 1：气球天空 ---------- */
@@ -171,6 +174,7 @@
   font-family: var(--font-num);
   font-size: 20px;
   font-weight: 600;
+  font-variant-numeric: tabular-nums;
   color: var(--ink);
   letter-spacing: .5px;
   pointer-events: none;
@@ -265,6 +269,7 @@
   font-family: var(--font-num);
   font-size: clamp(20px, 4.8vw, 28px);
   font-weight: 600;
+  font-variant-numeric: tabular-nums;
   color: var(--ink);
   letter-spacing: .5px;
 }
@@ -300,12 +305,12 @@
 }
 
 .impostor-badge {
-  background: var(--bad);
+  background: var(--bad-text);
   color: #fff;
   font-size: 12px;
   font-weight: 600;
   padding: 3px 10px;
-  border-radius: 999px;
+  border-radius: var(--r-full);
 }
 
 /* 正确卡片被点击时的验证状态 */
@@ -315,12 +320,12 @@
 }
 
 .impostor-badge-ok {
-  background: var(--ok);
+  background: var(--ok-text);
   color: #fff;
   font-size: 12px;
   font-weight: 600;
   padding: 3px 10px;
-  border-radius: 999px;
+  border-radius: var(--r-full);
 }
 
 @keyframes cardWobble {

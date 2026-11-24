@@ -456,9 +456,7 @@
   function finish() {
     clearTimer();
     S.active = false;
-    if (typeof document !== 'undefined' && document.body && document.body.classList) {
-      document.body.classList.remove('is-practicing');
-    }
+    setPracticingBody(false);
     MT.bus.emit('quiz:end', {});
     dom.quizPlay.hidden = true;
     var box = dom.quizResult;
@@ -586,6 +584,12 @@
     if (head) head.hidden = hidden;
   }
 
+  function setPracticingBody(active) {
+    if (typeof document !== 'undefined' && document.body && document.body.classList) {
+      document.body.classList.toggle('is-practicing', !!active);
+    }
+  }
+
   function resetRound() {
     clearTimer();
     S.idx = 0;
@@ -595,9 +599,7 @@
     S.failed = false;
     S.streak = 0;
     S.active = true;
-    if (typeof document !== 'undefined' && document.body && document.body.classList) {
-      document.body.classList.add('is-practicing');
-    }
+    setPracticingBody(true);
     dom.quizResult.hidden = true;
     dom.quizPlay.hidden = false;
   }
@@ -634,6 +636,7 @@
   function backToWrong() {
     clearTimer();
     S.active = false;
+    setPracticingBody(false);
     if (dom.quizResult) dom.quizResult.hidden = true;
     if (dom.quizPlay) dom.quizPlay.hidden = true;
     if (dom.wrongDetail) dom.wrongDetail.hidden = true;
@@ -979,9 +982,7 @@
     stop: function () {
       clearTimer();
       S.active = false;
-      if (typeof document !== 'undefined' && document.body && document.body.classList) {
-        document.body.classList.remove('is-practicing');
-      }
+      setPracticingBody(false);
       if (dom.quizPlay) dom.quizPlay.hidden = true;
       if (dom.quizResult) dom.quizResult.hidden = true;
     },

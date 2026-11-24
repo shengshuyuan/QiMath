@@ -9,31 +9,36 @@
   --muted-dot: #E4DFF0;
 
   /* 文字 */
-  --ink: #2F2A3D;
-  --ink-2: #6E6784;
-  --ink-3: #8C85A0;
+  --ink: #2B2638;
+  --ink-2: #554E6A;
+  --ink-3: #6C6482;
 
   /* 边框 */
   --line: rgba(91, 63, 150, .13);
   --line-2: rgba(91, 63, 150, .24);
 
   /* 主色：酷洛米紫 */
-  --brand: #8B5CF6;
-  --brand-d: #6D3FD9;
+  --brand: #7B48EA;
+  --brand-d: #5E32C6;
   --brand-l: #EDE7FE;
 
   /* 副色：酷洛米粉 */
   --accent: #F472B6;
-  --accent-d: #DB4E93;
+  --accent-d: #AD246B;
   --accent-l: #FDE7F3;
 
   /* 语义色 */
   --ok: #2FBFA0;
   --ok-l: #E2F7F1;
-  --ok-text: #16705C;
+  --ok-text: #136B57;
 
   --warn: #F2B544;
   --warn-l: #FFF3D9;
+  --warn-bg: #FFFBEB;
+  --warn-text: #8A4B08;
+
+  --measure-bg: #E6F6F2;
+  --measure-ink: #136B57;
 
   --bad: #EF4F6B;
   --bad-l: #FDE8EC;
@@ -52,6 +57,7 @@
   --r-full: 999px;
   --ease: cubic-bezier(.34, 1.4, .64, 1);
   --shadow: 0 4px 14px rgba(91, 63, 150, .08);
+  --shadow-float: 0 12px 32px rgba(47, 42, 61, .16);
   --font: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Heiti SC", sans-serif;
   --font-num: ui-rounded, "SF Pro Rounded", -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
 }
@@ -78,6 +84,7 @@ body {
 }
 
 h1, h2, h3, p { margin: 0; }
+h1, h2, h3 { text-wrap: balance; }
 
 button {
   font-family: inherit;
@@ -177,6 +184,49 @@ button, .tap { user-select: none; }
 .mini:active {
   transform: translateY(2px);
   box-shadow: 0 1px 0 var(--line-2);
+}
+
+.btn:disabled,
+.mini:disabled {
+  opacity: .46;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+.btn:disabled:active,
+.mini:disabled:active {
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-sm {
+  min-height: 44px;
+  padding: 0 12px;
+  font-size: 13px;
+}
+
+.btn-lg {
+  min-height: 48px;
+  padding: 0 22px;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.title-svg {
+  width: 20px;
+  height: 20px;
+  vertical-align: -3px;
+  margin-right: 6px;
+  color: var(--brand-d);
+  flex-shrink: 0;
+}
+
+.brand-svg {
+  width: 20px;
+  height: 20px;
+  display: block;
+  color: var(--brand);
 }
 
 /* ---------- segmented control ---------- */
@@ -389,7 +439,7 @@ button, .tap { user-select: none; }
   min-height: 44px;
   width: 44px;
   padding: 0;
-  border-radius: 50%;
+  border-radius: var(--r-full);
   font-size: 16px;
   display: inline-flex;
   align-items: center;

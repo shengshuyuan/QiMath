@@ -1,4 +1,4 @@
-var CACHE_NAME = 'mt99-cache-v47';
+var CACHE_NAME = 'mt99-cache-v48';
 var AUDIO_CACHE = 'mt99-audio-v1';
 var ASSETS = [
   './',

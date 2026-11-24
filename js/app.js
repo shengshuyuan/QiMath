@@ -9,8 +9,15 @@
   var basicViews = { learn: 'explore', practice: 'quiz' };
   var gradeFilter = 'all';
   var reportFocus = null;
+  var settingsFocus = null;
   var SPEECH_SVG_ON = '<svg class="nav-svg" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>';
   var SPEECH_SVG_OFF = '<svg class="nav-svg" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z"/><line x1="22" y1="9" x2="16" y2="15"/><line x1="16" y1="9" x2="22" y2="15"/></svg>';
+  var TARGET_SVG = '<svg class="nav-svg" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1" fill="currentColor"/></svg>';
+  var PRINT_SVG = '<svg class="nav-svg" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V4h12v5"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="6"/></svg>';
+  var COURSE_MARKS_SVG = {
+    length: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="8" rx="1.5"/><path d="M7 8v3M11 8v4M15 8v3M19 8v3"/></svg>',
+    mass: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v15M7 19h10M5 7h14"/><path d="M5 7l-2 6h4zM19 7l-2 6h4z"/></svg>'
+  };
 
   function showFatal(msg) {
     var box = document.getElementById('boot-error');
@@ -103,7 +110,7 @@
     box.dataset.view = tip.view || '';
     box.dataset.skill = tip.skill || '';
     box.dataset.game = tip.game || '';
-    box.innerHTML = '<span class="today-recommend-icon" aria-hidden="true">🎯</span><span class="today-recommend-copy"><b>' + tip.title + '</b><small>' + tip.detail + '</small></span><span class="today-recommend-cta">' + tip.cta + ' →</span>';
+    box.innerHTML = '<span class="today-recommend-icon" aria-hidden="true">' + TARGET_SVG + '</span><span class="today-recommend-copy"><b>' + tip.title + '</b><small>' + tip.detail + '</small></span><span class="today-recommend-cta">' + tip.cta + ' →</span>';
     return tip;
   }
 
@@ -145,13 +152,13 @@
       : '<p class="set-note">还没有学习记录。回到知识目录挑一门课，先「学一学」再「练一练」吧。</p>';
     body.innerHTML = '<div class="report-summary-grid">' +
       '<div class="report-stat-box"><b>' + summary.started + ' / ' + MT.navigation.courses.length + '</b><span>已学课程</span></div>' +
-      '<div class="report-stat-box"><b>' + summary.wrongTotal + '</b><span>待复习错题</span></div>' +
+      '<div class="report-stat-box' + (summary.wrongTotal ? ' is-alert' : '') + '"><b>' + summary.wrongTotal + '</b><span>待复习错题</span></div>' +
       '<div class="report-stat-box"><b>' + badgesCount + ' / 14</b><span>收集勋章</span></div>' +
       '<div class="report-stat-box"><b>' + act.totalDays + ' 天</b><span>累计练习</span></div>' +
       '</div>' + listHTML +
       '<div class="report-tip">' + summary.tip + '</div>' +
       '<div class="report-actions">' +
-      (summary.wrongTotal ? '<button type="button" class="btn btn-main" id="btn-print-wrong-sheet">🖨️ 打印错题巩固卷（' + summary.wrongTotal + ' 题）</button>' : '') +
+      (summary.wrongTotal ? '<button type="button" class="btn btn-main" id="btn-print-wrong-sheet">' + PRINT_SVG + '<span>打印错题巩固卷（' + summary.wrongTotal + ' 题）</span></button>' : '') +
       '<button type="button" class="btn btn-soft" id="btn-report-done">知道了</button>' +
       '</div>';
   }
@@ -191,7 +198,8 @@
         var st = courseStats(c);
         stats.push({ c: c, st: st });
         var gradeTag = c.grade ? '<span class="course-grade">' + c.grade + '</span>' : '';
-        return '<button type="button" class="course-card' + (st && st.started ? ' is-started' : '') + '" data-course="' + c.id + '"><span class="course-mark" aria-hidden="true">' + c.mark + '</span><span class="course-card-copy"><span class="course-card-head"><b>' + c.title + '</b>' + gradeTag + '</span><small>' + c.description + '</small>' + courseProgressHTML(c, st) + '</span><span class="course-arrow" aria-hidden="true">→</span></button>';
+        var markHTML = COURSE_MARKS_SVG[c.id] || c.mark;
+        return '<button type="button" class="course-card' + (st && st.started ? ' is-started' : '') + '" data-course="' + c.id + '"><span class="course-mark" aria-hidden="true">' + markHTML + '</span><span class="course-card-copy"><span class="course-card-head"><b>' + c.title + '</b>' + gradeTag + '</span><small>' + c.description + '</small>' + courseProgressHTML(c, st) + '</span><span class="course-arrow" aria-hidden="true">→</span></button>';
       }).join('');
     });
     if (gradeFilter !== 'all') stats = collectStats();
@@ -374,22 +382,34 @@
     syncOp();
   }
 
-  function closeSettings() {
+  function closeSettings(restoreFocus) {
     var box = document.getElementById('settings');
     var backdrop = document.getElementById('settings-backdrop');
     if (backdrop) backdrop.hidden = true;
     if (box.hidden) return;
     box.hidden = true;
     document.getElementById('btn-settings').setAttribute('aria-expanded', 'false');
+    if (restoreFocus) {
+      var target = settingsFocus && settingsFocus.isConnected ? settingsFocus : document.getElementById('btn-settings');
+      if (target && target.focus) target.focus();
+    }
+    settingsFocus = null;
   }
 
   function toggleSettings() {
     var box = document.getElementById('settings');
     var backdrop = document.getElementById('settings-backdrop');
-    box.hidden = !box.hidden;
-    if (backdrop) backdrop.hidden = box.hidden;
-    document.getElementById('btn-settings').setAttribute('aria-expanded', box.hidden ? 'false' : 'true');
-    if (!box.hidden) renderParentSummary();
+    if (!box.hidden) {
+      closeSettings(true);
+      return;
+    }
+    settingsFocus = document.getElementById('btn-settings') || document.activeElement;
+    box.hidden = false;
+    if (backdrop) backdrop.hidden = false;
+    document.getElementById('btn-settings').setAttribute('aria-expanded', 'true');
+    renderParentSummary();
+    var closeBtn = document.getElementById('settings-close');
+    if (closeBtn && closeBtn.focus) closeBtn.focus();
   }
 
   function openRecommend(btn) {
@@ -543,15 +563,18 @@
       e.stopPropagation();
     });
 
+    var settingsClose = document.getElementById('settings-close');
+    if (settingsClose) settingsClose.addEventListener('click', function () { closeSettings(true); });
+
     var sBackdrop = document.getElementById('settings-backdrop');
-    if (sBackdrop) sBackdrop.addEventListener('click', closeSettings);
+    if (sBackdrop) sBackdrop.addEventListener('click', function () { closeSettings(true); });
 
     document.addEventListener('click', function () {
       if (!document.getElementById('settings').hidden) closeSettings();
     });
 
     document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape') closeSettings();
+      if (e.key === 'Escape') closeSettings(true);
     });
 
     var reportBtn = document.getElementById('btn-report');

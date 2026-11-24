@@ -58,6 +58,14 @@
 @media (max-width: 720px) {
   .level-head { align-items: stretch; flex-direction: column; }
   #btn-quiz-reset { align-self: flex-start; }
+  .qcard { padding: 12px 14px; }
+  .q-budget { margin-top: 6px; }
+  .q-dots { margin: 6px 0 8px; }
+  .q-input { margin-top: 10px; min-height: 52px; font-size: 30px; }
+  .q-tools { margin-top: 8px; }
+  .keypad { margin-top: 10px; gap: 8px; }
+  .key { min-height: 50px; font-size: 22px; }
+  .quiz-exit { margin-top: 10px; }
 }
 
 .modal {
@@ -126,6 +134,7 @@
   font-family: var(--font-num);
   font-size: 22px;
   font-weight: 500;
+  font-variant-numeric: tabular-nums;
   color: var(--ink);
 }
 
@@ -166,6 +175,7 @@
   display: flex;
   justify-content: space-between;
   font-size: 13px;
+  font-variant-numeric: tabular-nums;
   color: var(--ink-2);
 }
 
@@ -208,6 +218,7 @@
 }
 .q-help { margin-top: 0; }
 .q-help:disabled { opacity: .45; cursor: default; }
+.q-read { display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
 
 .q-dots {
   display: flex;
@@ -232,6 +243,7 @@
   font-family: var(--font-num);
   font-size: clamp(30px, 9vw, 46px);
   font-weight: 500;
+  font-variant-numeric: tabular-nums;
   letter-spacing: 2px;
   line-height: 1.2;
 }
@@ -252,6 +264,7 @@
   font-family: var(--font-num);
   font-size: 34px;
   font-weight: 500;
+  font-variant-numeric: tabular-nums;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -287,6 +300,11 @@
   justify-content: center;
   gap: 8px;
   font-size: 17px;
+}
+
+.q-fb:empty {
+  min-height: 0;
+  margin-top: 0;
 }
 
 .q-fb.is-ok { color: var(--ok-text); font-weight: 500; }
@@ -355,7 +373,7 @@
   font-size: 16px;
   font-weight: 600;
   color: var(--ink-2);
-  background: #fbf9ff;
+  background: var(--field);
 }
 
 .key-del:active {

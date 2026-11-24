@@ -55,6 +55,12 @@
     return map;
   }
 
+  function setPracticingBody(active) {
+    if (typeof document !== 'undefined' && document.body && document.body.classList) {
+      document.body.classList.toggle('is-practicing', !!active);
+    }
+  }
+
   function syncNavigation() {
     var b = bag();
     var wrongBySkill = topicWrongSkills(b);
@@ -78,7 +84,9 @@
     });
     var label = panel.querySelector('#topic-current-skill');
     if (label) label.textContent = skill.title;
-    panel.classList.toggle('is-practicing', !!((session && !session.done) || currentSubGame));
+    var practicing = !!((session && !session.done) || currentSubGame);
+    panel.classList.toggle('is-practicing', practicing);
+    setPracticingBody(practicing);
     panel.classList.toggle('is-wrong', mode === 'wrong');
     if (MT.bus) MT.bus.emit('topic:navigate', { mode: mode, skill: skill.id, game: currentSubGame });
   }
@@ -107,6 +115,7 @@
     if (!knownGame(gameId)) return;
     currentSubGame = gameId;
     panel.classList.toggle('is-practicing', true);
+    setPracticingBody(true);
     if (MT.bus) MT.bus.emit('topic:navigate', { mode: mode, skill: skill.id, game: gameId });
     if (gameId === 'impostor') {
       MT.topicGames.start(work, model, bag().range, function () {
@@ -559,6 +568,7 @@
         MT.moneyGames.exit();
       }
       session = null; model = null; currentSubGame = null;
+      setPracticingBody(false);
     },
     changeMode: changeMode,
     refresh: function () { if (model) this.enter(model.id); },

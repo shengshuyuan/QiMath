@@ -140,24 +140,25 @@
   align-items: center;
   justify-content: center;
   padding: 16px 28px;
-  background: #FFFBEB;
-  border: 2px dashed #F59E0B;
+  background: var(--warn-bg);
+  border: 2px dashed var(--warn);
   border-radius: var(--r-md);
-  box-shadow: 0 4px 10px rgba(245, 158, 11, .15);
+  box-shadow: 0 4px 10px rgba(242, 181, 68, .15);
   margin: 12px auto;
   position: relative;
 }
 .price-tag-label {
   font-size: 14px;
   font-weight: 600;
-  color: #92400E;
+  color: var(--warn-text);
   margin-bottom: 4px;
 }
 .price-tag-amount {
   font-family: var(--font-num);
   font-size: 32px;
   font-weight: 800;
-  color: #B45309;
+  font-variant-numeric: tabular-nums;
+  color: var(--warn-text);
 }
 .shopping-cart-card {
   padding: 16px;
@@ -279,6 +280,7 @@
 .target-amount {
   font-size: 26px;
   font-family: var(--font-num);
+  font-variant-numeric: tabular-nums;
   color: var(--brand-d);
 }
 .mission-tip {
@@ -311,15 +313,16 @@
 .current-total {
   font-family: var(--font-num);
   font-size: 18px;
+  font-variant-numeric: tabular-nums;
   color: var(--ink);
   transition: color .15s;
 }
 .current-total.is-exact {
-  color: var(--ok);
+  color: var(--ok-text);
   font-weight: 800;
 }
 .current-total.is-over {
-  color: var(--bad);
+  color: var(--bad-text);
   font-weight: 800;
 }
 .game-tray-btns {
@@ -371,7 +374,7 @@
 }
 .game-feedback-bar.is-warn {
   background: var(--warn-l);
-  color: #92400E;
+  color: var(--warn-text);
   border: 1px solid var(--warn);
 }
 
@@ -456,15 +459,15 @@
 /* ---------- 小小收银员特色样式 ---------- */
 .cashier-counter-card {
   padding: 16px;
-  background: #FEF3C7;
-  border: 1.5px solid #F59E0B;
+  background: var(--warn-l);
+  border: 1.5px solid var(--warn);
   border-radius: var(--r-md);
   margin-bottom: 16px;
 }
 .counter-label {
   font-size: 13px;
   font-weight: 700;
-  color: #92400E;
+  color: var(--warn-text);
   margin-bottom: 8px;
 }
 .counter-goods-chips {
@@ -478,33 +481,35 @@
   align-items: center;
   gap: 6px;
   padding: 6px 12px;
-  background: #FFFBEB;
-  border: 1px solid #FDE68A;
+  background: var(--warn-bg);
+  border: 1px solid var(--warn);
   border-radius: var(--r-sm);
   font-size: 14px;
-  color: #78350F;
+  color: var(--warn-text);
 }
 .chip-price {
   font-family: var(--font-num);
   font-weight: 700;
-  color: #B45309;
+  font-variant-numeric: tabular-nums;
+  color: var(--warn-text);
 }
 .counter-total {
   font-size: 16px;
   font-weight: 700;
-  color: #78350F;
+  color: var(--warn-text);
   margin-top: 6px;
   padding-top: 6px;
-  border-top: 1px dashed rgba(180, 83, 9, .25);
+  border-top: 1px dashed rgba(138, 75, 8, .25);
 }
 .counter-total b {
   font-size: 20px;
-  color: #B45309;
+  font-variant-numeric: tabular-nums;
+  color: var(--warn-text);
 }
 .counter-payment-box {
   margin-top: 12px;
   padding: 10px 14px;
-  background: #FFFFFF;
+  background: var(--card);
   border-radius: var(--r-sm);
   display: flex;
   align-items: center;
@@ -514,6 +519,7 @@
 .counter-paid-amount {
   font-size: 18px;
   font-weight: 800;
+  font-variant-numeric: tabular-nums;
   color: var(--brand-d);
 }
 
@@ -535,7 +541,7 @@
 }
 
 .cashier-audit-details {
-  background: #FFFFFF;
+  background: var(--card);
   padding: 12px 16px;
   border-radius: var(--r-sm);
   font-size: 14px;
@@ -624,6 +630,8 @@
   .money-game-top {
     flex-wrap: wrap;
     gap: 8px;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
     justify-content: space-between;
   }
   .game-btn-back {
@@ -648,8 +656,18 @@
   .target-amount {
     font-size: 22px;
   }
+  .cashier-counter-card {
+    padding: 12px;
+    margin-bottom: 10px;
+  }
   .game-stage-area {
     padding: 10px;
+    min-height: 92px;
+    margin-bottom: 10px;
+  }
+  .game-denom-pool {
+    padding: 10px;
+    margin-bottom: 10px;
   }
   .game-tray-head {
     flex-wrap: wrap;
@@ -674,11 +692,16 @@
     padding: 14px 10px 18px;
   }
   .quick-decisions {
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
     width: 100%;
+    margin-bottom: 10px;
   }
   .cashier-quick-btn {
     width: 100%;
+    padding: 8px 10px;
+    font-size: 14px;
     text-align: center;
   }
   .counter-payment-box {
