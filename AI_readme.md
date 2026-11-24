@@ -92,13 +92,13 @@ vercel --prod --yes
 
 ### Cloudflare Pages
 
-仓库已备 `_headers`、`.assetsignore`。本机需已 `wrangler login`，然后例如：
+部署必须通过 `./tools/deploy-cloudflare.sh` 执行。因为 `wrangler pages deploy .` 会忽略 `.assetsignore` 并将 dotfiles 及内部文件（如 `.env.local`、`.workbuddy`、`.vercel`、`AGENTS.md`、`tools/`）一并上传，所以发布脚本会新建临时白名单目录，仅打包线上运行所需资源（`_headers`、`index.html`、`404.html`、`manifest.json`、`icon.svg`、`sw.js`、`css/`、`js/`、`audio/`）并自动校验无敏感文件后再部署。本机需先完成 `wrangler login`，然后运行：
 
 ```sh
-npx wrangler pages deploy . --project-name=<项目名> --commit-dirty=true
+./tools/deploy-cloudflare.sh
 ```
 
-若未登录或项目名未知，先 `npx wrangler pages project list` 确认。
+可先加 `--dry-run` 预检打包清单；若未登录或项目名未知，先 `wrangler pages project list` 确认。
 
 ### WorkBuddy 国内站
 
